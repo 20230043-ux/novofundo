@@ -447,7 +447,7 @@ const AdminPublications = () => {
     },
   });
   
-  // Edit investment mutation with optimistic updates
+  // Edit investment mutation with instant optimistic updates
   const editInvestmentMutation = useMutation({
     mutationFn: async ({ projectId, totalInvested }: { projectId: number, totalInvested: string }) => {
       const data = { totalInvested };
@@ -463,15 +463,50 @@ const AdminPublications = () => {
         throw new Error("Erro ao atualizar valor investido");
       }
       
-      return { success: true };
+      return { success: true, projectId, totalInvested };
+    },
+    onMutate: async ({ projectId, totalInvested }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/projects'] });
+
+      // Snapshot previous value
+      const previousProjects = queryClient.getQueryData(['/api/projects']);
+
+      // Optimistically update the investment value instantly
+      queryClient.setQueryData(['/api/projects'], (old: any[]) => {
+        if (!old) return old;
+        return old.map(project => 
+          project.id === projectId 
+            ? { 
+                ...project, 
+                totalInvested: totalInvested,
+                displayInvestment: { 
+                  ...project.displayInvestment, 
+                  displayAmount: totalInvested 
+                }
+              }
+            : project
+        );
+      });
+
+      // Return context with previous value
+      return { previousProjects };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousProjects) {
+        queryClient.setQueryData(['/api/projects'], context.previousProjects);
+      }
+      
+      toast({
+        title: "Erro ao atualizar valor",
+        description: "Houve um erro. Tente novamente.",
+        variant: "destructive",
+      });
     },
     onSuccess: (data, { projectId, totalInvested }) => {
-      // Invalidate all related queries for comprehensive updates
+      // Invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
-      
-      // Force refetch to ensure fresh data
-      queryClient.refetchQueries({ queryKey: ['/api/projects'] });
       
       // Close dialog
       setIsEditInvestmentOpen(false);
@@ -479,15 +514,8 @@ const AdminPublications = () => {
       investmentForm.reset();
       
       toast({
-        title: "Valor atualizado",
-        description: "O valor investido foi atualizado com sucesso.",
-      });
-    },
-    onError: (err) => {
-      toast({
-        title: "Erro ao atualizar valor",
-        description: "Houve um erro. Tente novamente.",
-        variant: "destructive",
+        title: "Valor atualizado instantaneamente",
+        description: "O valor investido foi atualizado imediatamente.",
       });
     },
   });

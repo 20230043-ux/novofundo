@@ -26,12 +26,15 @@ const AdminPendingOds = () => {
   const { toast } = useToast();
   const [selectedSdgIds, setSelectedSdgIds] = useState<Record<number, string>>({});
   
-  // Fetch payment proofs without SDG
-  const { data: proofsWithoutSdg, isLoading: isLoadingProofs } = useQuery({
+  // Fetch payment proofs without SDG with instant updates
+  const { data: proofsWithoutSdg, isLoading: isLoadingProofs, refetch: refetchProofs } = useQuery({
     queryKey: ['/api/admin/payment-proofs/without-sdg'],
     enabled: !!user && user.role === 'admin',
-    staleTime: 0, // No cache to ensure immediate updates
-    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    staleTime: 0, // Always consider data stale for immediate updates
+    gcTime: 0, // Don't cache query results
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: 2000, // Refetch every 2 seconds for real-time updates
   });
   
   // Fetch all SDGs for selection
@@ -41,26 +44,50 @@ const AdminPendingOds = () => {
     staleTime: 1000 * 60 * 60, // 1 hour
   });
   
-  // Assign SDG mutation
+  // Assign SDG mutation with instant optimistic updates
   const assignSdgMutation = useMutation({
     mutationFn: async ({ id, sdgId }: { id: number, sdgId: string }) => {
       const res = await apiRequest("PUT", `/api/admin/payment-proofs/${id}/sdg`, { sdgId });
       return await res.json();
     },
-    onSuccess: async (_, variables) => {
-      // Force immediate cache invalidation and refetch
-      await queryClient.invalidateQueries({ queryKey: ['/api/admin/payment-proofs/without-sdg'] });
-      await queryClient.refetchQueries({ queryKey: ['/api/admin/payment-proofs/without-sdg'] });
-      
-      // Also invalidate admin stats to update the investment amounts shown in the dashboard
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
-      
-      // And invalidate any specific SDG data that might be affected
-      queryClient.invalidateQueries({ queryKey: ['/api/sdgs'] });
+    onMutate: async ({ id, sdgId }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/payment-proofs/without-sdg'] });
+
+      // Snapshot previous value
+      const previousProofs = queryClient.getQueryData(['/api/admin/payment-proofs/without-sdg']);
+
+      // Optimistically remove the proof from the list since it now has an SDG
+      queryClient.setQueryData(['/api/admin/payment-proofs/without-sdg'], (old: any[]) => {
+        if (!old) return old;
+        return old.filter(proof => proof.id !== id);
+      });
+
+      // Return context with previous value
+      return { previousProofs };
+    },
+    onError: (error: Error, variables, context) => {
+      // Rollback on error
+      if (context?.previousProofs) {
+        queryClient.setQueryData(['/api/admin/payment-proofs/without-sdg'], context.previousProofs);
+      }
       
       toast({
-        title: "ODS atribuído",
-        description: "ODS foi atribuído com sucesso ao comprovativo.",
+        title: "Erro ao atribuir ODS",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSuccess: async (_, variables) => {
+      // Invalidate to ensure consistency across the app
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/payment-proofs/without-sdg'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/sdgs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      toast({
+        title: "ODS atribuído instantaneamente",
+        description: "ODS foi atribuído e removido da lista imediatamente.",
       });
       
       // Clear the selected SDG for this proof
@@ -68,13 +95,6 @@ const AdminPendingOds = () => {
         const newState = { ...prev };
         delete newState[variables.id];
         return newState;
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Erro ao atribuir ODS",
-        description: error.message,
-        variant: "destructive",
       });
     },
   });
