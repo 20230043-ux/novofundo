@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/queryClient";
@@ -91,6 +91,12 @@ const AdminPublications = () => {
   // Multiple timestamps for immediate cache busting
   const [imageTimestamp, setImageTimestamp] = useState(Date.now());
   const [projectTimestamps, setProjectTimestamps] = useState<Record<number, number>>({});
+  const [forceRender, setForceRender] = useState(0);
+  
+  // Force component to re-render
+  const triggerRender = useCallback(() => {
+    setForceRender(prev => prev + 1);
+  }, []);
   
   // Function to force immediate image refresh for specific project
   const forceProjectImageRefresh = (projectId: number) => {
@@ -108,14 +114,14 @@ const AdminPublications = () => {
   
   // Fetch all projects with real-time optimized caching
   const { data: projects, isLoading: isLoadingProjects, refetch: refetchProjects } = useQuery({
-    queryKey: ['/api/projects', imageTimestamp],
+    queryKey: ['/api/projects', imageTimestamp, forceRender],
     enabled: !!user && user.role === 'admin',
     staleTime: 0, // Always consider data stale for immediate updates
     gcTime: 0, // Don't cache query results for images
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     queryFn: async () => {
-      const response = await fetch(`/api/projects?t=${imageTimestamp}`, {
+      const response = await fetch(`/api/projects?t=${imageTimestamp}&force=${forceRender}`, {
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
@@ -459,46 +465,53 @@ const AdminPublications = () => {
       return { success: true, projectId, totalInvested };
     },
     onMutate: async ({ projectId, totalInvested }) => {
+      console.log('Investment mutation started:', { projectId, totalInvested });
+      
       // Cancel outgoing refetches for all project queries
       await queryClient.cancelQueries({ queryKey: ['/api/projects'] });
 
-      // Snapshot previous value from the current query key with imageTimestamp
-      const currentQueryKey = ['/api/projects', imageTimestamp];
+      // Get current query key with imageTimestamp and forceRender
+      const currentQueryKey = ['/api/projects', imageTimestamp, forceRender];
       const previousProjects = queryClient.getQueryData(currentQueryKey);
+      
+      console.log('Previous projects data:', previousProjects);
 
-      // Optimistically update the investment value instantly
+      // Force an immediate update to trigger UI refresh
+      const numValue = parseFloat(totalInvested);
+      const updateProject = (project: any) => {
+        if (project.id === projectId) {
+          const updated = { 
+            ...project, 
+            totalInvested: numValue,
+            displayInvestment: { 
+              displayAmount: numValue
+            }
+          };
+          console.log('Updating project:', updated);
+          return updated;
+        }
+        return project;
+      };
+
+      // Update all possible query variations
       queryClient.setQueryData(currentQueryKey, (old: any[]) => {
         if (!old) return old;
-        return old.map(project => 
-          project.id === projectId 
-            ? { 
-                ...project, 
-                totalInvested: totalInvested,
-                displayInvestment: { 
-                  ...project.displayInvestment, 
-                  displayAmount: totalInvested 
-                }
-              }
-            : project
-        );
+        const updated = old.map(updateProject);
+        console.log('Updated projects for current key:', updated);
+        return updated;
       });
 
-      // Also update any other query keys that might have project data
       queryClient.setQueryData(['/api/projects'], (old: any[]) => {
         if (!old) return old;
-        return old.map(project => 
-          project.id === projectId 
-            ? { 
-                ...project, 
-                totalInvested: totalInvested,
-                displayInvestment: { 
-                  ...project.displayInvestment, 
-                  displayAmount: totalInvested 
-                }
-              }
-            : project
-        );
+        const updated = old.map(updateProject);
+        console.log('Updated projects for base key:', updated);
+        return updated;
       });
+
+      // Force React to re-render by updating timestamp and trigger render
+      const newTimestamp = Date.now();
+      setImageTimestamp(newTimestamp);
+      triggerRender();
 
       // Return context with previous value
       return { previousProjects, currentQueryKey };
@@ -516,8 +529,16 @@ const AdminPublications = () => {
       });
     },
     onSuccess: (data, { projectId, totalInvested }) => {
-      // Invalidate to ensure consistency
+      console.log('Investment mutation success:', { projectId, totalInvested });
+      
+      // Force immediate cache invalidation and refresh
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      queryClient.refetchQueries({ queryKey: ['/api/projects'] });
+      
+      // Force timestamp update to trigger re-render
+      const newTimestamp = Date.now();
+      setImageTimestamp(newTimestamp);
+      triggerRender();
       
       // Close dialog
       setIsEditInvestmentOpen(false);
