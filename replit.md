@@ -44,11 +44,18 @@ The frontend is built with modern React patterns and optimized for performance:
    - React Query for server state management
    - Custom hooks for business logic
    - Context API for authentication and onboarding
+   - Global event system for real-time investment updates
 
 3. **Routing**: 
    - Wouter for lightweight client-side routing
    - Protected routes for authenticated users
    - Role-based access control (Admin vs Company)
+
+4. **Event-Driven Architecture**:
+   - Global `investmentEvents` system for broadcasting investment value changes
+   - Component subscription model for receiving real-time updates
+   - Optimistic update pattern for immediate UI feedback
+   - Graceful fallback to cached data when events are unavailable
 
 ### Backend Architecture
 
@@ -87,6 +94,19 @@ The Express.js backend provides a comprehensive API with:
 3. **Admin Review**: Admin validates and approves investments
 4. **Public Display**: Approved investments appear on public project pages
 5. **Impact Metrics**: System tracks and displays collective impact
+
+### Instant Investment Update System
+
+The platform implements a sophisticated real-time update system for investment values:
+
+1. **Global Event System**: Central `investmentEvents` module broadcasts value changes across components
+2. **Optimistic Updates**: UI updates immediately before server confirmation for instant feedback
+3. **Component Subscription**: Project cards subscribe to investment events for their specific project ID
+4. **State Management**: Local state (`currentInvestmentValue`) overrides cached values for real-time display
+5. **Fallback Strategy**: System gracefully falls back to cached or default values if events fail
+6. **Cache Invalidation**: Aggressive cache busting ensures eventual consistency with server state
+
+This architecture eliminates delays in investment value updates, providing users with instant visual feedback when admin makes changes to project investment amounts.
 
 ## External Dependencies
 
@@ -208,4 +228,12 @@ Changelog:
   • All project publications now appear instantaneously in the interface with aggressive cache-busting
   • Investment updates reflect immediately in the admin interface with optimistic state management
   • ODS assignments remove items from pending list instantly with rollback on errors
+- July 17, 2025. Global event system for instant investment value propagation:
+  • Implemented global investmentEvents system to broadcast investment updates across all components
+  • Created subscription-based architecture allowing project cards to receive instant value updates
+  • Added currentInvestmentValue state management in ProjectCard components for immediate UI reflection
+  • Solved investment value update delays by bypassing React Query cache for real-time value display
+  • Enhanced user experience with instant visual feedback when admin updates investment values
+  • Investment changes now propagate instantly to all project cards regardless of cache state
+  • Maintained data consistency with server while providing immediate optimistic UI updates
 ```
