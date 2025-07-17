@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { investmentEvents } from "@/lib/investment-events";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -508,6 +509,9 @@ const AdminPublications = () => {
         return updated;
       });
 
+      // Emit global investment update event for instant UI updates
+      investmentEvents.emit(projectId, numValue);
+
       // Force React to re-render by updating timestamp and trigger render
       const newTimestamp = Date.now();
       setImageTimestamp(newTimestamp);
@@ -531,6 +535,10 @@ const AdminPublications = () => {
     onSuccess: (data, { projectId, totalInvested }) => {
       console.log('Investment mutation success:', { projectId, totalInvested });
       
+      // Emit global investment update event again to ensure all components are updated
+      const numValue = parseFloat(totalInvested);
+      investmentEvents.emit(projectId, numValue);
+      
       // Force immediate cache invalidation and refresh
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       queryClient.refetchQueries({ queryKey: ['/api/projects'] });
@@ -547,7 +555,7 @@ const AdminPublications = () => {
       
       toast({
         title: "Valor atualizado instantaneamente",
-        description: "O valor investido foi atualizado imediatamente.",
+        description: "O valor investido foi atualizado em todos os componentes.",
       });
     },
   });

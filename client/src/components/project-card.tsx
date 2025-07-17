@@ -3,6 +3,8 @@ import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useSmartImage } from "@/hooks/use-smart-image";
+import { useState, useEffect } from "react";
+import { investmentEvents } from "@/lib/investment-events";
 
 interface ProjectCardProps {
   id: number;
@@ -34,8 +36,28 @@ const ProjectCard = ({ id, name, description, imageUrl, totalInvested, displayIn
     fallbackContent 
   } = useSmartImage(imageUrl, name);
 
+  // Local state for instant investment value updates
+  const [currentInvestmentValue, setCurrentInvestmentValue] = useState<number | null>(null);
+
+  // Subscribe to global investment update events
+  useEffect(() => {
+    const unsubscribe = investmentEvents.subscribe((projectId, newValue) => {
+      if (projectId === id) {
+        console.log(`ProjectCard ${id}: Received investment update:`, newValue);
+        setCurrentInvestmentValue(newValue);
+      }
+    });
+
+    return unsubscribe;
+  }, [id]);
+
   // Função para determinar o valor a ser exibido (displayAmount ou totalInvested)
   const getDisplayValue = () => {
+    // Use local state if available (from investment events)
+    if (currentInvestmentValue !== null) {
+      return currentInvestmentValue;
+    }
+    
     // Se displayInvestment existe E tem uma propriedade displayAmount que não é nula/indefinida
     if (displayInvestment && displayInvestment.displayAmount !== undefined && displayInvestment.displayAmount !== null) {
       return displayInvestment.displayAmount;
