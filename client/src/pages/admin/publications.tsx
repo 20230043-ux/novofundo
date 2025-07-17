@@ -107,25 +107,23 @@ const AdminPublications = () => {
       [projectId]: newTimestamp
     }));
     
-    // Force queries to refetch immediately
+    // Invalidate cache but keep data persistent
     queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-    queryClient.refetchQueries({ queryKey: ['/api/projects'] });
   };
   
-  // Fetch all projects with real-time optimized caching
+  // Fetch all projects with balanced caching for persistence
   const { data: projects, isLoading: isLoadingProjects, refetch: refetchProjects } = useQuery({
-    queryKey: ['/api/projects', imageTimestamp, forceRender],
+    queryKey: ['/api/projects'],
     enabled: !!user && user.role === 'admin',
-    staleTime: 0, // Always consider data stale for immediate updates
-    gcTime: 0, // Don't cache query results for images
+    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    gcTime: 5 * 60 * 1000, // Keep cached data for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     queryFn: async () => {
-      const response = await fetch(`/api/projects?t=${imageTimestamp}&force=${forceRender}`, {
+      const response = await fetch(`/api/projects?t=${Date.now()}`, {
         headers: {
           'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Expires': '0'
+          'Pragma': 'no-cache'
         }
       });
       if (!response.ok) {
@@ -403,14 +401,12 @@ const AdminPublications = () => {
       // IMMEDIATE image cache busting for this specific project
       forceProjectImageRefresh(updatedProject.id);
       
-      // Additional aggressive cache invalidation
-      queryClient.removeQueries({ queryKey: ['/api/projects'] });
+      // Smart cache invalidation - invalidate but don't remove
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       queryClient.invalidateQueries({ queryKey: [`/api/projects/${updatedProject.id}`] });
       
-      // Force multiple immediate refetches to ensure fresh images
-      setTimeout(() => refetchProjects(), 50);
-      setTimeout(() => refetchProjects(), 200);
-      setTimeout(() => refetchProjects(), 500);
+      // Single refetch with delay to allow cache to settle
+      setTimeout(() => refetchProjects(), 100);
       
       // Notify other tabs/windows about the project update
       localStorage.setItem('project-updated', Date.now().toString());
@@ -638,6 +634,15 @@ const AdminPublications = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    {/* Debug info for troubleshooting */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="mb-4 p-2 bg-yellow-50 border rounded text-xs">
+                        Debug: isLoading={isLoadingProjects.toString()}, 
+                        projects={projects ? `array(${projects.length})` : 'null/undefined'}, 
+                        type={typeof projects}
+                      </div>
+                    )}
+                    
                     {isLoadingProjects ? (
                       <div className="space-y-2">
                         <Skeleton className="h-10 w-full" />
@@ -782,10 +787,21 @@ const AdminPublications = () => {
                     ) : (
                       <div className="text-center py-8 bg-gray-50 rounded-lg">
                         <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-500 mb-4">Nenhum projeto encontrado.</p>
-                        <Button onClick={() => setActiveTab("new-project")}>
-                          Criar Projeto
-                        </Button>
+                        <p className="text-gray-500 mb-2">
+                          {!projects ? 'Carregando projetos...' : 
+                           !Array.isArray(projects) ? 'Erro ao carregar projetos' : 
+                           'Nenhum projeto encontrado.'}
+                        </p>
+                        {projects && Array.isArray(projects) && projects.length === 0 && (
+                          <Button onClick={() => setActiveTab("new-project")}>
+                            Criar Primeiro Projeto
+                          </Button>
+                        )}
+                        {!projects || !Array.isArray(projects) ? (
+                          <Button onClick={() => refetchProjects()} variant="outline">
+                            Tentar Novamente
+                          </Button>
+                        ) : null}
                       </div>
                     )}
                   </CardContent>

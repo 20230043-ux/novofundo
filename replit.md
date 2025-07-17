@@ -236,4 +236,12 @@ Changelog:
   • Enhanced user experience with instant visual feedback when admin updates investment values
   • Investment changes now propagate instantly to all project cards regardless of cache state
   • Maintained data consistency with server while providing immediate optimistic UI updates
+- July 17, 2025. Fixed project persistence and cache invalidation issues:
+  • Resolved "Projetos Ativos" disappearing due to aggressive cache invalidation settings
+  • Changed staleTime from 0 to 30 seconds and gcTime from 0 to 5 minutes for proper data persistence
+  • Fixed query key consistency by removing dynamic parameters that prevented proper cache invalidation
+  • Added debug information and improved error handling for project loading states
+  • Enhanced fallback states to show appropriate messages when projects fail to load
+  • Replaced aggressive queryClient.removeQueries with invalidateQueries to preserve cached data
+  • Added "Tentar Novamente" button for recovery when projects fail to load
 ```
