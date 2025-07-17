@@ -59,6 +59,10 @@ const projectSchema = z.object({
     val => !isNaN(parseInt(val)) && parseInt(val) >= 0,
     "O número de pessoas deve ser um número válido e não negativo"
   ),
+  totalInvested: z.string().min(1, "O valor investido é obrigatório").refine(
+    val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0,
+    "O valor investido deve ser um número válido e não negativo"
+  ),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -146,6 +150,7 @@ const AdminPublications = () => {
       description: "",
       sdgId: "",
       peopleCount: "",
+      totalInvested: "",
     },
   });
   
@@ -454,6 +459,7 @@ const AdminPublications = () => {
     formData.append("description", data.description);
     formData.append("sdgId", data.sdgId);
     formData.append("peopleCount", data.peopleCount);
+    formData.append("totalInvested", data.totalInvested);
     formData.append("image", projectImage);
     
     createProjectMutation.mutate(formData);
@@ -535,6 +541,7 @@ const AdminPublications = () => {
       description: project.description,
       sdgId: project.sdgId.toString(),
       peopleCount: project.peopleCount ? project.peopleCount.toString() : "0",
+      totalInvested: project.totalInvested ? project.totalInvested.toString() : "0",
     });
   };
   
@@ -872,6 +879,25 @@ const AdminPublications = () => {
                                 <Input 
                                   type="number" 
                                   placeholder="Ex: 500" 
+                                  min="0"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={projectForm.control}
+                          name="totalInvested"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Valor Total Investido (Kz)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  placeholder="Ex: 5000000" 
                                   min="0"
                                   {...field} 
                                 />
@@ -1226,6 +1252,25 @@ const AdminPublications = () => {
                             <Input 
                               type="number" 
                               placeholder="Ex: 500" 
+                              min="0"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={projectForm.control}
+                      name="totalInvested"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Valor Total Investido (Kz)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="Ex: 5000000" 
                               min="0"
                               {...field} 
                             />
