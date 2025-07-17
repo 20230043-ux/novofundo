@@ -1647,18 +1647,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       clearCacheByPattern(`project:${id}`);
       clearCacheByPattern(`project_${id}`);
       
-      // Update instant cache immediately
-      if (instantProjectCache.isInitialized()) {
+      // Update instant cache immediately (non-blocking)
+      setImmediate(async () => {
         try {
           await instantProjectCache.invalidateProject(id);
           console.log(`Instant cache invalidated for project ${id}`);
         } catch (cacheError) {
           console.log('Cache invalidation error (non-critical):', cacheError);
         }
-      }
+      });
       
-      // Resposta mínima para máxima performance
-      res.status(200).end();
+      // Resposta imediata para máxima performance
+      res.status(200).json({ success: true, displayAmount: investedValue });
     } catch (error) {
       console.error("Erro ao atualizar valor investido:", error);
       res.status(500).json({ message: "Erro ao atualizar valor investido" });

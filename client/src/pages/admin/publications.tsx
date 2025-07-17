@@ -521,9 +521,18 @@ const AdminPublications = () => {
       return { previousProjects, currentQueryKey };
     },
     onError: (err, variables, context) => {
+      console.error('Investment mutation error:', err);
+      
       // Rollback on error
       if (context?.previousProjects && context?.currentQueryKey) {
         queryClient.setQueryData(context.currentQueryKey, context.previousProjects);
+      }
+      
+      // Reset investment event to previous value
+      const { projectId } = variables;
+      const previousProject = context?.previousProjects?.find((p: any) => p.id === projectId);
+      if (previousProject?.displayInvestment?.displayAmount) {
+        investmentEvents.emit(projectId, parseFloat(previousProject.displayInvestment.displayAmount));
       }
       
       toast({
