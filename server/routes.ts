@@ -1627,17 +1627,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cleanValue = String(totalInvested).replace(/[^0-9.]/g, '');
       const investedValue = parseFloat(cleanValue);
       
+      console.log('Investment update request:', { 
+        projectId: id, 
+        originalValue: totalInvested, 
+        cleanValue, 
+        investedValue 
+      });
+      
       if (isNaN(investedValue)) {
         return res.status(400).json({ message: "Valor investido inválido" });
       }
       
       // Atualizar diretamente e retornar imediatamente
-      await storage.createOrUpdateDisplayInvestment(id, investedValue);
+      const result = await storage.createOrUpdateDisplayInvestment(id, investedValue);
+      console.log('Investment update result:', result);
       
       // Clear project-related cache when investment is updated
       clearCacheByPattern('projects');
       clearCacheByPattern(`project:${id}`);
       clearCacheByPattern(`project_${id}`);
+      
+      // Update instant cache immediately
+      if (instantProjectCache.isInitialized()) {
+        try {
+          await instantProjectCache.invalidateProject(id);
+          console.log(`Instant cache invalidated for project ${id}`);
+        } catch (cacheError) {
+          console.log('Cache invalidation error (non-critical):', cacheError);
+        }
+      }
       
       // Resposta mínima para máxima performance
       res.status(200).end();
