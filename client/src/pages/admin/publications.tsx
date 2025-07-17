@@ -378,6 +378,7 @@ const AdminPublications = () => {
       formData.append("description", data.description);
       formData.append("sdgId", data.sdgId);
       formData.append("peopleCount", data.peopleCount);
+      formData.append("totalInvested", data.totalInvested);
       
       // Se tiver uma nova imagem, adiciona ao formData
       if (image) {
