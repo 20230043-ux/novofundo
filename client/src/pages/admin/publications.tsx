@@ -312,13 +312,6 @@ const AdminPublications = () => {
         description: "O projeto foi excluído com sucesso.",
       });
     },
-    onError: (err) => {
-      toast({
-        title: "Erro ao excluir projeto",
-        description: "Houve um erro. Tente novamente.",
-        variant: "destructive",
-      });
-    },
   });
   
   // Add project update mutation with optimistic update
@@ -466,13 +459,31 @@ const AdminPublications = () => {
       return { success: true, projectId, totalInvested };
     },
     onMutate: async ({ projectId, totalInvested }) => {
-      // Cancel outgoing refetches
+      // Cancel outgoing refetches for all project queries
       await queryClient.cancelQueries({ queryKey: ['/api/projects'] });
 
-      // Snapshot previous value
-      const previousProjects = queryClient.getQueryData(['/api/projects']);
+      // Snapshot previous value from the current query key with imageTimestamp
+      const currentQueryKey = ['/api/projects', imageTimestamp];
+      const previousProjects = queryClient.getQueryData(currentQueryKey);
 
       // Optimistically update the investment value instantly
+      queryClient.setQueryData(currentQueryKey, (old: any[]) => {
+        if (!old) return old;
+        return old.map(project => 
+          project.id === projectId 
+            ? { 
+                ...project, 
+                totalInvested: totalInvested,
+                displayInvestment: { 
+                  ...project.displayInvestment, 
+                  displayAmount: totalInvested 
+                }
+              }
+            : project
+        );
+      });
+
+      // Also update any other query keys that might have project data
       queryClient.setQueryData(['/api/projects'], (old: any[]) => {
         if (!old) return old;
         return old.map(project => 
@@ -490,12 +501,12 @@ const AdminPublications = () => {
       });
 
       // Return context with previous value
-      return { previousProjects };
+      return { previousProjects, currentQueryKey };
     },
     onError: (err, variables, context) => {
       // Rollback on error
-      if (context?.previousProjects) {
-        queryClient.setQueryData(['/api/projects'], context.previousProjects);
+      if (context?.previousProjects && context?.currentQueryKey) {
+        queryClient.setQueryData(context.currentQueryKey, context.previousProjects);
       }
       
       toast({
