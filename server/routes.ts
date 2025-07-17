@@ -7,6 +7,7 @@ import { eq, and, isNull, desc, sql } from "drizzle-orm";
 import { whatsappService } from "./whatsapp-service";
 import { preloadCache } from "./preload-cache";
 import { optimizeStaticFiles, enableServerPush, optimizeForMobile } from "./cdn-optimization";
+import { instantProjectCache } from "./instant-project-cache";
 import multer from "multer";
 import path from "path";
 import { mkdir } from "fs/promises";
@@ -61,11 +62,11 @@ async function checkSystemDependencies(): Promise<{[key: string]: boolean}> {
 // Simple cache implementation with invalidation
 const cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
 
-function setCache(key: string, data: any, ttlMinutes: number = 10) {
+function setCache(key: string, data: any, ttlMinutes: number = 1) {
   cache.set(key, {
     data,
     timestamp: Date.now(),
-    ttl: ttlMinutes * 60 * 1000
+    ttl: ttlMinutes * 60 * 1000 // Minimum 1 minute for instant updates
   });
 }
 
@@ -418,20 +419,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all projects (cached for 5 minutes)
-  app.get("/api/projects", cacheMiddleware("projects", 5), async (req, res) => {
+  // Get all projects (instant response from memory cache)
+  app.get("/api/projects", async (req, res) => {
     const startTime = Date.now();
     try {
-      // Enhanced headers for better mobile/external device performance
-      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300, must-revalidate');
-      res.setHeader('Vary', 'Accept-Encoding');
-      res.setHeader('ETag', `"projects-cache"`);
+      // Initialize instant cache if needed
+      await instantProjectCache.initialize();
       
-      // Use preloaded cache for faster response
-      const projects = await preloadCache.getProjects();
+      // Get projects instantly from memory (no database query)
+      const projects = instantProjectCache.getProjectsInstant();
       
       const responseTime = Date.now() - startTime;
       res.setHeader('X-Response-Time', `${responseTime}ms`);
+      res.setHeader('X-Instant-Response', 'true');
+      res.setHeader('X-Cache-Source', 'memory');
+      res.setHeader('Cache-Control', 'no-cache'); // Force fresh data always
       
       res.json(projects);
     } catch (error) {
@@ -440,29 +442,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get project by ID (cached for 20 minutes)
+  // Get project by ID (instant response from memory)
   app.get("/api/projects/:id", async (req, res) => {
+    const startTime = Date.now();
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "ID inválido" });
       }
       
-      const cacheKey = `project_${id}`;
-      const cached = getCache(cacheKey);
-      if (cached) {
-        res.setHeader('X-Cache', 'HIT');
-        return res.json(cached);
-      }
+      // Initialize instant cache if needed
+      await instantProjectCache.initialize();
       
-      const project = await storage.getProjectById(id);
+      // Try to get from instant cache first
+      let project = instantProjectCache.getProjectInstant(id);
+      
+      // If not in cache, get from database and cache it
       if (!project) {
-        return res.status(404).json({ message: "Projeto não encontrado" });
+        project = await storage.getProjectById(id);
+        if (!project) {
+          return res.status(404).json({ message: "Projeto não encontrado" });
+        }
       }
       
-      setCache(cacheKey, project, 2);
-      res.setHeader('X-Cache', 'MISS');
-      res.setHeader('Cache-Control', 'public, max-age=120'); // 2 minutes browser cache
+      const responseTime = Date.now() - startTime;
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      res.setHeader('X-Cache-Source', project ? 'memory' : 'database');
+      res.setHeader('Cache-Control', 'no-cache'); // Force fresh data always
+      
       res.json(project);
     } catch (error) {
       res.status(500).json({ message: "Erro ao buscar projeto" });
@@ -1157,8 +1164,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a project
+  // Create a project (optimized for instant response)
   app.post("/api/admin/projects", isAdmin, upload.single("image"), async (req, res) => {
+    const startTime = Date.now();
     try {
       if (!req.file) {
         return res.status(400).json({ message: "Imagem do projeto é obrigatória" });
@@ -1185,14 +1193,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const project = await storage.createProject(validationResult.data);
+      // Use instant cache for immediate response
+      const project = await instantProjectCache.addProject(validationResult.data);
       
-      // Clear project-related cache when a new project is created
-      clearCacheByPattern('projects');
-      clearCacheByPattern('sdgs');
+      // Clear other caches in parallel (non-blocking)
+      Promise.all([
+        Promise.resolve(clearCacheByPattern('projects')),
+        Promise.resolve(clearCacheByPattern('sdgs')),
+        preloadCache.forceRefresh()
+      ]).catch(err => console.warn('Cache clear warning:', err));
+      
+      const responseTime = Date.now() - startTime;
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      res.setHeader('X-Cache-Invalidated', 'true');
       
       res.status(201).json(project);
     } catch (error) {
+      console.error('Erro ao criar projeto:', error);
       res.status(500).json({ message: "Erro ao criar projeto" });
     }
   });
@@ -1271,19 +1288,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Nenhum dado fornecido para atualização" });
       }
       
-      const updated = await storage.updateProject(id, projectData);
+      // Use instant cache for immediate response
+      const updated = await instantProjectCache.updateProject(id, projectData);
+      
+      // Clear other caches in parallel (non-blocking)
+      Promise.all([
+        Promise.resolve(clearCacheByPattern('projects')),
+        Promise.resolve(clearCacheByPattern(`project:${id}`)),
+        Promise.resolve(clearCacheByPattern('sdgs')),
+        preloadCache.forceRefresh()
+      ]).catch(err => console.warn('Cache clear warning:', err));
+      
       if (!updated) {
         return res.status(404).json({ message: "Projeto não encontrado" });
       }
       
-      // Clear all project-related cache when a project is updated
-      clearCacheByPattern('projects');
-      clearCacheByPattern(`project:${id}`);
-      clearCacheByPattern('sdgs');
-      
-      // Add response header to trigger client-side cache invalidation
+      // Add response headers for instant cache invalidation
       res.setHeader('X-Cache-Invalidate', 'projects');
       res.setHeader('X-Project-Updated', id.toString());
+      res.setHeader('X-Cache-Invalidated', 'true');
       
       res.json(updated);
     } catch (error) {
@@ -1299,23 +1322,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete a project
+  // Delete a project (optimized for instant response)
   app.delete("/api/admin/projects/:id", isAdmin, async (req, res) => {
+    const startTime = Date.now();
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "ID inválido" });
       }
       
-      const result = await storage.deleteProject(id);
+      // Use instant cache for immediate response
+      const result = await instantProjectCache.deleteProject(id);
+      
+      // Clear other caches in parallel (non-blocking)
+      Promise.all([
+        Promise.resolve(clearCacheByPattern('projects')),
+        Promise.resolve(clearCacheByPattern(`project:${id}`)),
+        Promise.resolve(clearCacheByPattern('sdgs')),
+        preloadCache.forceRefresh()
+      ]).catch(err => console.warn('Cache clear warning:', err));
+      
       if (!result) {
         return res.status(404).json({ message: "Projeto não encontrado ou não pode ser excluído" });
       }
       
-      // Clear project-related cache when a project is deleted
-      clearCacheByPattern('projects');
-      clearCacheByPattern(`project:${id}`);
-      clearCacheByPattern('sdgs');
+      const responseTime = Date.now() - startTime;
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      res.setHeader('X-Cache-Invalidated', 'true');
       
       res.status(200).json({ message: "Projeto excluído com sucesso" });
     } catch (error) {
@@ -1354,13 +1387,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mediaUrls
       };
       
-      const update = await storage.addProjectUpdate(updateData);
+      // Run all operations in parallel for instant response
+      const [update] = await Promise.all([
+        storage.addProjectUpdate(updateData),
+        Promise.resolve(clearCacheByPattern('projects')),
+        Promise.resolve(clearCacheByPattern(`project:${projectId}`)),
+        Promise.resolve(clearCacheByPattern(`project_${projectId}`)),
+        preloadCache.forceRefresh()
+      ]);
       
-      // Clear project-related cache when project updates are added
-      clearCacheByPattern('projects');
-      clearCacheByPattern(`project:${projectId}`);
-      clearCacheByPattern(`project_${projectId}`);
-      
+      res.setHeader('X-Cache-Invalidated', 'true');
       res.status(201).json(update);
     } catch (error) {
       console.error("Error adding project update:", error);

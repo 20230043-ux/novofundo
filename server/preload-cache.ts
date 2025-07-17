@@ -13,7 +13,7 @@ interface PreloadedData {
 class PreloadCache {
   private cache: PreloadedData | null = null;
   private isLoading = false;
-  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly CACHE_TTL = 30 * 1000; // 30 seconds for instant updates
 
   async preloadEssentialData(): Promise<void> {
     if (this.isLoading) return;
@@ -128,12 +128,12 @@ class PreloadCache {
   }
 
   startPeriodicRefresh(): void {
-    // Refresh cache every 3 minutes
+    // Refresh cache every 30 seconds for instant updates
     setInterval(() => {
       this.preloadEssentialData();
-    }, 3 * 60 * 1000);
+    }, 30 * 1000);
     
-    log('🔄 Cache periódico configurado para atualizar a cada 3 minutos');
+    log('🔄 Cache periódico configurado para atualizar a cada 30 segundos');
   }
 }
 

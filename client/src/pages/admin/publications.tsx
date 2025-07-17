@@ -167,7 +167,7 @@ const AdminPublications = () => {
   // State for media files
   const [updateMediaFiles, setUpdateMediaFiles] = useState<File[]>([]);
   
-  // Create project mutation with optimistic update
+  // Create project mutation with instant optimistic update
   const createProjectMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const res = await fetch("/api/admin/projects", {
@@ -183,20 +183,63 @@ const AdminPublications = () => {
       
       return await res.json();
     },
-    onSuccess: (newProject) => {
-      // IMMEDIATE image cache busting for the new project
-      if (newProject && newProject.id) {
-        forceProjectImageRefresh(newProject.id);
+    onMutate: async (formData) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/projects'] });
+
+      // Snapshot previous value
+      const previousProjects = queryClient.getQueryData(['/api/projects']);
+
+      // Optimistically update to instantly show the new project
+      const name = formData.get('name') as string;
+      const description = formData.get('description') as string;
+      const sdgId = parseInt(formData.get('sdgId') as string);
+      
+      const optimisticProject = {
+        id: Date.now(), // Temporary ID
+        name,
+        description,
+        sdgId,
+        imageUrl: projectImage ? URL.createObjectURL(projectImage) : '/placeholder-project.jpg',
+        totalInvested: formData.get('totalInvested') || '0',
+        peopleCount: parseInt(formData.get('peopleCount') as string) || 0,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        _optimistic: true // Flag to identify optimistic updates
+      };
+
+      queryClient.setQueryData(['/api/projects'], (old: any[]) => 
+        old ? [optimisticProject, ...old] : [optimisticProject]
+      );
+
+      // Return context with previous value
+      return { previousProjects };
+    },
+    onError: (err, formData, context) => {
+      // Rollback on error
+      if (context?.previousProjects) {
+        queryClient.setQueryData(['/api/projects'], context.previousProjects);
       }
       
-      // Additional aggressive cache invalidation
-      queryClient.removeQueries({ queryKey: ['/api/projects'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/sdgs'] });
+      toast({
+        title: "Erro ao criar projeto",
+        description: "Houve um erro. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: (newProject) => {
+      // Replace optimistic update with real data
+      queryClient.setQueryData(['/api/projects'], (old: any[]) => {
+        if (!old) return [newProject];
+        return old.map(project => 
+          project._optimistic && project.name === newProject.name 
+            ? newProject 
+            : project
+        );
+      });
       
-      // Force multiple immediate refetches
-      setTimeout(() => refetchProjects(), 50);
-      setTimeout(() => refetchProjects(), 200);
-      setTimeout(() => refetchProjects(), 500);
+      // Force complete refresh to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       
       // Switch to projects tab and reset form
       setActiveTab("projects");
@@ -205,19 +248,16 @@ const AdminPublications = () => {
       
       toast({
         title: "Projeto criado",
-        description: "O projeto foi criado com imagem atualizada imediatamente.",
+        description: "Projeto publicado instantaneamente.",
       });
     },
-    onError: (err) => {
-      toast({
-        title: "Erro ao criar projeto",
-        description: "Houve um erro. Tente novamente.",
-        variant: "destructive",
-      });
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
     },
   });
   
-  // Delete project mutation with optimistic update
+  // Delete project mutation with instant optimistic update
   const deleteProjectMutation = useMutation({
     mutationFn: async (projectId: number) => {
       const res = await fetch(`/api/admin/projects/${projectId}`, {
@@ -232,14 +272,36 @@ const AdminPublications = () => {
       
       return await res.json();
     },
-    onSuccess: () => {
-      // Invalidate all related queries for comprehensive updates
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/sdgs'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+    onMutate: async (projectId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/projects'] });
+
+      // Snapshot previous value
+      const previousProjects = queryClient.getQueryData(['/api/projects']);
+
+      // Optimistically remove the project from the list
+      queryClient.setQueryData(['/api/projects'], (old: any[]) => 
+        old ? old.filter(project => project.id !== projectId) : []
+      );
+
+      // Return context with previous value
+      return { previousProjects };
+    },
+    onError: (err, projectId, context) => {
+      // Rollback on error
+      if (context?.previousProjects) {
+        queryClient.setQueryData(['/api/projects'], context.previousProjects);
+      }
       
-      // Force refetch to ensure fresh data
-      queryClient.refetchQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: "Erro ao excluir projeto",
+        description: "Não foi possível excluir o projeto. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      // Invalidate to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       
       // Close dialog
       setIsDeleteAlertOpen(false);

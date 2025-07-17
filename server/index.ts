@@ -5,6 +5,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { ensureDatabaseReady, startDatabaseHealthCheck } from "./database-init";
 import { whatsappService } from "./whatsapp-service";
 import { preloadCache } from "./preload-cache";
+import { instantProjectCache } from "./instant-project-cache";
 
 const app = express();
 
@@ -85,9 +86,12 @@ app.use((req, res, next) => {
     // Iniciar monitoramento de saúde do banco de dados
     startDatabaseHealthCheck();
     
-    // Pré-carregar dados essenciais
+    // Inicializar cache instantâneo e pré-carregar dados essenciais
     setTimeout(async () => {
-      await preloadCache.preloadEssentialData();
+      await Promise.all([
+        instantProjectCache.initialize(),
+        preloadCache.preloadEssentialData()
+      ]);
       preloadCache.startPeriodicRefresh();
     }, 1000); // Aguarda 1 segundo após inicialização do banco
     

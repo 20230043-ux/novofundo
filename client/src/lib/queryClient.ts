@@ -60,9 +60,9 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: defaultQueryFn,
       refetchInterval: false,
-      refetchOnWindowFocus: false, // Disable automatic refetch on window focus
-      staleTime: 1000 * 60 * 15, // 15 minutes - cache data longer
-      gcTime: 1000 * 60 * 30, // 30 minutes - keep in cache longer
+      refetchOnWindowFocus: true, // Enable immediate refetch for instant updates
+      staleTime: 0, // Consider data immediately stale for instant updates
+      gcTime: 1000 * 30, // 30 seconds - shorter cache for fresh data
       retry: 1
     },
     mutations: {
