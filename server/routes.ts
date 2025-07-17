@@ -1608,62 +1608,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Erro ao criar investimento" });
     }
   });
-  
-  // Rota específica para atualizar apenas o valor investido exibido do projeto
-  app.put("/api/admin/projects/:id/investment", isAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "ID inválido" });
-      }
-      
-      const { totalInvested } = req.body;
-      
-      if (totalInvested === undefined) {
-        return res.status(400).json({ message: "Valor investido é obrigatório" });
-      }
-      
-      // Converte para número independente do formato de entrada
-      const cleanValue = String(totalInvested).replace(/[^0-9.]/g, '');
-      const investedValue = parseFloat(cleanValue);
-      
-      console.log('Investment update request:', { 
-        projectId: id, 
-        originalValue: totalInvested, 
-        cleanValue, 
-        investedValue 
-      });
-      
-      if (isNaN(investedValue)) {
-        return res.status(400).json({ message: "Valor investido inválido" });
-      }
-      
-      // Atualizar diretamente e retornar imediatamente
-      const result = await storage.createOrUpdateDisplayInvestment(id, investedValue);
-      console.log('Investment update result:', result);
-      
-      // Clear project-related cache when investment is updated
-      clearCacheByPattern('projects');
-      clearCacheByPattern(`project:${id}`);
-      clearCacheByPattern(`project_${id}`);
-      
-      // Update instant cache immediately (non-blocking)
-      setImmediate(async () => {
-        try {
-          await instantProjectCache.invalidateProject(id);
-          console.log(`Instant cache invalidated for project ${id}`);
-        } catch (cacheError) {
-          console.log('Cache invalidation error (non-critical):', cacheError);
-        }
-      });
-      
-      // Resposta imediata para máxima performance
-      res.status(200).json({ success: true, displayAmount: investedValue });
-    } catch (error) {
-      console.error("Erro ao atualizar valor investido:", error);
-      res.status(500).json({ message: "Erro ao atualizar valor investido" });
-    }
-  });
+
 
   // Rotas para o Leaderboard de Pegada de Carbono
   

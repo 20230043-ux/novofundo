@@ -15,7 +15,6 @@ import {
   consumptionRecords,
   paymentProofs,
   investments,
-  displayInvestments,
   carbonLeaderboard,
   InsertUser,
   User,
@@ -523,8 +522,7 @@ export class DatabaseStorage implements IStorage {
             company: true
           }
         },
-        updates: true,
-        displayInvestment: true
+        updates: true
       },
       orderBy: [desc(projects.createdAt)]
     });
@@ -540,8 +538,7 @@ export class DatabaseStorage implements IStorage {
           with: {
             company: true
           }
-        },
-        displayInvestment: true
+        }
       }
     });
     
@@ -557,8 +554,7 @@ export class DatabaseStorage implements IStorage {
           with: {
             company: true
           }
-        },
-        displayInvestment: true
+        }
       },
       orderBy: [desc(projects.createdAt)]
     });
@@ -616,8 +612,7 @@ export class DatabaseStorage implements IStorage {
         return false;
       }
       
-      // Delete display investments first (foreign key constraint)
-      await db.delete(displayInvestments).where(eq(displayInvestments.projectId, id));
+
       
       // Delete project updates (foreign key constraint)
       await db.delete(projectUpdates).where(eq(projectUpdates.projectId, id));
@@ -880,34 +875,7 @@ export class DatabaseStorage implements IStorage {
     });
   }
   
-  // Display Investments (for publications page)
-  async getDisplayInvestment(projectId: number) {
-    return await db.query.displayInvestments.findFirst({
-      where: eq(displayInvestments.projectId, projectId)
-    });
-  }
-  
-  async createOrUpdateDisplayInvestment(projectId: number, displayAmount: number) {
-    // Convert number to string for decimal field - much faster UPSERT
-    const displayAmountStr = displayAmount.toString();
-    
-    const [result] = await db
-      .insert(displayInvestments)
-      .values({
-        projectId: projectId,
-        displayAmount: displayAmountStr
-      })
-      .onConflictDoUpdate({
-        target: displayInvestments.projectId,
-        set: {
-          displayAmount: displayAmountStr,
-          updatedAt: new Date()
-        }
-      })
-      .returning();
-    
-    return result;
-  }
+
 
   // Companies
   async getAllCompanies() {

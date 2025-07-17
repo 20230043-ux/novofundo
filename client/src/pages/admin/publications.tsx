@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { investmentEvents } from "@/lib/investment-events";
+
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -68,12 +68,7 @@ const updateSchema = z.object({
   content: z.string().min(10, "O conteúdo deve ter pelo menos 10 caracteres"),
 });
 
-const investmentSchema = z.object({
-  totalInvested: z.string().min(1, "O valor investido é obrigatório"),
-});
-
 type UpdateFormValues = z.infer<typeof updateSchema>;
-type InvestmentFormValues = z.infer<typeof investmentSchema>;
 
 const AdminPublications = () => {
   const { user } = useAuth();
@@ -83,7 +78,7 @@ const AdminPublications = () => {
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isAddUpdateOpen, setIsAddUpdateOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-  const [isEditInvestmentOpen, setIsEditInvestmentOpen] = useState(false);
+
   const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<any | null>(null);
   const [projectToEdit, setProjectToEdit] = useState<any | null>(null);
@@ -163,13 +158,7 @@ const AdminPublications = () => {
     },
   });
   
-  // Investment form
-  const investmentForm = useForm<InvestmentFormValues>({
-    resolver: zodResolver(investmentSchema),
-    defaultValues: {
-      totalInvested: "",
-    },
-  });
+
   
   // State for media files
   const [updateMediaFiles, setUpdateMediaFiles] = useState<File[]>([]);
@@ -447,127 +436,7 @@ const AdminPublications = () => {
     },
   });
   
-  // Edit investment mutation with instant optimistic updates
-  const editInvestmentMutation = useMutation({
-    mutationFn: async ({ projectId, totalInvested }: { projectId: number, totalInvested: string }) => {
-      const data = { totalInvested };
-      
-      const res = await fetch(`/api/admin/projects/${projectId}/investment`, {
-        method: "PUT",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      
-      if (!res.ok) {
-        throw new Error("Erro ao atualizar valor investido");
-      }
-      
-      return { success: true, projectId, totalInvested };
-    },
-    onMutate: async ({ projectId, totalInvested }) => {
-      console.log('Investment mutation started:', { projectId, totalInvested });
-      
-      // Cancel outgoing refetches for all project queries
-      await queryClient.cancelQueries({ queryKey: ['/api/projects'] });
 
-      // Get current query key with imageTimestamp and forceRender
-      const currentQueryKey = ['/api/projects', imageTimestamp, forceRender];
-      const previousProjects = queryClient.getQueryData(currentQueryKey);
-      
-      console.log('Previous projects data:', previousProjects);
-
-      // Force an immediate update to trigger UI refresh
-      const numValue = parseFloat(totalInvested);
-      const updateProject = (project: any) => {
-        if (project.id === projectId) {
-          const updated = { 
-            ...project, 
-            totalInvested: numValue,
-            displayInvestment: { 
-              displayAmount: numValue
-            }
-          };
-          console.log('Updating project:', updated);
-          return updated;
-        }
-        return project;
-      };
-
-      // Update all possible query variations
-      queryClient.setQueryData(currentQueryKey, (old: any[]) => {
-        if (!old) return old;
-        const updated = old.map(updateProject);
-        console.log('Updated projects for current key:', updated);
-        return updated;
-      });
-
-      queryClient.setQueryData(['/api/projects'], (old: any[]) => {
-        if (!old) return old;
-        const updated = old.map(updateProject);
-        console.log('Updated projects for base key:', updated);
-        return updated;
-      });
-
-      // Emit global investment update event for instant UI updates
-      investmentEvents.emit(projectId, numValue);
-
-      // Force React to re-render by updating timestamp and trigger render
-      const newTimestamp = Date.now();
-      setImageTimestamp(newTimestamp);
-      triggerRender();
-
-      // Return context with previous value
-      return { previousProjects, currentQueryKey };
-    },
-    onError: (err, variables, context) => {
-      console.error('Investment mutation error:', err);
-      
-      // Rollback on error
-      if (context?.previousProjects && context?.currentQueryKey) {
-        queryClient.setQueryData(context.currentQueryKey, context.previousProjects);
-      }
-      
-      // Reset investment event to previous value
-      const { projectId } = variables;
-      const previousProject = context?.previousProjects?.find((p: any) => p.id === projectId);
-      if (previousProject?.displayInvestment?.displayAmount) {
-        investmentEvents.emit(projectId, parseFloat(previousProject.displayInvestment.displayAmount));
-      }
-      
-      toast({
-        title: "Erro ao atualizar valor",
-        description: "Houve um erro. Tente novamente.",
-        variant: "destructive",
-      });
-    },
-    onSuccess: (data, { projectId, totalInvested }) => {
-      console.log('Investment mutation success:', { projectId, totalInvested });
-      
-      // Emit global investment update event again to ensure all components are updated
-      const numValue = parseFloat(totalInvested);
-      investmentEvents.emit(projectId, numValue);
-      
-      // Force immediate cache invalidation and refresh
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      queryClient.refetchQueries({ queryKey: ['/api/projects'] });
-      
-      // Force timestamp update to trigger re-render
-      const newTimestamp = Date.now();
-      setImageTimestamp(newTimestamp);
-      triggerRender();
-      
-      // Close dialog
-      setIsEditInvestmentOpen(false);
-      setProjectToEdit(null);
-      investmentForm.reset();
-      
-      toast({
-        title: "Valor atualizado instantaneamente",
-        description: "O valor investido foi atualizado em todos os componentes.",
-      });
-    },
-  });
   
   // Submit new project
   const onProjectSubmit = (data: ProjectFormValues) => {
@@ -608,30 +477,7 @@ const AdminPublications = () => {
     });
   };
   
-  // Submit investment update
-  const onInvestmentSubmit = (data: InvestmentFormValues) => {
-    if (!projectToEdit) {
-      toast({
-        title: "Erro",
-        description: "Nenhum projeto selecionado.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Limpa o valor para garantir que só temos números
-    const cleanValue = data.totalInvested.replace(/[^\d]/g, '');
-    
-    console.log("Enviando valor:", {
-      original: data.totalInvested,
-      limpo: cleanValue
-    });
-    
-    editInvestmentMutation.mutate({ 
-      projectId: projectToEdit.id, 
-      totalInvested: cleanValue
-    });
-  };
+
   
   // Handle project image change
   const handleProjectImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -676,32 +522,7 @@ const AdminPublications = () => {
     });
   };
   
-  // Open edit investment dialog
-  const openEditInvestmentDialog = (project: any) => {
-    setProjectToEdit(project);
-    setIsEditInvestmentOpen(true);
-    
-    // Verificar o valor atual diretamente do banco de dados
-    fetch(`/api/projects/${project.id}`)
-      .then(res => res.json())
-      .then(updatedProject => {
-        // Verificar se existe um valor específico para exibição
-        const displayValue = updatedProject.displayInvestment?.displayAmount || updatedProject.totalInvested;
-        console.log("Valor para exibição:", displayValue);
-        investmentForm.reset({
-          totalInvested: displayValue ? displayValue.toString() : "0",
-        });
-      })
-      .catch(err => {
-        console.error("Erro ao buscar projeto:", err);
-        // Fallback para o valor local se falhar
-        const fallbackValue = project.displayInvestment?.displayAmount || project.totalInvested;
-        investmentForm.reset({
-          totalInvested: fallbackValue ? fallbackValue.toString() : "0",
-        });
-      });
-  };
-  
+
   // Open edit project dialog
   const openEditDialog = (project: any) => {
     setProjectToEdit(project);
@@ -863,20 +684,8 @@ const AdminPublications = () => {
                                   )}
                                 </TableCell>
                                 <TableCell>
-    <div className="flex items-center gap-2">
-      <Button
-        variant="link"
-        className="p-0 h-auto font-normal"
-        onClick={(e) => {
-          e.stopPropagation();
-          openEditInvestmentDialog(project);
-        }}
-      >
-        {formatCurrency(project.displayInvestment?.displayAmount || project.totalInvested)}
-        <Edit className="h-3 w-3 ml-2 text-gray-600" />
-      </Button>
-    </div>
-  </TableCell>
+                                  {formatCurrency(project.totalInvested)}
+                                </TableCell>
                                 <TableCell>
                                   {project.updates && project.updates.length > 0 ? (
                                     <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
@@ -1529,63 +1338,7 @@ const AdminPublications = () => {
             </AlertDialog>
           </div>
         </div>
-        {/* Edit Investment Dialog */}
-        <Dialog open={isEditInvestmentOpen} onOpenChange={setIsEditInvestmentOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Edit className="h-5 w-5 text-primary" />
-                Editar Valor Investido
-              </DialogTitle>
-              <DialogDescription>
-                {projectToEdit ? `Projeto: ${projectToEdit.name}` : 'Edite o valor total investido neste projeto.'}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <Form {...investmentForm}>
-              <form onSubmit={investmentForm.handleSubmit(onInvestmentSubmit)} className="space-y-4">
-                <FormField
-                  control={investmentForm.control}
-                  name="totalInvested"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Valor Total Investido (Kz)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="Ex: 5000000" 
-                          {...field} 
-                          onChange={(e) => {
-                            // Remove formatação para armazenar apenas o número
-                            const value = e.target.value.replace(/[^0-9]/g, '');
-                            field.onChange(value);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <DialogFooter className="mt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsEditInvestmentOpen(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    type="submit"
-                    disabled={editInvestmentMutation.isPending}
-                  >
-                    {editInvestmentMutation.isPending ? "Salvando..." : "Salvar"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+
       </div>
       
       <Footer />

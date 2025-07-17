@@ -138,13 +138,7 @@ export const investments = pgTable('investments', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// Tabela específica para armazenar o valor de exibição na página de publicações
-export const displayInvestments = pgTable('display_investments', {
-  id: serial('id').primaryKey(),
-  projectId: integer('project_id').references(() => projects.id).notNull().unique(),
-  displayAmount: decimal('display_amount', { precision: 12, scale: 2 }).notNull().default('0'),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+
 
 // Messages table for communication between admin and users
 export const messages = pgTable('messages', {
@@ -192,13 +186,7 @@ export const carbonLeaderboardRelations = relations(carbonLeaderboard, ({ one })
   }),
 }));
 
-// Relações para displayInvestments
-export const displayInvestmentsRelations = relations(displayInvestments, ({ one }) => ({
-  project: one(projects, {
-    fields: [displayInvestments.projectId],
-    references: [projects.id],
-  }),
-}));
+
 
 // Define relations
 export const usersRelations = relations(users, ({ one }) => ({
@@ -244,10 +232,6 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   }),
   updates: many(projectUpdates),
   investments: many(investments),
-  displayInvestment: one(displayInvestments, {
-    fields: [projects.id],
-    references: [displayInvestments.projectId],
-  }),
 }));
 
 export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
@@ -425,9 +409,7 @@ export const paymentProofInsertSchema = createInsertSchema(paymentProofs, {
   }))
 });
 export const investmentInsertSchema = createInsertSchema(investments);
-export const displayInvestmentInsertSchema = createInsertSchema(displayInvestments, {
-  displayAmount: (schema) => schema.or(z.string().transform(val => parseFloat(val)))
-});
+
 
 // Create select schemas for type safety
 export const userSelectSchema = createSelectSchema(users);
@@ -439,7 +421,7 @@ export const projectUpdateSelectSchema = createSelectSchema(projectUpdates);
 export const consumptionRecordSelectSchema = createSelectSchema(consumptionRecords);
 export const paymentProofSelectSchema = createSelectSchema(paymentProofs);
 export const investmentSelectSchema = createSelectSchema(investments);
-export const displayInvestmentSelectSchema = createSelectSchema(displayInvestments);
+
 export const carbonLeaderboardSelectSchema = createSelectSchema(carbonLeaderboard);
 
 // Message schemas

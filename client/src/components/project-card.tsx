@@ -3,8 +3,8 @@ import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useSmartImage } from "@/hooks/use-smart-image";
-import { useState, useEffect } from "react";
-import { investmentEvents } from "@/lib/investment-events";
+
+
 
 interface ProjectCardProps {
   id: number;
@@ -12,12 +12,7 @@ interface ProjectCardProps {
   description: string;
   imageUrl: string;
   totalInvested: string;
-  displayInvestment?: {
-    id: number;
-    projectId: number;
-    displayAmount: string;
-    updatedAt: string;
-  };
+
   sdg?: {
     id: number;
     number: number;
@@ -26,7 +21,7 @@ interface ProjectCardProps {
   };
 }
 
-const ProjectCard = ({ id, name, description, imageUrl, totalInvested, displayInvestment, sdg }: ProjectCardProps) => {
+const ProjectCard = ({ id, name, description, imageUrl, totalInvested, sdg }: ProjectCardProps) => {
   // Use smart image loading hook
   const { 
     imageUrl: smartImageUrl, 
@@ -36,36 +31,7 @@ const ProjectCard = ({ id, name, description, imageUrl, totalInvested, displayIn
     fallbackContent 
   } = useSmartImage(imageUrl, name);
 
-  // Local state for instant investment value updates
-  const [currentInvestmentValue, setCurrentInvestmentValue] = useState<number | null>(null);
 
-  // Subscribe to global investment update events
-  useEffect(() => {
-    const unsubscribe = investmentEvents.subscribe((projectId, newValue) => {
-      if (projectId === id) {
-        console.log(`ProjectCard ${id}: Received investment update:`, newValue);
-        setCurrentInvestmentValue(newValue);
-      }
-    });
-
-    return unsubscribe;
-  }, [id]);
-
-  // Função para determinar o valor a ser exibido (displayAmount ou totalInvested)
-  const getDisplayValue = () => {
-    // Use local state if available (from investment events)
-    if (currentInvestmentValue !== null) {
-      return currentInvestmentValue;
-    }
-    
-    // Se displayInvestment existe E tem uma propriedade displayAmount que não é nula/indefinida
-    if (displayInvestment && displayInvestment.displayAmount !== undefined && displayInvestment.displayAmount !== null) {
-      return displayInvestment.displayAmount;
-    }
-    
-    // Se chegamos aqui, usamos o totalInvested como fallback
-    return totalInvested;
-  };
   // Format currency - showing only actual values
   const formatCurrency = (value: string | number | undefined | null) => {
     // No value provided or zero value
@@ -168,7 +134,7 @@ const ProjectCard = ({ id, name, description, imageUrl, totalInvested, displayIn
               Valor investido
             </p>
             <p className="font-bold text-primary group-hover:text-primary-600 transition-colors duration-300">
-              {formatCurrency(getDisplayValue())}
+              {formatCurrency(totalInvested)}
             </p>
           </div>
           
