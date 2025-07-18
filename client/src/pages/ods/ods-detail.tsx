@@ -337,7 +337,14 @@ const OdsDetail = () => {
                       Pessoas Investidoras
                     </h2>
                     
-                    {sdg.investingIndividuals && sdg.investingIndividuals.length > 0 ? (
+                    {/* Debug info - remove this after fixing */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="mb-4 p-2 bg-yellow-100 text-xs">
+                        Debug: investingIndividuals = {JSON.stringify(sdg.investingIndividuals)}
+                      </div>
+                    )}
+                    
+                    {sdg.investingIndividuals && Array.isArray(sdg.investingIndividuals) && sdg.investingIndividuals.length > 0 ? (
                       <div className="rounded-md border">
                         <Table>
                           <TableHeader>
@@ -394,7 +401,14 @@ const OdsDetail = () => {
                     ) : (
                       <div className="text-center py-8 bg-gray-50 rounded-lg">
                         <Users className="h-12 w-12 mx-auto text-gray-400 mb-2" />
-                        <p className="text-gray-500">Nenhuma pessoa investiu neste ODS ainda.</p>
+                        <p className="text-gray-500">
+                          {!sdg.investingIndividuals ? 
+                            'Carregando pessoas investidoras...' : 
+                            Array.isArray(sdg.investingIndividuals) && sdg.investingIndividuals.length === 0 ?
+                            'Nenhuma pessoa investiu neste ODS ainda.' :
+                            'Erro ao carregar dados das pessoas investidoras.'
+                          }
+                        </p>
                       </div>
                     )}
                   </TabsContent>
