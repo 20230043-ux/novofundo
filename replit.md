@@ -257,4 +257,5 @@ Changelog:
   • Added logout success toast notification with "Logout realizado com sucesso" message
   • Enhanced user experience with faster disappearing notifications for login and logout actions
   • Improved visual feedback consistency across authentication flows
+  • Removed "Mensagens" link from admin navigation menu (both desktop and mobile)
 ```

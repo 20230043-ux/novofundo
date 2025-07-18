@@ -235,10 +235,6 @@ const Navbar = () => {
                 <Link href="/admin/relatorios" className={`text-gray-700 hover:text-primary font-medium ${isActive('/admin/relatorios') && 'text-primary'}`}>
                   Relatórios
                 </Link>
-
-                <Link href="/admin/mensagens" className={`text-gray-700 hover:text-primary font-medium ${isActive('/admin/mensagens') && 'text-primary'}`}>
-                  Mensagens
-                </Link>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger className="flex items-center space-x-2 outline-none">
@@ -381,9 +377,6 @@ const Navbar = () => {
                 </Link>
                 <Link href="/admin/publications" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">
                   Publicações
-                </Link>
-                <Link href="/admin/mensagens" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">
-                  Mensagens
                 </Link>
                 <button 
                   onClick={handleLogout}
