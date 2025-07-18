@@ -258,4 +258,6 @@ Changelog:
   • Enhanced user experience with faster disappearing notifications for login and logout actions
   • Improved visual feedback consistency across authentication flows
   • Removed "Mensagens" link from admin navigation menu (both desktop and mobile)
+  • Confirmed complete removal of SMS functionality for all user types (individuals, companies, and admin)
+  • Verified no SMS-related code, environment variables, or configuration files remain in the system
 ```
