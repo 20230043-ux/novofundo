@@ -10,17 +10,14 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Leaf, Menu, ChevronDown, User, FileUp, LogOut, MessageCircle } from "lucide-react";
+import { Leaf, Menu, ChevronDown, User, FileUp, LogOut } from "lucide-react";
 import { HelpButton } from "@/components/onboarding";
-import { useMessages } from "@/hooks/use-messages";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
-  const { unreadCount } = useMessages();
   const { toast } = useToast();
   
   const handleLogout = async () => {
@@ -168,15 +165,6 @@ const Navbar = () => {
                   Projetos
                 </Link>
                 
-                <Link href="/mensagens" className={`text-gray-700 hover:text-primary font-medium ${isActive('/mensagens') && 'text-primary'} relative`}>
-                  Mensagens
-                  {unreadCount > 0 && (
-                    <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 text-xs flex items-center justify-center">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </Link>
-                
                 <div className="flex items-center space-x-2">
                   <HelpButton />
                 </div>
@@ -319,9 +307,6 @@ const Navbar = () => {
                 <Link href="/empresa/historico" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">
                   Histórico
                 </Link>
-                <Link href="/mensagens" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">
-                  Mensagens {unreadCount > 0 && `(${unreadCount})`}
-                </Link>
                 <button 
                   onClick={() => {
                     const { showOnboarding } = require("@/hooks/use-onboarding").useOnboarding();
@@ -352,9 +337,6 @@ const Navbar = () => {
                 </Link>
                 <Link href="/individual/profile" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">
                   Perfil
-                </Link>
-                <Link href="/mensagens" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">
-                  Mensagens {unreadCount > 0 && `(${unreadCount})`}
                 </Link>
                 <button 
                   onClick={handleLogout}

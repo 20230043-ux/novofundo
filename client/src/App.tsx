@@ -49,8 +49,7 @@ import AdminOdsInvestimentos from "@/pages/admin/ods-investimentos";
 import AdminSetoresPoluentes from "@/pages/admin/setores-poluentes";
 import AdminRelatorios from "@/pages/admin/relatorios";
 
-import AdminMensagens from "@/pages/admin/mensagens";
-import Mensagens from "@/pages/mensagens";
+
 import LoadingScreen from "@/components/loading-screen";
 
 function Router() {
@@ -80,9 +79,6 @@ function Router() {
       <ProtectedRoute path="/individual/payment-proof" component={IndividualPaymentProof} role="individual" />
       <ProtectedRoute path="/individual/investments" component={IndividualInvestments} role="individual" />
       
-      {/* Messaging Routes */}
-      <ProtectedRoute path="/mensagens" component={Mensagens} />
-      
       {/* Admin Routes */}
       <AdminRoute path="/admin/dashboard" component={AdminDashboard} />
       <AdminRoute path="/admin/empresas" component={AdminCompanies} />
@@ -93,8 +89,6 @@ function Router() {
       <AdminRoute path="/admin/ods-investimentos" component={AdminOdsInvestimentos} />
       <AdminRoute path="/admin/setores-poluentes" component={AdminSetoresPoluentes} />
       <AdminRoute path="/admin/relatorios" component={AdminRelatorios} />
-
-      <AdminRoute path="/admin/mensagens" component={AdminMensagens} />
       <AdminRoute path="/admin/publications" component={AdminPublications} />
       
       {/* Fallback to 404 */}

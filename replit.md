@@ -260,4 +260,10 @@ Changelog:
   • Removed "Mensagens" link from admin navigation menu (both desktop and mobile)
   • Confirmed complete removal of SMS functionality for all user types (individuals, companies, and admin)
   • Verified no SMS-related code, environment variables, or configuration files remain in the system
+  • Completely removed all messaging functionality from the platform:
+    - Removed "Mensagens" navigation links from individual and company user menus
+    - Removed messaging routes from App.tsx (/mensagens and /admin/mensagens)
+    - Removed messaging component imports and unused badge/unread count functionality
+    - Cleaned up navbar imports (removed useMessages hook, Badge component, MessageCircle icon)
+    - Platform now operates without any internal messaging system between users and admin
 ```
