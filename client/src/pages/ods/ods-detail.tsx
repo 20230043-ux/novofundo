@@ -60,11 +60,18 @@ const OdsDetail = () => {
   const { id } = useParams();
   
   // Fetch SDG details
-  const { data: sdg, isLoading: isLoadingSdg } = useQuery({
-    queryKey: [`/api/sdgs/${id}`, Date.now()], // Force fresh data with timestamp
+  const { data: sdg, isLoading: isLoadingSdg, error } = useQuery({
+    queryKey: [`/api/sdgs/${id}`], // Simplified query key
     staleTime: 0, // Force fresh data to see investing individuals
-    cacheTime: 0, // Don't cache this query
   });
+
+  console.log('SDG Data:', sdg);
+  console.log('Loading:', isLoadingSdg);
+  console.log('Error:', error);
+  
+  if (sdg?.investingIndividuals) {
+    console.log('Investing Individuals:', sdg.investingIndividuals);
+  }
   
   // Format currency
   const formatCurrency = (value: string) => {
@@ -340,7 +347,9 @@ const OdsDetail = () => {
                     
                     {/* Debug info - remove this after fixing */}
                     <div className="mb-4 p-2 bg-yellow-100 text-xs">
-                      Debug: investingIndividuals = {JSON.stringify(sdg?.investingIndividuals)}
+                      Debug: investingIndividuals length = {sdg?.investingIndividuals?.length || 0}
+                      <br />
+                      Debug: investingIndividuals = {JSON.stringify(sdg?.investingIndividuals, null, 2)}
                       <br />
                       <button 
                         onClick={() => window.location.reload()} 
