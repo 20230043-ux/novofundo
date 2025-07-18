@@ -394,7 +394,8 @@ export class DatabaseStorage implements IStorage {
   async getInvestingIndividualsForSdg(sdgId: number) {
     try {
       console.log(`Encontrando pessoas investidoras para o ODS ${sdgId}`);
-      // Count both investments and payment proofs
+      
+      // Simplify the query by getting individuals from both investments and payment proofs separately
       const allInvestors = await db
         .select({
           id: individuals.id,
@@ -403,29 +404,27 @@ export class DatabaseStorage implements IStorage {
           profilePictureUrl: individuals.profilePictureUrl,
           occupation: individuals.occupation,
           location: individuals.location,
-          // Count both investments and payment proofs (avoiding double counting)
+          // Calculate total invested from both sources
           totalInvested: sql<string>`
-            (
-              SELECT COALESCE(SUM(inv.amount), 0)
+            COALESCE((
+              SELECT SUM(inv.amount)
               FROM investments inv
               JOIN projects p ON inv.project_id = p.id
               WHERE inv.individual_id = individuals.id 
               AND p.sdg_id = ${sdgId}
-            ) + 
-            (
-              SELECT COALESCE(SUM(pp.amount), 0)
+            ), 0) + 
+            COALESCE((
+              SELECT SUM(pp.amount)
               FROM payment_proofs pp
-              LEFT JOIN investments inv ON pp.id = inv.payment_proof_id
               WHERE pp.individual_id = individuals.id 
               AND pp.sdg_id = ${sdgId}
               AND pp.status = 'approved'
-              AND inv.id IS NULL
-            )
+            ), 0)
           `,
         })
         .from(individuals)
         .where(
-          // Filter individuals that have either investments or payment proofs for this SDG
+          // Find individuals that have either investments through projects or direct payment proofs for this SDG
           sql`
             individuals.id IN (
               SELECT DISTINCT inv.individual_id
@@ -437,36 +436,34 @@ export class DatabaseStorage implements IStorage {
             individuals.id IN (
               SELECT DISTINCT pp.individual_id
               FROM payment_proofs pp
-              LEFT JOIN investments inv ON pp.id = inv.payment_proof_id
               WHERE pp.sdg_id = ${sdgId} 
               AND pp.status = 'approved'
-              AND inv.id IS NULL
             )
           `
         )
         .orderBy(desc(sql<string>`
-          (
-            SELECT COALESCE(SUM(inv.amount), 0)
+          COALESCE((
+            SELECT SUM(inv.amount)
             FROM investments inv
             JOIN projects p ON inv.project_id = p.id
             WHERE inv.individual_id = individuals.id 
             AND p.sdg_id = ${sdgId}
-          ) + 
-          (
-            SELECT COALESCE(SUM(pp.amount), 0)
+          ), 0) + 
+          COALESCE((
+            SELECT SUM(pp.amount)
             FROM payment_proofs pp
-            LEFT JOIN investments inv ON pp.id = inv.payment_proof_id
             WHERE pp.individual_id = individuals.id 
             AND pp.sdg_id = ${sdgId}
             AND pp.status = 'approved'
-            AND inv.id IS NULL
-          )
+          ), 0)
         `));
       
       // Filter out individuals with zero investments
       const individualsWithInvestments = allInvestors.filter(
         individual => parseFloat(individual.totalInvested) > 0
       );
+      
+      console.log(`Encontradas ${individualsWithInvestments.length} pessoas investidoras para o ODS ${sdgId}`);
       
       return individualsWithInvestments;
     } catch (error) {
