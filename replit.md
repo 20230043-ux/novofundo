@@ -266,4 +266,13 @@ Changelog:
     - Removed messaging component imports and unused badge/unread count functionality
     - Cleaned up navbar imports (removed useMessages hook, Badge component, MessageCircle icon)
     - Platform now operates without any internal messaging system between users and admin
+- July 18, 2025. Enhanced calculator UX and pending payment proofs display:
+  • Implemented separate "Calculate" and "Save" buttons for both individual and company calculators
+  • Added multiplication factor descriptions showing emission coefficients (e.g., "× 0.5 kg CO2/kWh")
+  • Created detailed calculation breakdown summary after calculation with per-category emissions
+  • Enhanced "Comprovativos Pendentes" to show complete entity information for both companies and individuals
+  • Added entity type badges, photos/logos, email addresses, and additional details (sector, age)
+  • Updated backend to include full user and entity relationships for payment proofs
+  • Fixed null pointer exceptions in both admin companies and pending ODS assignment pages
+  • Improved data validation requiring calculation before allowing data saving
 ```

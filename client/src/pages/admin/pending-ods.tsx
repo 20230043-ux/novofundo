@@ -185,7 +185,8 @@ const AdminPendingOds = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Empresa</TableHead>
+                          <TableHead>Entidade</TableHead>
+                          <TableHead>Tipo</TableHead>
                           <TableHead>Data</TableHead>
                           <TableHead>Valor</TableHead>
                           <TableHead>Comprovativo</TableHead>
@@ -194,19 +195,30 @@ const AdminPendingOds = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(proofsWithoutSdg as any[]).map((proof: any) => (
-                          <TableRow key={proof.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={proof.company.logoUrl} alt={proof.company.name} />
-                                  <AvatarFallback className="bg-primary text-white">
-                                    {getInitials(proof.company.name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium">{proof.company.name}</span>
-                              </div>
-                            </TableCell>
+                        {(proofsWithoutSdg as any[]).map((proof: any) => {
+                          const isCompany = !!proof.company;
+                          const entity = isCompany ? proof.company : proof.individual;
+                          const entityName = isCompany ? entity?.name : entity?.fullName;
+                          const entityImage = isCompany ? entity?.logoUrl : entity?.profilePictureUrl;
+                          
+                          return (
+                            <TableRow key={proof.id}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={entityImage || ''} alt={entityName || ''} />
+                                    <AvatarFallback className="bg-primary text-white">
+                                      {getInitials(entityName || 'N/A')}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="font-medium">{entityName || 'N/A'}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={isCompany ? "default" : "secondary"}>
+                                  {isCompany ? "Empresa" : "Pessoa"}
+                                </Badge>
+                              </TableCell>
                             <TableCell>{formatDate(proof.createdAt)}</TableCell>
                             <TableCell>{formatCurrency(proof.amount)}</TableCell>
                             <TableCell>
@@ -260,7 +272,8 @@ const AdminPendingOds = () => {
                               </Button>
                             </TableCell>
                           </TableRow>
-                        ))}
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </div>
