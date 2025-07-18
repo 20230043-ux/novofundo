@@ -14,15 +14,29 @@ import { Leaf, Menu, ChevronDown, User, FileUp, LogOut, MessageCircle } from "lu
 import { HelpButton } from "@/components/onboarding";
 import { useMessages } from "@/hooks/use-messages";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { unreadCount } = useMessages();
+  const { toast } = useToast();
   
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Logout realizado com sucesso",
+        description: "Até logo!",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro no logout",
+        description: "Não foi possível fazer logout",
+        variant: "destructive",
+      });
+    }
   };
   
   const getInitials = (name: string) => {

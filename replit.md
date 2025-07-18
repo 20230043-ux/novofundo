@@ -251,4 +251,10 @@ Changelog:
   • Cleaned up all imports and references to WhatsApp functionality
   • Removed Chrome/Puppeteer dependency checking functions
   • Platform now operates without any messaging automation systems
+- July 18, 2025. UI improvements and toast notification optimizations:
+  • Fixed X button alignment in OnboardingWizard component (moved from right-4 top-4 to right-6 top-6)
+  • Reduced toast notification duration from 1,000,000ms to 2,000ms (2 seconds) for all notifications
+  • Added logout success toast notification with "Logout realizado com sucesso" message
+  • Enhanced user experience with faster disappearing notifications for login and logout actions
+  • Improved visual feedback consistency across authentication flows
 ```

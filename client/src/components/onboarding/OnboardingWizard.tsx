@@ -238,7 +238,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <Card className="w-full max-w-xl mx-auto">
         <CardHeader className="relative pb-0">
-          <div className="absolute right-4 top-4">
+          <div className="absolute right-6 top-6">
             <Button
               variant="ghost"
               size="icon"
@@ -246,7 +246,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
               className="h-8 w-8 rounded-full text-gray-700 hover:bg-gray-100"
               aria-label="Fechar"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
           <div className="mb-2">
