@@ -722,9 +722,12 @@ const AdminPublications = () => {
                                     <div className="flex -space-x-2">
                                       {project.investments.slice(0, 3).map((investment: any, index: number) => (
                                         <Avatar key={index} className="h-6 w-6 border-2 border-white">
-                                          <AvatarImage src={investment.company.logoUrl} alt={investment.company.name} />
+                                          <AvatarImage 
+                                            src={investment.company?.logoUrl || ''} 
+                                            alt={investment.company?.name || 'Company'} 
+                                          />
                                           <AvatarFallback className="text-xs bg-primary text-white">
-                                            {investment.company.name.charAt(0).toUpperCase()}
+                                            {investment.company?.name?.charAt(0)?.toUpperCase() || 'C'}
                                           </AvatarFallback>
                                         </Avatar>
                                       ))}
