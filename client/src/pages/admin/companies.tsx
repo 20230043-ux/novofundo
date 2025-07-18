@@ -376,7 +376,9 @@ const AdminCompanies = () => {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Empresa</TableHead>
+                              <TableHead>Entidade</TableHead>
+                              <TableHead>Tipo</TableHead>
+                              <TableHead>Email</TableHead>
                               <TableHead>Data</TableHead>
                               <TableHead>Valor</TableHead>
                               <TableHead>ODS</TableHead>
@@ -385,71 +387,95 @@ const AdminCompanies = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {pendingProofs.map((proof: any) => (
-                              <TableRow key={proof.id}>
-                                <TableCell>
-                                  <div className="flex items-center gap-3">
-                                    <Avatar className="h-8 w-8">
-                                      <AvatarImage src={proof.company?.logoUrl || ''} alt={proof.company?.name || ''} />
-                                      <AvatarFallback className="bg-primary text-white">
-                                        {getInitials(proof.company?.name || 'N/A')}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <span className="font-medium">{proof.company?.name || 'N/A'}</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>{formatDate(proof.createdAt)}</TableCell>
-                                <TableCell>{formatCurrency(proof.amount)}</TableCell>
-                                <TableCell>
-                                  {proof.sdg ? (
-                                    <span className="inline-flex items-center">
-                                      <span 
-                                        className="w-3 h-3 rounded-full mr-1"
-                                        style={{ backgroundColor: proof.sdg.color }}
-                                      ></span>
-                                      ODS {proof.sdg.number}
-                                    </span>
-                                  ) : (
-                                    <span className="text-gray-500">Não definido</span>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <a 
-                                    href={proof.fileUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-primary hover:underline inline-flex items-center"
-                                  >
-                                    <FileText className="h-4 w-4 mr-1" />
-                                    Ver
-                                  </a>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 hover:text-green-700"
-                                      onClick={() => handleApprove(proof.id)}
-                                      disabled={updateProofStatusMutation.isPending}
+                            {pendingProofs.map((proof: any) => {
+                              const isCompany = !!proof.company;
+                              const entity = isCompany ? proof.company : proof.individual;
+                              const entityName = isCompany ? entity?.name : entity?.fullName;
+                              const entityImage = isCompany ? entity?.logoUrl : entity?.profilePictureUrl;
+                              const entityEmail = entity?.user?.email;
+                              
+                              return (
+                                <TableRow key={proof.id}>
+                                  <TableCell>
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="h-10 w-10">
+                                        <AvatarImage src={entityImage || ''} alt={entityName || ''} />
+                                        <AvatarFallback className="bg-primary text-white">
+                                          {getInitials(entityName || 'N/A')}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex flex-col">
+                                        <span className="font-medium">{entityName || 'N/A'}</span>
+                                        {isCompany && entity?.sector && (
+                                          <span className="text-xs text-gray-500 capitalize">{entity.sector}</span>
+                                        )}
+                                        {!isCompany && entity?.birthDate && (
+                                          <span className="text-xs text-gray-500">
+                                            Idade: {new Date().getFullYear() - new Date(entity.birthDate).getFullYear()} anos
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant={isCompany ? "default" : "secondary"}>
+                                      {isCompany ? "Empresa" : "Pessoa"}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-sm text-gray-600">{entityEmail || 'N/A'}</TableCell>
+                                  <TableCell>{formatDate(proof.createdAt)}</TableCell>
+                                  <TableCell>{formatCurrency(proof.amount)}</TableCell>
+                                  <TableCell>
+                                    {proof.sdg ? (
+                                      <span className="inline-flex items-center">
+                                        <span 
+                                          className="w-3 h-3 rounded-full mr-1"
+                                          style={{ backgroundColor: proof.sdg.color }}
+                                        ></span>
+                                        ODS {proof.sdg.number}
+                                      </span>
+                                    ) : (
+                                      <span className="text-gray-500">Não definido</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <a 
+                                      href={proof.fileUrl} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:underline inline-flex items-center"
                                     >
-                                      <ThumbsUp className="h-4 w-4 mr-1" />
-                                      <span>Aprovar</span>
-                                    </Button>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700"
-                                      onClick={() => handleReject(proof.id)}
-                                      disabled={updateProofStatusMutation.isPending}
-                                    >
-                                      <ThumbsDown className="h-4 w-4 mr-1" />
-                                      <span>Rejeitar</span>
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                                      <FileText className="h-4 w-4 mr-1" />
+                                      Ver
+                                    </a>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="bg-green-50 border-green-200 text-green-600 hover:bg-green-100 hover:text-green-700"
+                                        onClick={() => handleApprove(proof.id)}
+                                        disabled={updateProofStatusMutation.isPending}
+                                      >
+                                        <ThumbsUp className="h-4 w-4 mr-1" />
+                                        <span>Aprovar</span>
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:text-red-700"
+                                        onClick={() => handleReject(proof.id)}
+                                        disabled={updateProofStatusMutation.isPending}
+                                      >
+                                        <ThumbsDown className="h-4 w-4 mr-1" />
+                                        <span>Rejeitar</span>
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
                           </TableBody>
                         </Table>
                       </div>

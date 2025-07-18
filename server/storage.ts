@@ -773,7 +773,16 @@ export class DatabaseStorage implements IStorage {
     return await db.query.paymentProofs.findMany({
       where: eq(paymentProofs.status, 'pending'),
       with: {
-        company: true,
+        company: {
+          with: {
+            user: true
+          }
+        },
+        individual: {
+          with: {
+            user: true
+          }
+        },
         sdg: true,
         consumptionRecord: true
       },
