@@ -208,8 +208,13 @@ const AdminPendingOds = () => {
                               entityName = entity.name || 'Empresa sem nome';
                               entityImage = entity.logoUrl || '';
                             } else {
-                              // For individuals, try multiple name fields
-                              entityName = entity.fullName || entity.name || entity.firstName || 'Nome não disponível';
+                              // For individuals, prioritize fullName and combine firstName + lastName if needed
+                              entityName = entity.fullName || 
+                                         (entity.firstName && entity.lastName ? `${entity.firstName} ${entity.lastName}` : '') ||
+                                         entity.firstName || 
+                                         entity.lastName ||
+                                         entity.name || 
+                                         'Nome não disponível';
                               entityImage = entity.profilePictureUrl || '';
                             }
                           }
