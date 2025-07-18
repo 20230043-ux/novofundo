@@ -60,18 +60,10 @@ const OdsDetail = () => {
   const { id } = useParams();
   
   // Fetch SDG details
-  const { data: sdg, isLoading: isLoadingSdg, error } = useQuery({
-    queryKey: [`/api/sdgs/${id}`], // Simplified query key
-    staleTime: 0, // Force fresh data to see investing individuals
+  const { data: sdg, isLoading: isLoadingSdg } = useQuery({
+    queryKey: [`/api/sdgs/${id}`],
+    staleTime: 1000 * 60 * 5, // 5 minutes cache for better performance
   });
-
-  console.log('SDG Data:', sdg);
-  console.log('Loading:', isLoadingSdg);
-  console.log('Error:', error);
-  
-  if (sdg?.investingIndividuals) {
-    console.log('Investing Individuals:', sdg.investingIndividuals);
-  }
   
   // Format currency
   const formatCurrency = (value: string) => {
@@ -345,19 +337,7 @@ const OdsDetail = () => {
                       Pessoas Investidoras
                     </h2>
                     
-                    {/* Debug info - remove this after fixing */}
-                    <div className="mb-4 p-2 bg-yellow-100 text-xs">
-                      Debug: investingIndividuals length = {sdg?.investingIndividuals?.length || 0}
-                      <br />
-                      Debug: investingIndividuals = {JSON.stringify(sdg?.investingIndividuals, null, 2)}
-                      <br />
-                      <button 
-                        onClick={() => window.location.reload()} 
-                        className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs"
-                      >
-                        Force Refresh
-                      </button>
-                    </div>
+
                     
                     {sdg.investingIndividuals && Array.isArray(sdg.investingIndividuals) && sdg.investingIndividuals.length > 0 ? (
                       <div className="rounded-md border">
