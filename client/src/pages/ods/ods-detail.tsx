@@ -62,7 +62,7 @@ const OdsDetail = () => {
   // Fetch SDG details
   const { data: sdg, isLoading: isLoadingSdg } = useQuery({
     queryKey: [`/api/sdgs/${id}`],
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 0, // Force fresh data to see investing individuals
   });
   
   // Format currency
