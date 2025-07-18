@@ -13,12 +13,17 @@ import {
 import { Leaf, Menu, ChevronDown, User, FileUp, LogOut } from "lucide-react";
 import { HelpButton } from "@/components/onboarding";
 import { useToast } from "@/hooks/use-toast";
+import { WebSocketStatus } from "@/components/websocket-status";
+import { useRealTimeNotifications } from "@/hooks/use-real-time-notifications";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
+  
+  // Initialize real-time notifications
+  useRealTimeNotifications();
   
   const handleLogout = async () => {
     try {
@@ -111,6 +116,7 @@ const Navbar = () => {
                 </Link>
                 
                 <div className="flex items-center space-x-2">
+                  <WebSocketStatus />
                   <HelpButton />
                 </div>
                 
@@ -166,6 +172,7 @@ const Navbar = () => {
                 </Link>
                 
                 <div className="flex items-center space-x-2">
+                  <WebSocketStatus />
                   <HelpButton />
                 </div>
                 
@@ -223,6 +230,10 @@ const Navbar = () => {
                 <Link href="/admin/relatorios" className={`text-gray-700 hover:text-primary font-medium ${isActive('/admin/relatorios') && 'text-primary'}`}>
                   Relatórios
                 </Link>
+                
+                <div className="flex items-center space-x-2">
+                  <WebSocketStatus />
+                </div>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger className="flex items-center space-x-2 outline-none">

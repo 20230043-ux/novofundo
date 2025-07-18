@@ -204,7 +204,7 @@ function optimizeForExternalConnections() {
   };
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express, wsService?: any): Promise<Server> {
   // Apply optimizations for external connections and performance
   app.use(optimizeForExternalConnections());
   app.use(optimizeStaticFiles());
@@ -1052,6 +1052,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Broadcast real-time update to all connected clients
+      if (wsService) {
+        wsService.broadcastPaymentProofUpdate({
+          action: 'status_update',
+          paymentProof: updated,
+          status: status
+        });
+      }
+      
       res.json(updated);
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
@@ -1113,6 +1122,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Broadcast real-time update to all connected clients
+      if (wsService) {
+        wsService.broadcastPaymentProofUpdate({
+          action: 'sdg_assignment',
+          paymentProof: updated,
+          sdgId: parseInt(sdgId)
+        });
+      }
+      
       res.json(updated);
     } catch (error) {
       console.error('Erro ao atribuir ODS:', error);
@@ -1151,6 +1169,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Use instant cache for immediate response
       const project = await instantProjectCache.addProject(validationResult.data);
+      
+      // Broadcast real-time update to all connected clients
+      if (wsService) {
+        wsService.broadcastProjectUpdate({
+          action: 'create',
+          project: project
+        });
+      }
       
       // Clear other caches in parallel (non-blocking)
       Promise.all([
@@ -1259,6 +1285,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Projeto não encontrado" });
       }
       
+      // Broadcast real-time update to all connected clients
+      if (wsService) {
+        wsService.broadcastProjectUpdate({
+          action: 'update',
+          project: updated,
+          projectId: id
+        });
+      }
+      
       // Add response headers for instant cache invalidation
       res.setHeader('X-Cache-Invalidate', 'projects');
       res.setHeader('X-Project-Updated', id.toString());
@@ -1289,6 +1324,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Use instant cache for immediate response
       const result = await instantProjectCache.deleteProject(id);
+      
+      // Broadcast real-time update to all connected clients
+      if (wsService) {
+        wsService.broadcastProjectUpdate({
+          action: 'delete',
+          projectId: id
+        });
+      }
       
       // Clear other caches in parallel (non-blocking)
       Promise.all([

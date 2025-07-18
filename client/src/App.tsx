@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OnboardingProvider } from "@/hooks/use-onboarding";
 import { OnboardingController } from "@/components/onboarding";
+import { WebSocketProvider } from "@/hooks/use-websocket";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { AdminRoute } from "@/lib/admin-route";
 import ScrollToTop from "@/components/scroll-to-top";
@@ -123,12 +124,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <OnboardingProvider>
-          <ScrollToTop />
-          <Router />
-          <OnboardingController />
-          <Toaster />
-        </OnboardingProvider>
+        <WebSocketProvider>
+          <OnboardingProvider>
+            <ScrollToTop />
+            <Router />
+            <OnboardingController />
+            <Toaster />
+          </OnboardingProvider>
+        </WebSocketProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
