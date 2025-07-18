@@ -221,9 +221,7 @@ const Navbar = () => {
                 <Link href="/admin/relatorios" className={`text-gray-700 hover:text-primary font-medium ${isActive('/admin/relatorios') && 'text-primary'}`}>
                   Relatórios
                 </Link>
-                <Link href="/admin/whatsapp" className={`text-gray-700 hover:text-primary font-medium ${isActive('/admin/whatsapp') && 'text-primary'}`}>
-                  WhatsApp
-                </Link>
+
                 <Link href="/admin/mensagens" className={`text-gray-700 hover:text-primary font-medium ${isActive('/admin/mensagens') && 'text-primary'}`}>
                   Mensagens
                 </Link>

@@ -128,9 +128,7 @@ This architecture eliminates delays in investment value updates, providing users
 
 ### Optional Integrations
 
-- **WhatsApp Web.js**: Automated messaging and notifications
 - **Multer**: File upload handling for logos and documents
-- **QR Code Terminal**: WhatsApp QR code generation
 
 ## Deployment Strategy
 
@@ -244,4 +242,13 @@ Changelog:
   • Enhanced fallback states to show appropriate messages when projects fail to load
   • Replaced aggressive queryClient.removeQueries with invalidateQueries to preserve cached data
   • Added "Tentar Novamente" button for recovery when projects fail to load
+- July 18, 2025. Complete removal of WhatsApp and SMS systems:
+  • Removed all WhatsApp Web.js integration code and dependencies
+  • Deleted whatsapp-service.ts and whatsapp-assistant.ts server files
+  • Removed all WhatsApp-related API endpoints from routes.ts
+  • Eliminated WhatsApp admin page and navigation links
+  • Uninstalled whatsapp-web.js, qrcode-terminal, and node-cron packages
+  • Cleaned up all imports and references to WhatsApp functionality
+  • Removed Chrome/Puppeteer dependency checking functions
+  • Platform now operates without any messaging automation systems
 ```

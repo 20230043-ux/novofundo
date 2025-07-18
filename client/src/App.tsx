@@ -48,7 +48,7 @@ import AdminPublications from "@/pages/admin/publications";
 import AdminOdsInvestimentos from "@/pages/admin/ods-investimentos";
 import AdminSetoresPoluentes from "@/pages/admin/setores-poluentes";
 import AdminRelatorios from "@/pages/admin/relatorios";
-import AdminWhatsApp from "@/pages/admin/whatsapp";
+
 import AdminMensagens from "@/pages/admin/mensagens";
 import Mensagens from "@/pages/mensagens";
 import LoadingScreen from "@/components/loading-screen";
@@ -93,7 +93,7 @@ function Router() {
       <AdminRoute path="/admin/ods-investimentos" component={AdminOdsInvestimentos} />
       <AdminRoute path="/admin/setores-poluentes" component={AdminSetoresPoluentes} />
       <AdminRoute path="/admin/relatorios" component={AdminRelatorios} />
-      <AdminRoute path="/admin/whatsapp" component={AdminWhatsApp} />
+
       <AdminRoute path="/admin/mensagens" component={AdminMensagens} />
       <AdminRoute path="/admin/publications" component={AdminPublications} />
       

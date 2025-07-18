@@ -4,60 +4,16 @@ import { storage } from "./storage";
 // Importar setupAuth do arquivo auth
 import { setupAuth } from "./auth";
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
-import { whatsappService } from "./whatsapp-service";
+
 import { preloadCache } from "./preload-cache";
 import { optimizeStaticFiles, enableServerPush, optimizeForMobile } from "./cdn-optimization";
 import { instantProjectCache } from "./instant-project-cache";
 import multer from "multer";
 import path from "path";
 import { mkdir } from "fs/promises";
-import { exec } from 'child_process';
-import { promisify } from 'util';
 
-const execAsync = promisify(exec);
 
-async function checkChromeAvailability(): Promise<boolean> {
-  try {
-    await execAsync('which google-chrome-stable');
-    return true;
-  } catch {
-    try {
-      await execAsync('which chromium-browser');
-      return true;
-    } catch {
-      return false;
-    }
-  }
-}
 
-async function checkPuppeteerAvailability(): Promise<boolean> {
-  try {
-    require('puppeteer-core');
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function checkSystemDependencies(): Promise<{[key: string]: boolean}> {
-  const dependencies = {
-    'libgobject-2.0.so.0': false,
-    'libnss3.so': false,
-    'libxss.so.1': false,
-    'libatk-1.0.so.0': false
-  };
-
-  for (const dep of Object.keys(dependencies)) {
-    try {
-      await execAsync(`ldconfig -p | grep ${dep}`);
-      dependencies[dep] = true;
-    } catch {
-      dependencies[dep] = false;
-    }
-  }
-
-  return dependencies;
-}
 
 // Simple cache implementation with invalidation
 const cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
@@ -1894,170 +1850,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // WhatsApp API endpoints
-  app.get("/api/whatsapp/status", isAdmin, async (req, res) => {
-    try {
-      const isConnected = whatsappService.isConnected();
-      const assistantStats = whatsappService.getAssistantStats();
-      const groups = await whatsappService.getAvailableGroups();
-      
-      res.json({
-        connected: isConnected,
-        assistantStats,
-        groups,
-        message: isConnected ? "WhatsApp conectado" : "WhatsApp desconectado - Verifique as dependências do sistema"
-      });
-    } catch (error) {
-      console.error("Error getting WhatsApp status:", error);
-      res.status(500).json({ message: "Erro ao obter status do WhatsApp: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
-  app.get("/api/whatsapp/diagnostics", isAdmin, async (req, res) => {
-    try {
-      const diagnostics = {
-        environment: process.env.NODE_ENV || 'development',
-        platform: process.platform,
-        nodeVersion: process.version,
-        hasChrome: await checkChromeAvailability(),
-        hasPuppeteer: await checkPuppeteerAvailability(),
-        systemDependencies: await checkSystemDependencies()
-      };
-      
-      res.json(diagnostics);
-    } catch (error) {
-      console.error("Error getting WhatsApp diagnostics:", error);
-      res.status(500).json({ message: "Erro ao obter diagnósticos do WhatsApp: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
-  app.post("/api/whatsapp/send-message", isAdmin, async (req, res) => {
-    try {
-      const { userId, message } = req.body;
-      
-      if (!userId || !message) {
-        return res.status(400).json({ message: "userId e message são obrigatórios" });
-      }
 
-      if (!whatsappService.isConnected()) {
-        return res.status(503).json({ message: "WhatsApp não está conectado" });
-      }
 
-      await whatsappService.sendMessageToUser(userId, message);
-      res.json({ message: "Mensagem enviada com sucesso" });
-    } catch (error) {
-      console.error("Error sending WhatsApp message:", error);
-      res.status(500).json({ message: "Erro ao enviar mensagem: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
-  app.post("/api/whatsapp/groups", isAdmin, async (req, res) => {
-    try {
-      const { groupName } = req.body;
-      
-      if (!groupName) {
-        return res.status(400).json({ message: "Nome do grupo é obrigatório" });
-      }
 
-      if (!whatsappService.isConnected()) {
-        return res.status(503).json({ message: "WhatsApp não está conectado" });
-      }
 
-      const group = await whatsappService.createPublicGroup(groupName);
-      res.status(201).json(group);
-    } catch (error) {
-      console.error("Error creating WhatsApp group:", error);
-      res.status(500).json({ message: "Erro ao criar grupo: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
-  app.post("/api/whatsapp/groups/:groupId/configure", isAdmin, async (req, res) => {
-    try {
-      const { groupId } = req.params;
-      const { projectIds, sdgIds, isPublic } = req.body;
-      
-      if (!whatsappService.isConnected()) {
-        return res.status(503).json({ message: "WhatsApp não está conectado" });
-      }
 
-      const group = await whatsappService.configureGroup(groupId, projectIds, sdgIds, isPublic);
-      res.json(group);
-    } catch (error) {
-      console.error("Error configuring WhatsApp group:", error);
-      res.status(500).json({ message: "Erro ao configurar grupo: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
-  app.post("/api/whatsapp/groups/:groupId/invite", isAdmin, async (req, res) => {
-    try {
-      const { groupId } = req.params;
-      
-      if (!whatsappService.isConnected()) {
-        return res.status(503).json({ message: "WhatsApp não está conectado" });
-      }
 
-      const inviteLink = await whatsappService.getGroupInviteLink(groupId);
-      res.json({ inviteLink });
-    } catch (error) {
-      console.error("Error getting group invite link:", error);
-      res.status(500).json({ message: "Erro ao obter link de convite: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
-  app.post("/api/whatsapp/projects/:projectId/update", isAdmin, async (req, res) => {
-    try {
-      const { projectId } = req.params;
-      const { message } = req.body;
-      
-      if (!message) {
-        return res.status(400).json({ message: "Mensagem é obrigatória" });
-      }
 
-      if (!whatsappService.isConnected()) {
-        return res.status(503).json({ message: "WhatsApp não está conectado" });
-      }
 
-      await whatsappService.sendProjectUpdate(parseInt(projectId), message);
-      res.json({ message: "Atualização enviada com sucesso" });
-    } catch (error) {
-      console.error("Error sending project update:", error);
-      res.status(500).json({ message: "Erro ao enviar atualização: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
-  app.post("/api/whatsapp/weekly-report", isAdmin, async (req, res) => {
-    try {
-      if (!whatsappService.isConnected()) {
-        return res.status(503).json({ message: "WhatsApp não está conectado" });
-      }
 
-      await whatsappService.sendWeeklyReport();
-      res.json({ message: "Relatório semanal enviado com sucesso" });
-    } catch (error) {
-      console.error("Error sending weekly report:", error);
-      res.status(500).json({ message: "Erro ao enviar relatório: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
-  app.post("/api/whatsapp/carbon-alert", isAdmin, async (req, res) => {
-    try {
-      const { companyId, currentEmissions, threshold } = req.body;
-      
-      if (!companyId || !currentEmissions || !threshold) {
-        return res.status(400).json({ message: "companyId, currentEmissions e threshold são obrigatórios" });
-      }
-
-      if (!whatsappService.isConnected()) {
-        return res.status(503).json({ message: "WhatsApp não está conectado" });
-      }
-
-      await whatsappService.sendCarbonAlert(companyId, currentEmissions, threshold);
-      res.json({ message: "Alerta de carbono enviado com sucesso" });
-    } catch (error) {
-      console.error("Error sending carbon alert:", error);
-      res.status(500).json({ message: "Erro ao enviar alerta: " + (error instanceof Error ? error.message : 'Erro desconhecido') });
-    }
-  });
 
   const httpServer = createServer(app);
 

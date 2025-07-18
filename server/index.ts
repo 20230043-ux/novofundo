@@ -3,7 +3,7 @@ import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { ensureDatabaseReady, startDatabaseHealthCheck } from "./database-init";
-import { whatsappService } from "./whatsapp-service";
+
 import { preloadCache } from "./preload-cache";
 import { instantProjectCache } from "./instant-project-cache";
 
@@ -95,12 +95,7 @@ app.use((req, res, next) => {
       preloadCache.startPeriodicRefresh();
     }, 1000); // Aguarda 1 segundo após inicialização do banco
     
-    // Inicializar WhatsApp service em background
-    setTimeout(() => {
-      whatsappService.initialize().catch(error => {
-        log(`WhatsApp service initialization failed: ${error.message}`);
-      });
-    }, 5000); // Aguarda 5 segundos após inicialização do banco
+
   }
 
   const server = await registerRoutes(app);
