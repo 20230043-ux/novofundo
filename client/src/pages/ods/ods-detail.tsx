@@ -61,8 +61,9 @@ const OdsDetail = () => {
   
   // Fetch SDG details
   const { data: sdg, isLoading: isLoadingSdg } = useQuery({
-    queryKey: [`/api/sdgs/${id}`],
+    queryKey: [`/api/sdgs/${id}`, Date.now()], // Force fresh data with timestamp
     staleTime: 0, // Force fresh data to see investing individuals
+    cacheTime: 0, // Don't cache this query
   });
   
   // Format currency
@@ -338,11 +339,16 @@ const OdsDetail = () => {
                     </h2>
                     
                     {/* Debug info - remove this after fixing */}
-                    {process.env.NODE_ENV === 'development' && (
-                      <div className="mb-4 p-2 bg-yellow-100 text-xs">
-                        Debug: investingIndividuals = {JSON.stringify(sdg.investingIndividuals)}
-                      </div>
-                    )}
+                    <div className="mb-4 p-2 bg-yellow-100 text-xs">
+                      Debug: investingIndividuals = {JSON.stringify(sdg?.investingIndividuals)}
+                      <br />
+                      <button 
+                        onClick={() => window.location.reload()} 
+                        className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                      >
+                        Force Refresh
+                      </button>
+                    </div>
                     
                     {sdg.investingIndividuals && Array.isArray(sdg.investingIndividuals) && sdg.investingIndividuals.length > 0 ? (
                       <div className="rounded-md border">
