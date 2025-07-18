@@ -1278,7 +1278,18 @@ export class DatabaseStorage implements IStorage {
         eq(paymentProofs.status, 'approved')
       ),
       with: {
-        company: true
+        company: {
+          with: {
+            user: true
+          }
+        },
+        individual: {
+          with: {
+            user: true
+          }
+        },
+        sdg: true,
+        consumptionRecord: true
       },
       orderBy: [desc(paymentProofs.createdAt)]
     });
