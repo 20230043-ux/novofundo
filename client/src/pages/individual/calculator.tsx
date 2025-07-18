@@ -260,6 +260,86 @@ const IndividualCalculator = () => {
                 <CardContent>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      {/* Period - Moved to top */}
+                      <div className="p-4 border border-gray-200 rounded-md bg-blue-50">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Calendar className="h-5 w-5 text-blue-500" />
+                          <h3 className="font-medium text-gray-900">Período de Consumo</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="period"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Período</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione o período" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="daily">Diário</SelectItem>
+                                    <SelectItem value="weekly">Semanal</SelectItem>
+                                    <SelectItem value="monthly">Mensal</SelectItem>
+                                    <SelectItem value="yearly">Anual</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          {period !== "yearly" && (
+                            <FormField
+                              control={form.control}
+                              name="month"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Mês</FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Selecione o mês" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {Array.from({ length: 12 }, (_, i) => (
+                                        <SelectItem key={i + 1} value={String(i + 1).padStart(2, '0')}>
+                                          {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                          
+                          <FormField
+                            control={form.control}
+                            name="year"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Ano</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="2024"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      
+                      <Separator />
+                      
                       {/* Energy consumption */}
                       <div className="space-y-4">
                         <div className="flex items-center gap-2">
@@ -281,7 +361,7 @@ const IndividualCalculator = () => {
                                 />
                               </FormControl>
                               <FormDescription>
-                                Consumo de energia elétrica em kWh
+                                Consumo de energia elétrica em kWh × 0,85 kg CO₂/kWh
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -312,7 +392,7 @@ const IndividualCalculator = () => {
                                 />
                               </FormControl>
                               <FormDescription>
-                                Quantidade de combustível consumida
+                                Litros de combustível × fator de emissão (gasolina: 2,31 kg CO₂/L, diesel: 2,68 kg CO₂/L)
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -373,7 +453,7 @@ const IndividualCalculator = () => {
                                 />
                               </FormControl>
                               <FormDescription>
-                                Quilômetros percorridos
+                                Quilômetros × fator de emissão (carro: 0,21 kg CO₂/km, ônibus: 0,105 kg CO₂/km, moto: 0,14 kg CO₂/km)
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -434,6 +514,9 @@ const IndividualCalculator = () => {
                                     {...field}
                                   />
                                 </FormControl>
+                                <FormDescription>
+                                  Metros cúbicos × 0,298 kg CO₂/m³
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -459,85 +542,14 @@ const IndividualCalculator = () => {
                                     {...field}
                                   />
                                 </FormControl>
+                                <FormDescription>
+                                  Quilogramas × 0,5 kg CO₂/kg
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
-                      </div>
-                      
-                      <Separator />
-                      
-                      {/* Period */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="period"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Período</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Selecione o período" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="daily">Diário</SelectItem>
-                                  <SelectItem value="weekly">Semanal</SelectItem>
-                                  <SelectItem value="monthly">Mensal</SelectItem>
-                                  <SelectItem value="yearly">Anual</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        {period !== "yearly" && (
-                          <FormField
-                            control={form.control}
-                            name="month"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Mês</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Selecione o mês" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {Array.from({ length: 12 }, (_, i) => (
-                                      <SelectItem key={i + 1} value={String(i + 1).padStart(2, '0')}>
-                                        {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
-                        
-                        <FormField
-                          control={form.control}
-                          name="year"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Ano</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  placeholder="2024"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                       </div>
                       
                       <div className="space-y-3">
@@ -559,6 +571,85 @@ const IndividualCalculator = () => {
                           {createConsumptionMutation.isPending ? "Salvando..." : "Salvar Dados"}
                         </Button>
                       </div>
+
+                      {/* Calculation Summary */}
+                      {isCalculated && totalEmission > 0 && (
+                        <Card className="mt-6">
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Calculator className="h-5 w-5 text-blue-500" />
+                              Resumo do Cálculo
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            {energyKwh > 0 && (
+                              <div className="flex justify-between items-center p-2 bg-yellow-50 rounded">
+                                <span className="text-sm">Energia: {formatNumber(energyKwh)} kWh × 0,85</span>
+                                <span className="font-medium">{formatNumber(energyKwh * EMISSION_FACTORS.energy)} kg CO₂</span>
+                              </div>
+                            )}
+                            
+                            {fuelLiters > 0 && fuelTypes.length > 0 && (
+                              <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                                <span className="text-sm">
+                                  Combustível: {formatNumber(fuelLiters)} L × {formatNumber(
+                                    fuelTypes.reduce((sum, type) => 
+                                      sum + (EMISSION_FACTORS[type as keyof typeof EMISSION_FACTORS] || 0), 0
+                                    ) / fuelTypes.length
+                                  )}
+                                </span>
+                                <span className="font-medium">
+                                  {formatNumber(fuelLiters * (fuelTypes.reduce((sum, type) => 
+                                    sum + (EMISSION_FACTORS[type as keyof typeof EMISSION_FACTORS] || 0), 0
+                                  ) / fuelTypes.length))} kg CO₂
+                                </span>
+                              </div>
+                            )}
+                            
+                            {transportKm > 0 && transportTypes.length > 0 && (
+                              <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+                                <span className="text-sm">
+                                  Transporte: {formatNumber(transportKm)} km × {formatNumber(
+                                    transportTypes.reduce((sum, type) => 
+                                      sum + (EMISSION_FACTORS[type as keyof typeof EMISSION_FACTORS] || 0), 0
+                                    ) / transportTypes.length
+                                  )}
+                                </span>
+                                <span className="font-medium">
+                                  {formatNumber(transportKm * (transportTypes.reduce((sum, type) => 
+                                    sum + (EMISSION_FACTORS[type as keyof typeof EMISSION_FACTORS] || 0), 0
+                                  ) / transportTypes.length))} kg CO₂
+                                </span>
+                              </div>
+                            )}
+                            
+                            {waterM3 > 0 && (
+                              <div className="flex justify-between items-center p-2 bg-cyan-50 rounded">
+                                <span className="text-sm">Água: {formatNumber(waterM3)} m³ × 0,298</span>
+                                <span className="font-medium">{formatNumber(waterM3 * EMISSION_FACTORS.water)} kg CO₂</span>
+                              </div>
+                            )}
+                            
+                            {wasteKg > 0 && (
+                              <div className="flex justify-between items-center p-2 bg-red-50 rounded">
+                                <span className="text-sm">Resíduos: {formatNumber(wasteKg)} kg × 0,5</span>
+                                <span className="font-medium">{formatNumber(wasteKg * EMISSION_FACTORS.waste)} kg CO₂</span>
+                              </div>
+                            )}
+                            
+                            <div className="border-t pt-2">
+                              <div className="flex justify-between items-center p-2 bg-gray-100 rounded font-bold">
+                                <span>Total de Emissões:</span>
+                                <span className="text-red-600">{formatNumber(totalEmission)} kg CO₂</span>
+                              </div>
+                              <div className="flex justify-between items-center p-2 bg-green-100 rounded font-bold mt-2">
+                                <span>Valor de Compensação:</span>
+                                <span className="text-green-600">{formatCurrency(compensationValue)} Kz</span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
                     </form>
                   </Form>
                 </CardContent>

@@ -85,6 +85,7 @@ const CompanyConsumption = () => {
   const { toast } = useToast();
   const [totalEmission, setTotalEmission] = useState(0);
   const [compensationValue, setCompensationValue] = useState(0);
+  const [isCalculated, setIsCalculated] = useState(false);
   
   // Fetch consumption records
   const { data: consumptionRecords, isLoading } = useQuery({
@@ -122,44 +123,44 @@ const CompanyConsumption = () => {
   const waterM3 = form.watch("waterM3") ?? 0;
   const wasteKg = form.watch("wasteKg") ?? 0;
   
-  // Update calculations when form values change
-  useEffect(() => {
+  // Calculate emissions function
+  const calculateEmissions = () => {
     // Calculate energy emissions
     const energyEmission = energyKwh * EMISSION_FACTORS.energy;
     
-    // Calculate fuel emissions (average of selected fuel types)
-    let fuelEmission = 0;
-    if (fuelTypes.length > 0 && fuelLiters > 0) {
-      const fuelEmissionSum = fuelTypes.reduce((sum, type) => {
-        return sum + fuelLiters * (EMISSION_FACTORS.fuel[type as keyof typeof EMISSION_FACTORS.fuel] || 0);
-      }, 0);
-      fuelEmission = fuelEmissionSum / fuelTypes.length;
-    }
+    // Calculate fuel emissions
+    const fuelEmission = fuelTypes.length > 0 && fuelLiters > 0 ? 
+      fuelTypes.reduce((sum, type) => 
+        sum + fuelLiters * (EMISSION_FACTORS.fuel[type as keyof typeof EMISSION_FACTORS.fuel] || 0), 0
+      ) / fuelTypes.length : 0;
     
-    // Calculate transport emissions (average of selected transport types)
-    let transportEmission = 0;
-    if (transportTypes.length > 0 && transportKm > 0) {
-      const transportEmissionSum = transportTypes.reduce((sum, type) => {
-        return sum + transportKm * (EMISSION_FACTORS.transport[type as keyof typeof EMISSION_FACTORS.transport] || 0);
-      }, 0);
-      transportEmission = transportEmissionSum / transportTypes.length;
-    }
+    // Calculate transport emissions  
+    const transportEmission = transportTypes.length > 0 && transportKm > 0 ?
+      transportTypes.reduce((sum, type) => 
+        sum + transportKm * (EMISSION_FACTORS.transport[type as keyof typeof EMISSION_FACTORS.transport] || 0), 0
+      ) / transportTypes.length : 0;
     
     // Calculate waste emissions
     const wasteEmission = wasteKg * EMISSION_FACTORS.waste;
     
-    // Calculate total emission
-    const totalEmission = energyEmission + fuelEmission + transportEmission + wasteEmission;
-    setTotalEmission(totalEmission);
+    // Calculate total
+    const total = energyEmission + fuelEmission + transportEmission + wasteEmission;
+    const compensation = total * COMPENSATION_RATE;
     
-    // Calculate compensation value
-    const compensationValue = totalEmission * COMPENSATION_RATE;
-    setCompensationValue(compensationValue);
+    setTotalEmission(total);
+    setCompensationValue(compensation);
+    setIsCalculated(true);
     
-    // Update form values
-    form.setValue("emissionKgCo2", totalEmission);
-    form.setValue("compensationValueKz", compensationValue);
-  }, [energyKwh, fuelLiters, fuelTypes, transportKm, transportTypes, waterM3, wasteKg, form]);
+    // Update form with calculated values
+    form.setValue("emissionKgCo2", total);
+    form.setValue("compensationValueKz", compensation);
+    
+    toast({
+      title: "Cálculo realizado",
+      description: `Total de emissões: ${formatNumber(total)} kg CO₂`,
+      duration: 2000,
+    });
+  };
   
   // Create consumption record
   const createConsumptionMutation = useMutation({
@@ -204,6 +205,7 @@ const CompanyConsumption = () => {
       
       setTotalEmission(0);
       setCompensationValue(0);
+      setIsCalculated(false);
     },
     onError: (error: Error) => {
       toast({
@@ -215,6 +217,16 @@ const CompanyConsumption = () => {
   });
   
   const onSubmit = (data: ConsumptionFormValues) => {
+    // Validation: Check if calculation was performed
+    if (!isCalculated) {
+      toast({
+        title: "Cálculo necessário",
+        description: "Por favor, calcule a pegada de carbono antes de salvar os dados.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Ensure at least one consumption type is provided
     if (
       (data.energyKwh === 0 || !data.energyKwh) &&
@@ -279,37 +291,14 @@ const CompanyConsumption = () => {
                 
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Energy Section */}
-                    <div className="mb-6 p-4 border border-gray-200 rounded-md">
+                    {/* Period Section - Moved to top */}
+                    <div className="p-4 border border-gray-200 rounded-md bg-blue-50">
                       <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-                        <Zap className="text-yellow-500 mr-2 h-5 w-5" />
-                        Consumo de Energia
+                        <CalculatorIcon className="text-blue-500 mr-2 h-5 w-5" />
+                        Período de Análise
                       </h3>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="energyKwh"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Energia Elétrica (kWh)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  min="0" 
-                                  step="0.01" 
-                                  placeholder="" 
-                                  value={field.value === undefined || field.value === 0 ? "" : field.value}
-                                  onChange={(e) => {
-                                    field.onChange(e.target.value);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FormField
                           control={form.control}
                           name="period"
@@ -327,51 +316,12 @@ const CompanyConsumption = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
+                                  <SelectItem value="daily">Diário</SelectItem>
+                                  <SelectItem value="weekly">Semanal</SelectItem>
                                   <SelectItem value="monthly">Mensal</SelectItem>
-                                  <SelectItem value="quarterly">Trimestral</SelectItem>
                                   <SelectItem value="yearly">Anual</SelectItem>
                                 </SelectContent>
                               </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Data do Consumo Section */}
-                    <div className="mb-6 p-4 border border-gray-200 rounded-md">
-                      <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        Data do Consumo
-                      </h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="day"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Dia</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  min="1" 
-                                  max="31" 
-                                  placeholder="Dia"
-                                  {...field}
-                                  value={field.value === undefined ? '' : field.value}
-                                  onChange={(e) => {
-                                    const value = e.target.value === "" ? undefined : parseInt(e.target.value);
-                                    field.onChange(value);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Dia do consumo (1-31)
-                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -393,23 +343,13 @@ const CompanyConsumption = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="01">Janeiro</SelectItem>
-                                  <SelectItem value="02">Fevereiro</SelectItem>
-                                  <SelectItem value="03">Março</SelectItem>
-                                  <SelectItem value="04">Abril</SelectItem>
-                                  <SelectItem value="05">Maio</SelectItem>
-                                  <SelectItem value="06">Junho</SelectItem>
-                                  <SelectItem value="07">Julho</SelectItem>
-                                  <SelectItem value="08">Agosto</SelectItem>
-                                  <SelectItem value="09">Setembro</SelectItem>
-                                  <SelectItem value="10">Outubro</SelectItem>
-                                  <SelectItem value="11">Novembro</SelectItem>
-                                  <SelectItem value="12">Dezembro</SelectItem>
+                                  {Array.from({ length: 12 }, (_, i) => (
+                                    <SelectItem key={i + 1} value={String(i + 1).padStart(2, '0')}>
+                                      {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
-                              <FormDescription>
-                                Mês de referência
-                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -426,7 +366,7 @@ const CompanyConsumption = () => {
                                   type="number" 
                                   min="2000" 
                                   max="2030" 
-                                  placeholder="Ano"
+                                  placeholder="2024"
                                   {...field}
                                   value={field.value === undefined ? new Date().getFullYear() : field.value}
                                   onChange={(e) => {
@@ -435,17 +375,48 @@ const CompanyConsumption = () => {
                                   }}
                                 />
                               </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Energy Section */}
+                    <div className="mb-6 p-4 border border-gray-200 rounded-md">
+                      <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
+                        <Zap className="text-yellow-500 mr-2 h-5 w-5" />
+                        Consumo de Energia
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="energyKwh"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Energia Elétrica (kWh)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  min="0" 
+                                  step="0.01" 
+                                  placeholder="Ex: 1500" 
+                                  value={field.value === undefined || field.value === 0 ? "" : field.value}
+                                  onChange={(e) => {
+                                    field.onChange(e.target.value);
+                                  }}
+                                />
+                              </FormControl>
                               <FormDescription>
-                                Ano de referência
+                                Consumo de energia elétrica em kWh × 0,5 kg CO₂/kWh
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-                      
-                      <div className="mt-4 bg-gray-50 p-3 rounded-md">
-                        <div className="flex justify-between items-center">
+                    </div>
                           <span className="text-sm text-gray-600">Estimativa de emissão:</span>
                           <span className="font-medium">{formatNumber(energyKwh * EMISSION_FACTORS.energy)} kg CO2</span>
                         </div>
@@ -480,7 +451,7 @@ const CompanyConsumption = () => {
                                 />
                               </FormControl>
                               <FormDescription>
-                                O consumo de água é registrado apenas para fins de monitoramento.
+                                Metros cúbicos × 0,298 kg CO₂/m³
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -516,6 +487,9 @@ const CompanyConsumption = () => {
                                   }}
                                 />
                               </FormControl>
+                              <FormDescription>
+                                Quilogramas × 2,53 kg CO₂/kg
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -665,6 +639,9 @@ const CompanyConsumption = () => {
                                   }}
                                 />
                               </FormControl>
+                              <FormDescription>
+                                Litros × fator de emissão por tipo de combustível (diesel: 2,68 kg CO₂/L, gasolina: 2,31 kg CO₂/L)
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -766,20 +743,97 @@ const CompanyConsumption = () => {
                       </div>
                     </div>
                     
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={createConsumptionMutation.isPending}
-                    >
-                      {createConsumptionMutation.isPending ? (
-                        <>Registrando...</>
-                      ) : (
-                        <>
-                          <Check className="mr-2 h-4 w-4" />
-                          Registrar Consumo
-                        </>
-                      )}
-                    </Button>
+                    <div className="space-y-3">
+                      <Button 
+                        type="button" 
+                        onClick={calculateEmissions}
+                        className="w-full"
+                        variant="outline"
+                      >
+                        <CalculatorIcon className="h-4 w-4 mr-2" />
+                        Calcular Pegada de Carbono
+                      </Button>
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={!isCalculated || createConsumptionMutation.isPending}
+                      >
+                        {createConsumptionMutation.isPending ? "Salvando..." : "Salvar Dados"}
+                      </Button>
+                    </div>
+
+                    {/* Calculation Summary */}
+                    {isCalculated && totalEmission > 0 && (
+                      <Card className="mt-6">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <CalculatorIcon className="h-5 w-5 text-blue-500" />
+                            Resumo do Cálculo
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {energyKwh > 0 && (
+                            <div className="flex justify-between items-center p-2 bg-yellow-50 rounded">
+                              <span className="text-sm">Energia: {formatNumber(energyKwh)} kWh × 0,5</span>
+                              <span className="font-medium">{formatNumber(energyKwh * EMISSION_FACTORS.energy)} kg CO₂</span>
+                            </div>
+                          )}
+                          
+                          {fuelLiters > 0 && fuelTypes.length > 0 && (
+                            <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                              <span className="text-sm">
+                                Combustível: {formatNumber(fuelLiters)} L × {formatNumber(
+                                  fuelTypes.reduce((sum, type) => 
+                                    sum + (EMISSION_FACTORS.fuel[type as keyof typeof EMISSION_FACTORS.fuel] || 0), 0
+                                  ) / fuelTypes.length
+                                )}
+                              </span>
+                              <span className="font-medium">
+                                {formatNumber(fuelLiters * (fuelTypes.reduce((sum, type) => 
+                                  sum + (EMISSION_FACTORS.fuel[type as keyof typeof EMISSION_FACTORS.fuel] || 0), 0
+                                ) / fuelTypes.length))} kg CO₂
+                              </span>
+                            </div>
+                          )}
+                          
+                          {transportKm > 0 && transportTypes.length > 0 && (
+                            <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+                              <span className="text-sm">
+                                Transporte: {formatNumber(transportKm)} km × {formatNumber(
+                                  transportTypes.reduce((sum, type) => 
+                                    sum + (EMISSION_FACTORS.transport[type as keyof typeof EMISSION_FACTORS.transport] || 0), 0
+                                  ) / transportTypes.length
+                                )}
+                              </span>
+                              <span className="font-medium">
+                                {formatNumber(transportKm * (transportTypes.reduce((sum, type) => 
+                                  sum + (EMISSION_FACTORS.transport[type as keyof typeof EMISSION_FACTORS.transport] || 0), 0
+                                ) / transportTypes.length))} kg CO₂
+                              </span>
+                            </div>
+                          )}
+                          
+                          {wasteKg > 0 && (
+                            <div className="flex justify-between items-center p-2 bg-red-50 rounded">
+                              <span className="text-sm">Resíduos: {formatNumber(wasteKg)} kg × 2,53</span>
+                              <span className="font-medium">{formatNumber(wasteKg * EMISSION_FACTORS.waste)} kg CO₂</span>
+                            </div>
+                          )}
+                          
+                          <div className="border-t pt-2">
+                            <div className="flex justify-between items-center p-2 bg-gray-100 rounded font-bold">
+                              <span>Total de Emissões:</span>
+                              <span className="text-red-600">{formatNumber(totalEmission)} kg CO₂</span>
+                            </div>
+                            <div className="flex justify-between items-center p-2 bg-green-100 rounded font-bold mt-2">
+                              <span>Valor de Compensação:</span>
+                              <span className="text-green-600">{formatCurrency(compensationValue)} Kz</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </form>
                 </Form>
               </CardContent>

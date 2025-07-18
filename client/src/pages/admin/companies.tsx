@@ -103,11 +103,11 @@ const AdminCompanies = () => {
     companies.filter((company: any) => {
       // Search filter
       const matchesSearch = !searchQuery || 
-        company.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        company.user.email.toLowerCase().includes(searchQuery.toLowerCase());
+        (company?.name?.toLowerCase().includes(searchQuery.toLowerCase())) || 
+        (company?.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()));
       
       // Sector filter
-      const matchesSector = !sectorFilter || company.sector === sectorFilter;
+      const matchesSector = !sectorFilter || company?.sector === sectorFilter;
       
       return matchesSearch && matchesSector;
     }) : [];
@@ -169,7 +169,7 @@ const AdminCompanies = () => {
   
   // Get unique sectors from companies
   const sectors = companies 
-    ? Array.from(new Set(companies.map((company: any) => company.sector)))
+    ? Array.from(new Set(companies.map((company: any) => company?.sector).filter(Boolean)))
     : [];
   
   return (
@@ -312,17 +312,17 @@ const AdminCompanies = () => {
                                 <TableCell>
                                   <div className="flex items-center gap-3">
                                     <Avatar className="h-8 w-8">
-                                      <AvatarImage src={company.logoUrl} alt={company.name} />
+                                      <AvatarImage src={company?.logoUrl || ''} alt={company?.name || ''} />
                                       <AvatarFallback className="bg-primary text-white">
-                                        {getInitials(company.name)}
+                                        {getInitials(company?.name || 'N/A')}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span className="font-medium">{company.name}</span>
+                                    <span className="font-medium">{company?.name || 'N/A'}</span>
                                   </div>
                                 </TableCell>
-                                <TableCell>{company.user.email}</TableCell>
-                                <TableCell>{company.sector.charAt(0).toUpperCase() + company.sector.slice(1)}</TableCell>
-                                <TableCell>{formatDate(company.createdAt)}</TableCell>
+                                <TableCell>{company?.user?.email || 'N/A'}</TableCell>
+                                <TableCell>{company?.sector ? company.sector.charAt(0).toUpperCase() + company.sector.slice(1) : 'N/A'}</TableCell>
+                                <TableCell>{formatDate(company?.createdAt)}</TableCell>
                                 <TableCell>
                                   <Button variant="ghost" size="sm" asChild>
                                     <Link href={`/admin/empresas/${company.id}`} className="flex items-center">
@@ -390,12 +390,12 @@ const AdminCompanies = () => {
                                 <TableCell>
                                   <div className="flex items-center gap-3">
                                     <Avatar className="h-8 w-8">
-                                      <AvatarImage src={proof.company.logoUrl} alt={proof.company.name} />
+                                      <AvatarImage src={proof.company?.logoUrl || ''} alt={proof.company?.name || ''} />
                                       <AvatarFallback className="bg-primary text-white">
-                                        {getInitials(proof.company.name)}
+                                        {getInitials(proof.company?.name || 'N/A')}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span className="font-medium">{proof.company.name}</span>
+                                    <span className="font-medium">{proof.company?.name || 'N/A'}</span>
                                   </div>
                                 </TableCell>
                                 <TableCell>{formatDate(proof.createdAt)}</TableCell>
