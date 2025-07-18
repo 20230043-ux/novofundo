@@ -390,9 +390,27 @@ const AdminCompanies = () => {
                             {pendingProofs.map((proof: any) => {
                               const isCompany = !!proof.company;
                               const entity = isCompany ? proof.company : proof.individual;
-                              const entityName = isCompany ? entity?.name : entity?.fullName;
-                              const entityImage = isCompany ? entity?.logoUrl : entity?.profilePictureUrl;
-                              const entityEmail = entity?.user?.email;
+                              
+                              // Safely extract entity information with null checks
+                              let entityName = 'Nome não disponível';
+                              let entityImage = '';
+                              let entityEmail = '';
+
+                              if (entity) {
+                                if (isCompany) {
+                                  entityName = entity.name || 'Empresa sem nome';
+                                  entityImage = entity.logoUrl || '';
+                                } else {
+                                  // For individuals, try multiple name fields to show full name
+                                  entityName = entity.fullName || 
+                                             (entity.firstName && entity.lastName ? `${entity.firstName} ${entity.lastName}` : '') ||
+                                             entity.firstName || 
+                                             entity.name || 
+                                             'Nome não disponível';
+                                  entityImage = entity.profilePictureUrl || '';
+                                }
+                                entityEmail = entity.user?.email || '';
+                              }
                               
                               return (
                                 <TableRow key={proof.id}>
