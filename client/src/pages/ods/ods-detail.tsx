@@ -359,10 +359,22 @@ const OdsDetail = () => {
                                         alt={`${individual.firstName} ${individual.lastName}`} 
                                       />
                                       <AvatarFallback className="bg-primary-50 text-primary-700">
-                                        {getInitials(`${individual.firstName} ${individual.lastName}`)}
+                                        {getInitials(
+                                          individual.fullName || 
+                                          (individual.firstName && individual.lastName ? `${individual.firstName} ${individual.lastName}` : '') ||
+                                          individual.firstName || 
+                                          individual.lastName || 
+                                          'Nome'
+                                        )}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <div className="font-medium">{`${individual.firstName} ${individual.lastName}`}</div>
+                                    <div className="font-medium">
+                                      {individual.fullName || 
+                                       (individual.firstName && individual.lastName ? `${individual.firstName} ${individual.lastName}` : '') ||
+                                       individual.firstName || 
+                                       individual.lastName || 
+                                       'Nome não disponível'}
+                                    </div>
                                   </div>
                                 </TableCell>
                                 <TableCell>
