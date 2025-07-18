@@ -369,7 +369,8 @@ export const projectUpdateInsertSchema = createInsertSchema(projectUpdates);
 // Criar um esquema de inserção personalizado para consumptionRecords que aceite números
 export const consumptionRecordInsertSchema = z.object({
   id: z.number().optional(),
-  companyId: z.number(),
+  companyId: z.number().optional(),
+  individualId: z.number().optional(),
   energyKwh: z.union([z.string(), z.number()]).transform(val => 
     typeof val === 'string' ? val : val.toString()
   ).default('0'),
@@ -400,6 +401,9 @@ export const consumptionRecordInsertSchema = z.object({
   fuelTypes: z.array(z.string()).optional(),
   transportTypes: z.array(z.string()).optional(),
   createdAt: z.date().optional()
+}).refine(data => data.companyId || data.individualId, {
+  message: "É necessário fornecer companyId ou individualId",
+  path: ["companyId", "individualId"]
 });
 
 export const paymentProofInsertSchema = createInsertSchema(paymentProofs, {

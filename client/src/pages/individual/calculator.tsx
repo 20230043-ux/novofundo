@@ -71,6 +71,7 @@ const IndividualCalculator = () => {
   const queryClient = useQueryClient();
   const [totalEmission, setTotalEmission] = useState(0);
   const [compensationValue, setCompensationValue] = useState(0);
+  const [isCalculated, setIsCalculated] = useState(false);
   
   // Fetch consumption records
   const { data: consumptionRecords, isLoading } = useQuery({
@@ -93,6 +94,9 @@ const IndividualCalculator = () => {
         description: "Dados de consumo salvos com sucesso!",
       });
       form.reset();
+      setIsCalculated(false);
+      setTotalEmission(0);
+      setCompensationValue(0);
     },
     onError: (error: any) => {
       toast({
@@ -131,9 +135,10 @@ const IndividualCalculator = () => {
   const transportTypes = form.watch("transportTypes") || [];
   const waterM3 = form.watch("waterM3") ?? 0;
   const wasteKg = form.watch("wasteKg") ?? 0;
+  const period = form.watch("period");
   
-  // Update calculations when form values change
-  useEffect(() => {
+  // Function to calculate emissions
+  const calculateEmissions = () => {
     // Calculate energy emissions
     const energyEmission = energyKwh * EMISSION_FACTORS.energy;
     
@@ -165,24 +170,43 @@ const IndividualCalculator = () => {
     
     setTotalEmission(total);
     setCompensationValue(compensation);
+    setIsCalculated(true);
     
     // Update form with calculated values
     form.setValue("emissionKgCo2", total);
     form.setValue("compensationValueKz", compensation);
-  }, [energyKwh, fuelLiters, fuelTypes, transportKm, transportTypes, waterM3, wasteKg, form]);
+    
+    toast({
+      title: "Cálculo realizado",
+      description: "Pegada de carbono calculada com sucesso!",
+    });
+  };
   
-  const onSubmit = (data: ConsumptionFormValues) => {
+  const onCalculate = () => {
     // Ensure at least one consumption type is provided
     if (
-      (data.energyKwh === 0 || !data.energyKwh) &&
-      (data.fuelLiters === 0 || !data.fuelLiters) &&
-      (data.transportKm === 0 || !data.transportKm) &&
-      (data.waterM3 === 0 || !data.waterM3) &&
-      (data.wasteKg === 0 || !data.wasteKg)
+      (energyKwh === 0 || !energyKwh) &&
+      (fuelLiters === 0 || !fuelLiters) &&
+      (transportKm === 0 || !transportKm) &&
+      (waterM3 === 0 || !waterM3) &&
+      (wasteKg === 0 || !wasteKg)
     ) {
       toast({
         title: "Dados insuficientes",
         description: "Informe pelo menos um tipo de consumo.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    calculateEmissions();
+  };
+
+  const onSubmit = (data: ConsumptionFormValues) => {
+    if (!isCalculated) {
+      toast({
+        title: "Calcule primeiro",
+        description: "Por favor, calcule a pegada de carbono antes de salvar.",
         variant: "destructive",
       });
       return;
@@ -470,30 +494,32 @@ const IndividualCalculator = () => {
                           )}
                         />
                         
-                        <FormField
-                          control={form.control}
-                          name="month"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Mês</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Selecione o mês" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Array.from({ length: 12 }, (_, i) => (
-                                    <SelectItem key={i + 1} value={String(i + 1).padStart(2, '0')}>
-                                      {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        {period !== "yearly" && (
+                          <FormField
+                            control={form.control}
+                            name="month"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Mês</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione o mês" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {Array.from({ length: 12 }, (_, i) => (
+                                      <SelectItem key={i + 1} value={String(i + 1).padStart(2, '0')}>
+                                        {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
                         
                         <FormField
                           control={form.control}
@@ -514,13 +540,25 @@ const IndividualCalculator = () => {
                         />
                       </div>
                       
-                      <Button 
-                        type="submit" 
-                        className="w-full"
-                        disabled={createConsumptionMutation.isPending}
-                      >
-                        {createConsumptionMutation.isPending ? "Salvando..." : "Calcular e Salvar"}
-                      </Button>
+                      <div className="space-y-3">
+                        <Button 
+                          type="button" 
+                          onClick={onCalculate}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          <Calculator className="h-4 w-4 mr-2" />
+                          Calcular Pegada de Carbono
+                        </Button>
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full"
+                          disabled={!isCalculated || createConsumptionMutation.isPending}
+                        >
+                          {createConsumptionMutation.isPending ? "Salvando..." : "Salvar Dados"}
+                        </Button>
+                      </div>
                     </form>
                   </Form>
                 </CardContent>
