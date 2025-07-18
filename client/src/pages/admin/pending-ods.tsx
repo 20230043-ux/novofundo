@@ -25,7 +25,7 @@ const AdminPendingOds = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedSdgIds, setSelectedSdgIds] = useState<Record<number, string>>({});
-  
+
   // Fetch payment proofs without SDG with instant updates
   const { data: proofsWithoutSdg, isLoading: isLoadingProofs, refetch: refetchProofs } = useQuery({
     queryKey: ['/api/admin/payment-proofs/without-sdg'],
@@ -36,14 +36,14 @@ const AdminPendingOds = () => {
     refetchOnMount: true,
     refetchInterval: 2000, // Refetch every 2 seconds for real-time updates
   });
-  
+
   // Fetch all SDGs for selection
   const { data: sdgs, isLoading: isLoadingSdgs } = useQuery({
     queryKey: ['/api/sdgs'],
     enabled: !!user && user.role === 'admin',
     staleTime: 1000 * 60 * 60, // 1 hour
   });
-  
+
   // Assign SDG mutation with instant optimistic updates
   const assignSdgMutation = useMutation({
     mutationFn: async ({ id, sdgId }: { id: number, sdgId: string }) => {
@@ -71,7 +71,7 @@ const AdminPendingOds = () => {
       if (context?.previousProofs) {
         queryClient.setQueryData(['/api/admin/payment-proofs/without-sdg'], context.previousProofs);
       }
-      
+
       toast({
         title: "Erro ao atribuir ODS",
         description: error.message,
@@ -84,12 +84,12 @@ const AdminPendingOds = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/sdgs'] });
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      
+
       toast({
         title: "ODS atribuído instantaneamente",
         description: "ODS foi atribuído e removido da lista imediatamente.",
       });
-      
+
       // Clear the selected SDG for this proof
       setSelectedSdgIds(prev => {
         const newState = { ...prev };
@@ -98,7 +98,7 @@ const AdminPendingOds = () => {
       });
     },
   });
-  
+
   // Handle assigning SDG
   const handleAssignSdg = (proofId: number) => {
     const sdgId = selectedSdgIds[proofId];
@@ -110,10 +110,10 @@ const AdminPendingOds = () => {
       });
       return;
     }
-    
+
     assignSdgMutation.mutate({ id: proofId, sdgId });
   };
-  
+
   // Handle SDG selection change
   const handleSdgChange = (proofId: number, sdgId: string) => {
     setSelectedSdgIds(prev => ({
@@ -121,19 +121,19 @@ const AdminPendingOds = () => {
       [proofId]: sdgId
     }));
   };
-  
+
   // Format currency
   const formatCurrency = (value: string | number) => {
     if (!value) return "0 Kz";
     const num = typeof value === 'number' ? value : parseFloat(value);
     if (isNaN(num)) return "0 Kz";
-    
+
     return new Intl.NumberFormat('pt-AO', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(num) + " Kz";
   };
-  
+
   // Format date
   const formatDate = (dateString: string) => {
     try {
@@ -142,7 +142,7 @@ const AdminPendingOds = () => {
       return dateString;
     }
   };
-  
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -151,18 +151,18 @@ const AdminPendingOds = () => {
       .toUpperCase()
       .slice(0, 2);
   };
-  
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 flex flex-col md:flex-row">
         <Sidebar type="admin" />
-        
+
         <div className="flex-1 overflow-auto bg-gray-100 w-full">
           <div className="container mx-auto px-4 py-8">
             <h1 className="font-bold text-2xl text-gray-800 mb-6">Atribuir ODS a Comprovativos</h1>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -198,20 +198,39 @@ const AdminPendingOds = () => {
                         {(proofsWithoutSdg as any[]).map((proof: any) => {
                           const isCompany = !!proof.company;
                           const entity = isCompany ? proof.company : proof.individual;
-                          const entityName = isCompany ? entity?.name : entity?.fullName;
-                          const entityImage = isCompany ? entity?.logoUrl : entity?.profilePictureUrl;
-                          
+
+                          // Safely extract entity information with null checks
+                          let entityName = 'Nome não disponível';
+                          let entityImage = '';
+
+                          if (entity) {
+                            if (isCompany) {
+                              entityName = entity.name || 'Empresa sem nome';
+                              entityImage = entity.logoUrl || '';
+                            } else {
+                              entityName = entity.fullName || entity.name || 'Pessoa sem nome';
+                              entityImage = entity.profilePictureUrl || '';
+                            }
+                          }
+
                           return (
                             <TableRow key={proof.id}>
                               <TableCell>
                                 <div className="flex items-center gap-3">
                                   <Avatar className="h-8 w-8">
-                                    <AvatarImage src={entityImage || ''} alt={entityName || ''} />
+                                    <AvatarImage src={entityImage} alt={entityName} />
                                     <AvatarFallback className="bg-primary text-white">
-                                      {getInitials(entityName || 'N/A')}
+                                      {entityName !== 'Nome não disponível' ? getInitials(entityName) : 'ND'}
                                     </AvatarFallback>
                                   </Avatar>
-                                  <span className="font-medium">{entityName || 'N/A'}</span>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{entityName}</span>
+                                    {entity && (
+                                      <span className="text-xs text-gray-500">
+                                        ID: {entity.id}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -288,7 +307,7 @@ const AdminPendingOds = () => {
                 )}
               </CardContent>
             </Card>
-            
+
             {/* SDGs Info */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card>
@@ -304,7 +323,7 @@ const AdminPendingOds = () => {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Instruções</CardTitle>
@@ -318,7 +337,7 @@ const AdminPendingOds = () => {
                   </ol>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Próximos Passos</CardTitle>
@@ -339,7 +358,7 @@ const AdminPendingOds = () => {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
