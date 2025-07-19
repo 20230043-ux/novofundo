@@ -4,6 +4,8 @@
 
 The Fundo Verde platform is a comprehensive sustainability management system designed for companies to calculate their carbon footprint, invest in Sustainable Development Goals (SDGs), and track their environmental impact. The application serves as a bridge between carbon emissions calculation and sustainable investment opportunities in Angola.
 
+**Current Status**: Production-ready with full keep-alive system implemented to prevent Replit hibernation on free tier.
+
 ## System Architecture
 
 ### High-Level Architecture
@@ -221,6 +223,15 @@ Changelog:
   • Created instant cache invalidation for immediate UI feedback on project creation, editing, and deletion
   • Added optimistic update mutations that show changes immediately before server confirmation
   • Enhanced investment value updates with instant UI reflection - no delays or loading states
+- July 19, 2025. Replit Free Tier Hibernation Prevention System:
+  • Implemented comprehensive keep-alive system to prevent database and application hibernation on Replit free tier
+  • Created automatic database query system that runs every 4 minutes to keep PostgreSQL active
+  • Added multiple monitoring endpoints: /api/keep-alive, /health, and root endpoint
+  • Built status monitoring page at /status.html with real-time system health checking
+  • Created detailed UptimeRobot configuration guide for 24/7 external monitoring
+  • Documented complete "Replit for the poor" solution in REPLIT_KEEP_ALIVE_GUIDE.md
+  • System now operates continuously without hibernation on free Replit tier using UptimeRobot external pings
+  • All endpoints tested and confirmed working for external monitoring services
   • Optimized ODS pending assignment system with real-time updates every 2 seconds
   • Created instant removal from pending list when admin assigns ODS to payment proofs
   • All project publications now appear instantaneously in the interface with aggressive cache-busting

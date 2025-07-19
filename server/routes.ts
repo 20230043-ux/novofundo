@@ -4,6 +4,7 @@ import { storage } from "./storage";
 // Importar setupAuth do arquivo auth
 import { setupAuth } from "./auth";
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
+import { keepAliveHandler } from "./keep-alive";
 
 import { preloadCache } from "./preload-cache";
 import { optimizeStaticFiles, enableServerPush, optimizeForMobile } from "./cdn-optimization";
@@ -1892,6 +1893,10 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       res.status(500).json({ message: "Erro ao enviar mensagem" });
     }
   });
+
+  // Keep-alive endpoint para evitar hibernação
+  app.get("/api/keep-alive", keepAliveHandler);
+  app.get("/health", keepAliveHandler);
 
 
 

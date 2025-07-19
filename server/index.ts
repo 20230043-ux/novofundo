@@ -8,6 +8,7 @@ import { webSocketService } from "./websocket-service";
 
 import { preloadCache } from "./preload-cache";
 import { instantProjectCache } from "./instant-project-cache";
+import { startKeepAliveService } from "./keep-alive";
 
 const app = express();
 
@@ -95,6 +96,9 @@ app.use((req, res, next) => {
         preloadCache.preloadEssentialData()
       ]);
       preloadCache.startPeriodicRefresh();
+      
+      // Inicializar serviço keep-alive para evitar hibernação
+      startKeepAliveService();
     }, 1000); // Aguarda 1 segundo após inicialização do banco
     
 
