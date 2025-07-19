@@ -5,6 +5,9 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
 import { keepAliveHandler } from "./keep-alive";
+import { backupService } from "./backup-service";
+import { createReadStream } from "fs";
+import { stat } from "fs/promises";
 
 import { preloadCache } from "./preload-cache";
 import { optimizeStaticFiles, enableServerPush, optimizeForMobile } from "./cdn-optimization";
@@ -48,6 +51,14 @@ function clearCacheByPattern(pattern: string) {
 function clearAllCache() {
   cache.clear();
   console.log('All cache cleared');
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 function cacheMiddleware(key: string, ttlMinutes: number = 10) {
@@ -1897,6 +1908,173 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
   // Keep-alive endpoint para evitar hibernação
   app.get("/api/keep-alive", keepAliveHandler);
   app.get("/health", keepAliveHandler);
+
+  // ===== SISTEMA DE BACKUP E RESTAURAÇÃO =====
+  
+  // Criar backup completo de todo o sistema
+  app.post("/api/admin/backup/create-full", isAdmin, async (req, res) => {
+    try {
+      const { description } = req.body;
+      console.log("🗄️ Iniciando backup completo...");
+      
+      const backupPath = await backupService.createFullBackup(description);
+      const stats = await stat(backupPath);
+      
+      console.log("✅ Backup completo criado com sucesso");
+      res.json({
+        success: true,
+        message: "Backup completo criado com sucesso",
+        filename: backupPath.split('/').pop(),
+        size: stats.size,
+        path: backupPath
+      });
+    } catch (error) {
+      console.error("❌ Erro ao criar backup:", error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao criar backup: " + error.message
+      });
+    }
+  });
+
+  // Criar backup específico (empresa, pessoa ou projeto)
+  app.post("/api/admin/backup/create-specific", isAdmin, async (req, res) => {
+    try {
+      const { type, entityId } = req.body;
+      
+      if (!type || !entityId) {
+        return res.status(400).json({
+          success: false,
+          message: "Tipo e ID da entidade são obrigatórios"
+        });
+      }
+
+      if (!['company', 'individual', 'project'].includes(type)) {
+        return res.status(400).json({
+          success: false,
+          message: "Tipo deve ser 'company', 'individual' ou 'project'"
+        });
+      }
+
+      console.log(`🗄️ Iniciando backup específico: ${type} ID ${entityId}`);
+      const backupPath = await backupService.createSpecificBackup(type, parseInt(entityId));
+      const stats = await stat(backupPath);
+      
+      res.json({
+        success: true,
+        message: `Backup de ${type} criado com sucesso`,
+        filename: backupPath.split('/').pop(),
+        size: stats.size,
+        path: backupPath
+      });
+    } catch (error) {
+      console.error("❌ Erro ao criar backup específico:", error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao criar backup: " + error.message
+      });
+    }
+  });
+
+  // Listar todos os backups disponíveis
+  app.get("/api/admin/backup/list", isAdmin, async (req, res) => {
+    try {
+      const backups = await backupService.listBackups();
+      res.json({
+        success: true,
+        backups: backups.map(backup => ({
+          name: backup.name,
+          size: backup.size,
+          createdAt: backup.createdAt,
+          sizeFormatted: formatFileSize(backup.size)
+        }))
+      });
+    } catch (error) {
+      console.error("❌ Erro ao listar backups:", error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao listar backups: " + error.message
+      });
+    }
+  });
+
+  // Download de backup
+  app.get("/api/admin/backup/download/:filename", isAdmin, async (req, res) => {
+    try {
+      const { filename } = req.params;
+      const backups = await backupService.listBackups();
+      const backup = backups.find(b => b.name === filename);
+      
+      if (!backup) {
+        return res.status(404).json({
+          success: false,
+          message: "Backup não encontrado"
+        });
+      }
+
+      const stats = await stat(backup.path);
+      
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', stats.size);
+      
+      const readStream = createReadStream(backup.path);
+      readStream.pipe(res);
+      
+      readStream.on('error', (error) => {
+        console.error("❌ Erro ao fazer download do backup:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            success: false,
+            message: "Erro ao fazer download do backup"
+          });
+        }
+      });
+
+    } catch (error) {
+      console.error("❌ Erro ao fazer download do backup:", error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao fazer download do backup: " + error.message
+      });
+    }
+  });
+
+  // Upload e restauração de backup
+  app.post("/api/admin/backup/restore", isAdmin, upload.single("backup"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Arquivo de backup é obrigatório"
+        });
+      }
+
+      console.log("🔄 Iniciando restauração de backup...");
+      const result = await backupService.restoreFromBackup(req.file.path);
+      
+      if (result.success) {
+        console.log("✅ Backup restaurado com sucesso");
+        res.json({
+          success: true,
+          message: result.message,
+          restored: result.restored
+        });
+      } else {
+        console.log("❌ Erro na restauração:", result.message);
+        res.status(400).json({
+          success: false,
+          message: result.message
+        });
+      }
+    } catch (error) {
+      console.error("❌ Erro ao restaurar backup:", error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao restaurar backup: " + error.message
+      });
+    }
+  });
 
 
 

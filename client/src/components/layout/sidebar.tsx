@@ -16,7 +16,8 @@ import {
   BookOpen,
   X,
   Menu,
-  MessageCircle
+  MessageCircle,
+  Download
 } from "lucide-react";
 import { useMessages } from "@/hooks/use-messages";
 import { Badge } from "@/components/ui/badge";
@@ -183,9 +184,9 @@ const Sidebar = ({ type }: SidebarProps) => {
                 <BookOpen className="w-5 h-5 mr-3" />
                 <span>Publicações</span>
               </Link>
-              <Link href="/admin/mensagens" className={`flex items-center px-6 py-3 ${isActive('/admin/mensagens') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
-                <MessageCircle className="w-5 h-5 mr-3" />
-                <span>Mensagens</span>
+              <Link href="/admin/backup" className={`flex items-center px-6 py-3 ${isActive('/admin/backup') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+                <Download className="w-5 h-5 mr-3" />
+                <span>Backup & Restauração</span>
               </Link>
             </>
           )}
@@ -282,6 +283,10 @@ const Sidebar = ({ type }: SidebarProps) => {
             <Link href="/admin/publications" className={`flex items-center px-6 py-3 ${isActive('/admin/publications') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
               <BookOpen className="w-5 h-5 mr-3" />
               <span>Publicações</span>
+            </Link>
+            <Link href="/admin/backup" className={`flex items-center px-6 py-3 ${isActive('/admin/backup') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+              <Download className="w-5 h-5 mr-3" />
+              <span>Backup & Restauração</span>
             </Link>
           </>
         )}
