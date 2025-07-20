@@ -88,6 +88,42 @@ const AdminBackup = () => {
     }
   });
 
+  // Mutation para criar backup essencial
+  const createEssentialBackupMutation = useMutation({
+    mutationFn: async (description: string) => {
+      const response = await fetch('/api/admin/backup/create-essential', {
+        method: 'POST',
+        body: JSON.stringify({ description }),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao criar backup essencial');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "✅ Backup essencial criado!",
+        description: `Arquivo: ${data.filename} - Apenas dados críticos`,
+        duration: 3000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/backup/list'] });
+      setBackupDescription("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ Erro ao criar backup essencial",
+        description: error.message || "Ocorreu um erro inesperado",
+        variant: "destructive",
+        duration: 4000,
+      });
+    }
+  });
+
   // Mutation para criar backup específico
   const createSpecificBackupMutation = useMutation({
     mutationFn: async ({ type, entityId }: { type: string; entityId: number }) => {
@@ -207,28 +243,28 @@ const AdminBackup = () => {
           </div>
 
           {/* Seção de Criação de Backup */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Backup Completo */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Database className="w-5 h-5 mr-2" />
-                  Backup Completo do Sistema
+                  Backup Completo
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600">
-                  Cria um backup completo incluindo todas as empresas, pessoas, projetos, fotos, logos e comprovativos.
+                  Inclui TUDO: sistema, configurações, dependências e dados.
                 </p>
                 
                 <div>
-                  <Label htmlFor="description">Descrição do Backup (opcional)</Label>
+                  <Label htmlFor="description">Descrição (opcional)</Label>
                   <Textarea
                     id="description"
-                    placeholder="Ex: Backup antes da atualização mensal"
+                    placeholder="Ex: Backup antes da atualização"
                     value={backupDescription}
                     onChange={(e) => setBackupDescription(e.target.value)}
-                    rows={3}
+                    rows={2}
                   />
                 </div>
 
@@ -240,12 +276,58 @@ const AdminBackup = () => {
                   {(isCreatingBackup || createFullBackupMutation.isPending) ? (
                     <>
                       <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Criando Backup...
+                      Criando...
                     </>
                   ) : (
                     <>
                       <Download className="w-4 h-4 mr-2" />
-                      Criar Backup Completo
+                      Backup Completo
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Backup Essencial */}
+            <Card className="border-green-200 bg-green-50">
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-800">
+                  <HardDrive className="w-5 h-5 mr-2" />
+                  Backup Essencial
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-green-700">
+                  Apenas dados críticos: projetos, empresas, pessoas, históricos financeiros, imagens e senhas.
+                </p>
+                
+                <div className="text-xs text-green-600 space-y-1">
+                  <div>✓ Projetos e investimentos</div>
+                  <div>✓ Empresas e históricos</div>
+                  <div>✓ Pessoas e cálculos</div>
+                  <div>✓ Imagens e comprovativos</div>
+                  <div>✓ Senhas (hash)</div>
+                </div>
+
+                <Button 
+                  onClick={() => {
+                    setIsCreatingBackup(true);
+                    createEssentialBackupMutation.mutate(backupDescription, {
+                      onSettled: () => setIsCreatingBackup(false)
+                    });
+                  }}
+                  disabled={isCreatingBackup || createEssentialBackupMutation.isPending}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  {(isCreatingBackup || createEssentialBackupMutation.isPending) ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Criando...
+                    </>
+                  ) : (
+                    <>
+                      <HardDrive className="w-4 h-4 mr-2" />
+                      Backup Essencial
                     </>
                   )}
                 </Button>

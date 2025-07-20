@@ -1939,6 +1939,33 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
     }
   });
 
+  // Criar backup essencial (apenas dados críticos)
+  app.post("/api/admin/backup/create-essential", isAdmin, async (req, res) => {
+    try {
+      const { description } = req.body;
+      console.log("🗄️ Iniciando backup essencial...");
+      
+      const backupPath = await backupService.createEssentialBackup(description);
+      const stats = await stat(backupPath);
+      
+      console.log("✅ Backup essencial criado com sucesso");
+      res.json({
+        success: true,
+        message: "Backup essencial criado com sucesso",
+        filename: backupPath.split('/').pop(),
+        size: stats.size,
+        path: backupPath,
+        type: 'essential'
+      });
+    } catch (error) {
+      console.error("❌ Erro ao criar backup essencial:", error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao criar backup essencial: " + error.message
+      });
+    }
+  });
+
   // Criar backup específico (empresa, pessoa ou projeto)
   app.post("/api/admin/backup/create-specific", isAdmin, async (req, res) => {
     try {

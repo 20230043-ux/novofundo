@@ -165,68 +165,185 @@ export class BackupService {
   }
 
   /**
-   * BACKUP COMPLETO DA BASE DE DADOS - TODAS AS TABELAS
+   * BACKUP ESSENCIAL - Apenas dados necessários conforme solicitado
+   * Inclui: projetos, pessoas, empresas, históricos financeiros e de cálculo, links de imagens e senhas
    */
-  private async backupCompleteDatabase(archive: any) {
-    console.log('📊 Iniciando backup completo da base de dados...');
+  async createEssentialBackup(description?: string): Promise<string> {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupName = `backup-essencial-${timestamp}`;
+    const backupPath = path.join(this.backupDir, `${backupName}.zip`);
 
-    // 1. SDGs (Objetivos de Desenvolvimento Sustentável)
+    return new Promise(async (resolve, reject) => {
+      try {
+        const output = createWriteStream(backupPath);
+        const archive = archiver('zip', { zlib: { level: 9 } });
+
+        output.on('close', () => {
+          console.log(`✅ Backup ESSENCIAL criado: ${backupPath} (${archive.pointer()} bytes)`);
+          resolve(backupPath);
+        });
+
+        archive.on('error', (err) => reject(err));
+        archive.pipe(output);
+
+        // Backup apenas dos dados essenciais
+        await this.backupEssentialData(archive);
+
+        // Backup apenas das imagens dos uploads (logos, fotos de perfil, comprovativos)
+        await this.backupEssentialImages(archive);
+
+        // Schema do banco para referência
+        try {
+          archive.file('shared/schema.ts', { name: 'schema/database-schema.ts' });
+        } catch (error) {
+          console.warn('⚠️ Schema file not found, continuing without it');
+        }
+
+        // Metadados do backup essencial
+        const metadata = {
+          createdAt: new Date().toISOString(),
+          timestamp: new Date().toISOString(),
+          description: description || 'Backup ESSENCIAL do Fundo Verde - Dados críticos apenas',
+          type: 'essential',
+          includes: [
+            'Projetos com imagens e investimentos',
+            'Empresas com logos e históricos financeiros',
+            'Pessoas com fotos e históricos de cálculo',
+            'Comprovativos de pagamento',
+            'Histórico completo de investimentos',
+            'Senhas dos utilizadores (hash)',
+            'Links de todas as imagens'
+          ],
+          fileCount: 0,
+          totalSize: 0
+        };
+
+        archive.append(JSON.stringify(metadata, null, 2), { name: 'backup-essencial-metadata.json' });
+
+        // Instruções de restauração essencial
+        const restoreInstructions = `# Como Restaurar Backup Essencial
+
+Este backup contém apenas os dados essenciais do Fundo Verde:
+
+## Conteúdo Incluído:
+- ✅ Todos os projetos com imagens e histórico de investimentos
+- ✅ Todas as empresas com logos e históricos financeiros
+- ✅ Todas as pessoas com fotos e históricos de cálculo
+- ✅ Histórico completo de comprovativos de pagamento
+- ✅ Histórico completo de investimentos
+- ✅ Senhas dos utilizadores (hash bcrypt)
+- ✅ Links de todas as imagens utilizadas
+
+## Para Restaurar:
+1. Extrair o arquivo ZIP
+2. Importar os arquivos JSON da pasta 'database/' para o PostgreSQL
+3. Copiar imagens da pasta 'uploads/' para o servidor
+4. Verificar links de imagens no arquivo 'image_links.json'
+5. As senhas estão preservadas e funcionarão imediatamente
+
+## Dados NÃO Incluídos:
+- Arquivos de sistema e configuração
+- Dependências do Node.js
+- Arquivos públicos
+- Logs do sistema
+
+Este backup é otimizado para migração rápida de dados críticos.
+`;
+
+        archive.append(restoreInstructions, { name: 'COMO-RESTAURAR-ESSENCIAL.md' });
+
+        await archive.finalize();
+
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * BACKUP ESSENCIAL - APENAS DADOS NECESSÁRIOS
+   * Inclui: projetos, pessoas, empresas, históricos de financiamento/cálculo, links de imagens e senhas
+   */
+  private async backupEssentialData(archive: any) {
+    console.log('📊 Iniciando backup dos dados essenciais...');
+
+    // 1. SDGs (para referência dos projetos)
     const sdgsData = await db.query.sdgs.findMany();
     archive.append(JSON.stringify(sdgsData, null, 2), { name: 'database/sdgs.json' });
 
-    // 2. Utilizadores
+    // 2. Utilizadores (COM SENHAS INCLUÍDAS para recuperação completa)
     const usersData = await db.query.users.findMany();
+    // IMPORTANTE: Mantemos as senhas hash para poder restaurar os acessos
     archive.append(JSON.stringify(usersData, null, 2), { name: 'database/users.json' });
 
-    // 3. Empresas com relacionamentos
+    // 3. Empresas com todos os históricos financeiros e de cálculo
     const companiesData = await db.query.companies.findMany({
       with: { 
-        user: true,
-        consumptionRecords: true,
-        paymentProofs: true,
-        investments: true
+        user: true, // Inclui dados de login
+        consumptionRecords: true, // Histórico de cálculos de carbono
+        paymentProofs: true, // Histórico de comprovativos
+        investments: true // Histórico de investimentos
       }
     });
     archive.append(JSON.stringify(companiesData, null, 2), { name: 'database/companies.json' });
 
-    // 4. Pessoas individuais com relacionamentos
+    // 4. Pessoas individuais com todos os históricos
     const individualsData = await db.query.individuals.findMany({
       with: { 
-        user: true,
-        consumptionRecords: true,
-        paymentProofs: true,
-        investments: true
+        user: true, // Inclui dados de login
+        consumptionRecords: true, // Histórico de cálculos pessoais
+        paymentProofs: true, // Histórico de comprovativos
+        investments: true // Histórico de investimentos
       }
     });
     archive.append(JSON.stringify(individualsData, null, 2), { name: 'database/individuals.json' });
 
-    // 5. Projetos com relacionamentos
+    // 5. Projetos com imagens e histórico completo
     const projectsData = await db.query.projects.findMany({
       with: {
-        sdg: true,
-        updates: true,
-        investments: true
+        sdg: true, // Dados do ODS associado
+        updates: true, // Atualizações do projeto
+        investments: true // Histórico de investimentos recebidos
       }
     });
     archive.append(JSON.stringify(projectsData, null, 2), { name: 'database/projects.json' });
 
-    // 6. Atualizações de projetos
-    const updatesData = await db.query.projectUpdates.findMany();
-    archive.append(JSON.stringify(updatesData, null, 2), { name: 'database/project_updates.json' });
-
-    // 7. Registros de consumo
+    // 6. Histórico completo de consumo (cálculos de carbono)
     const consumptionData = await db.query.consumptionRecords.findMany();
     archive.append(JSON.stringify(consumptionData, null, 2), { name: 'database/consumption_records.json' });
 
-    // 8. Comprovativos de pagamento
+    // 7. Histórico completo de comprovativos de pagamento
     const paymentProofsData = await db.query.paymentProofs.findMany();
     archive.append(JSON.stringify(paymentProofsData, null, 2), { name: 'database/payment_proofs.json' });
 
-    // 9. Investimentos
+    // 8. Histórico completo de investimentos
     const investmentsData = await db.query.investments.findMany();
     archive.append(JSON.stringify(investmentsData, null, 2), { name: 'database/investments.json' });
 
-    console.log('✅ Backup da base de dados concluído');
+    // 9. Atualizações de projetos (conteúdo e mídia)
+    const updatesData = await db.query.projectUpdates.findMany();
+    archive.append(JSON.stringify(updatesData, null, 2), { name: 'database/project_updates.json' });
+
+    // 10. Links de todas as imagens usadas no sistema
+    const imageLinks = {
+      companies: companiesData.map(c => ({ id: c.id, name: c.name, logoUrl: c.logoUrl })).filter(c => c.logoUrl),
+      individuals: individualsData.map(i => ({ id: i.id, name: `${i.firstName} ${i.lastName}`, profilePictureUrl: i.profilePictureUrl })).filter(i => i.profilePictureUrl),
+      projects: projectsData.map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl })).filter(p => p.imageUrl),
+      projectUpdates: updatesData.map(u => ({ id: u.id, title: u.title, mediaUrls: u.mediaUrls })).filter(u => u.mediaUrls && u.mediaUrls.length > 0)
+    };
+    archive.append(JSON.stringify(imageLinks, null, 2), { name: 'database/image_links.json' });
+
+    console.log('✅ Backup dos dados essenciais concluído');
+    console.log(`📊 Incluído: ${companiesData.length} empresas, ${individualsData.length} pessoas, ${projectsData.length} projetos`);
+    console.log(`💰 Históricos: ${consumptionData.length} cálculos, ${paymentProofsData.length} comprovativos, ${investmentsData.length} investimentos`);
+  }
+
+  /**
+   * BACKUP COMPLETO DA BASE DE DADOS - TODAS AS TABELAS (versão antiga mantida para compatibilidade)
+   */
+  private async backupCompleteDatabase(archive: any) {
+    // Agora usa o backup essencial por padrão
+    return this.backupEssentialData(archive);
   }
 
   /**
@@ -289,6 +406,27 @@ export class BackupService {
     }
 
     console.log('✅ Backup de arquivos de configuração concluído');
+  }
+
+  /**
+   * BACKUP ESSENCIAL DE IMAGENS - Apenas imagens necessárias
+   */
+  private async backupEssentialImages(archive: any) {
+    console.log('📁 Iniciando backup de imagens essenciais...');
+
+    try {
+      // Verificar se a pasta uploads existe
+      await fs.access(this.uploadsDir);
+      
+      // Backup recursivo de toda a pasta uploads (inclui logos, fotos, comprovativos)
+      archive.directory(this.uploadsDir, 'uploads');
+      
+      console.log('✅ Backup de imagens essenciais concluído');
+    } catch (error) {
+      console.log('⚠️ Pasta uploads não encontrada, criando estrutura vazia...');
+      // Criar estrutura vazia para uploads
+      archive.append('', { name: 'uploads/.gitkeep' });
+    }
   }
 
   /**
