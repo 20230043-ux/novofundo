@@ -89,8 +89,14 @@ const IndividualInvestments = () => {
                   <Card key={investment.id}>
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-green-600 border-green-600">
-                          {investment.status === 'approved' ? 'Aprovado' : 'Pendente'}
+                        <Badge 
+                          variant="outline" 
+                          className={investment.paymentProof?.status === 'approved' 
+                            ? "text-green-600 border-green-600" 
+                            : "text-yellow-600 border-yellow-600"
+                          }
+                        >
+                          {investment.paymentProof?.status === 'approved' ? 'Aprovado' : 'Pendente'}
                         </Badge>
                         <div className="flex items-center gap-1 text-sm text-gray-500">
                           <Calendar className="h-4 w-4" />

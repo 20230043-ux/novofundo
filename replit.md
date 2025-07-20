@@ -282,7 +282,12 @@ Changelog:
   • Added multiplication factor descriptions showing emission coefficients (e.g., "× 0.5 kg CO2/kWh")
   • Created detailed calculation breakdown summary after calculation with per-category emissions
   • Enhanced "Comprovativos Pendentes" to show complete entity information for both companies and individuals
-  • Added entity type badges, photos/logos, email addresses, and additional details (sector, age)
+- July 20, 2025. Fixed individual investment display and status issues:
+  • Resolved missing investments in "Meus Investimentos" section for individual users
+  • Fixed backend investment creation logic to include individualId when payment proofs are approved
+  • Corrected frontend status display to read from investment.paymentProof.status instead of non-existent investment.status
+  • Added proper color coding for investment status badges (green for approved, yellow for pending)
+  • Created missing investment record for existing approved payment proof (151,941 Kz investment) entity type badges, photos/logos, email addresses, and additional details (sector, age)
   • Updated backend to include full user and entity relationships for payment proofs
   • Fixed null pointer exceptions in both admin companies and pending ODS assignment pages
   • Improved data validation requiring calculation before allowing data saving
