@@ -155,28 +155,7 @@ const IndividualDashboard = () => {
                     Sua jornada para um estilo de vida mais sustentável
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span>Meta de Redução</span>
-                        <span>{stats?.reduction || 0}% de {(parseFloat(stats?.totalEmissions || '0') - parseFloat(stats?.target || '0')).toFixed(1)}t</span>
-                      </div>
-                      <Progress value={stats?.reduction || 0} className="h-3" />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 mt-6">
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">2.1t</div>
-                        <div className="text-sm text-green-700">CO₂ Evitado</div>
-                      </div>
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">12</div>
-                        <div className="text-sm text-blue-700">Ações Eco</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
+                
               </Card>
 
               {/* Quick Actions */}
