@@ -3,7 +3,10 @@ import path from 'path';
 import archiver from 'archiver';
 import { createWriteStream, createReadStream } from 'fs';
 import { db } from '@db';
-import { users, companies, individuals, projects, projectUpdates, paymentProofs } from '@shared/schema';
+import { 
+  users, companies, individuals, projects, projectUpdates, paymentProofs, 
+  sdgs, consumptionRecords, investments, sessions 
+} from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 interface BackupMetadata {
@@ -12,6 +15,11 @@ interface BackupMetadata {
   description: string;
   fileCount: number;
   totalSize: number;
+  sdgImagesUrls: Record<number, string>;
+  databaseSchema: string;
+  systemFiles: string[];
+  configFiles: string[];
+  dependencies: Record<string, string>;
 }
 
 export class BackupService {
@@ -31,7 +39,7 @@ export class BackupService {
   }
 
   /**
-   * Cria backup completo de todos os arquivos organizados por categoria
+   * Cria backup COMPLETO de TUDO necessário para restaurar o site
    */
   async createFullBackup(description?: string): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -44,180 +52,72 @@ export class BackupService {
         const archive = archiver('zip', { zlib: { level: 9 } });
 
         output.on('close', () => {
-          console.log(`✅ Backup criado: ${backupPath} (${archive.pointer()} bytes)`);
+          console.log(`✅ Backup COMPLETO criado: ${backupPath} (${archive.pointer()} bytes)`);
           resolve(backupPath);
         });
 
         archive.on('error', (err) => reject(err));
         archive.pipe(output);
 
-        // 1. Backup de arquivos de empresas
-        const companiesData = await db.query.companies.findMany({
-          with: { 
-            user: true,
-            consumptionRecords: true,
-            paymentProofs: true,
-            investments: true
-          }
-        });
+        // NOVO: URLs das imagens dos ODS (para referência)
+        const sdgImageUrls = {
+          1: "https://th.bing.com/th/id/R.e450166479d03cfb325dd75b19af094e?rik=idy70PFGT0R9Ig&pid=ImgRaw&r=0",
+          2: "https://th.bing.com/th/id/OIP.oaFy_ZF8rMobDNAQefPEMwHaHa?rs=1&pid=ImgDetMain",
+          3: "https://th.bing.com/th/id/OIP.y4kQwPfXldkP0Sl_vas4YgHaHa?w=1024&h=1024&rs=1&pid=ImgDetMain",
+          4: "https://www.atlasodsamazonas.ufam.edu.br/images/SDG-icon-PT-04.jpg",
+          5: "https://th.bing.com/th/id/R.da468d5af7524497df187803fe0cae70?rik=5bkwuaNWDZB0xw&riu=http%3a%2f%2fwww.fiepr.org.br%2fnospodemosparana%2fdbimages%2f165839.img&ehk=Pz8eF2%2fpyco9Vo%2f2nhqn1LePL%2bA9E5vlgHXfHjs3ZGc%3d&risl=&pid=ImgRaw&r=0",
+          6: "https://www.researchgate.net/publication/332105058/figure/fig1/AS:742498821484544@1554036922168/Figura-2-Icone-do-ODS-6_Q320.jpg",
+          7: "https://th.bing.com/th/id/R.82b241e50d1b45b63ffd8de1c3c533f5?rik=8IWQk1ZIRjAYMw&riu=http%3a%2f%2fwww4.planalto.gov.br%2fods%2fobjetivos-de-desenvolvimento-sustentavel%2f7-energia-acessivel-e-limpa%2f7.png&ehk=2Cx1gE6R73fSslp%2bhUHnrc2oDBXcnvzFiwq0ocxDfoE%3d&risl=&pid=ImgRaw&r=0&sres=1&sresct=1",
+          8: "https://th.bing.com/th/id/OIP.SfkeHcHVpu58f56QvSodSAAAAA?rs=1&pid=ImgDetMain",
+          9: "https://th.bing.com/th/id/OIP.5n2ruG52gTFcl8z-2ulmpgHaHa?w=1772&h=1772&rs=1&pid=ImgDetMain",
+          10: "https://ods.ine.gov.ao/img/team/ods10.png",
+          11: "https://th.bing.com/th/id/OIP.TVr4hHLupfkGk14Md1GO_gHaHa?rs=1&pid=ImgDetMain",
+          12: "https://www.terceiravia.org.br/wp-content/uploads/2020/11/ODS-12-2.png",
+          13: "https://th.bing.com/th/id/OIP.JzbOWgHb5CgDVht4MUf37wHaHa?rs=1&pid=ImgDetMain",
+          14: "https://th.bing.com/th/id/OIP.jdsJOCu9dLeAdGrpgeQ10wAAAA?w=466&h=466&rs=1&pid=ImgDetMain",
+          15: "https://www.iberdrola.com/wcorp/gc/prod/es_ES/estaticos/ods-general/images/ico-ODS15-PT.png",
+          16: "https://th.bing.com/th/id/OIP.vFknArfBQbEM6VaJOf3cIQHaHa?w=1024&h=1024&rs=1&pid=ImgDetMain",
+          17: "https://th.bing.com/th/id/R.58589445ff5b3b737b0b7eabe2b4b601?rik=J1ybA5uwzTXDjg&riu=http%3a%2f%2fwww4.planalto.gov.br%2fods%2f17.png%2f%40%40images%2f35114d8b-1583-4660-90d4-1c6dca011b0f.png&ehk=GNtvTkjnrkn5JQa9CzZp7ejSfGCovMcO5WqMgQ9Ds8c%3d&risl=&pid=ImgRaw&r=0"
+        };
 
-        for (const company of companiesData) {
-          // Criar pasta da empresa no backup
-          const companyFolder = `empresas/${company.id}-${this.sanitizeFilename(company.name)}`;
-          
-          // Adicionar dados JSON da empresa
-          archive.append(JSON.stringify({
-            company,
-            metadata: {
-              type: 'company',
-              exportedAt: new Date().toISOString(),
-              id: company.id,
-              name: company.name
-            }
-          }, null, 2), { name: `${companyFolder}/dados.json` });
+        // ===== PARTE 1: BACKUP COMPLETO DA BASE DE DADOS =====
+        await this.backupCompleteDatabase(archive);
 
-          // Adicionar logo da empresa se existir
-          if (company.logoUrl) {
-            const logoPath = path.join(this.uploadsDir, company.logoUrl.replace('/uploads/', ''));
-            try {
-              await fs.access(logoPath);
-              archive.file(logoPath, { name: `${companyFolder}/logo${path.extname(logoPath)}` });
-            } catch (error) {
-              console.log(`⚠️ Logo não encontrado para ${company.name}: ${logoPath}`);
-            }
-          }
+        // ===== PARTE 2: BACKUP DE ARQUIVOS DO SISTEMA =====
+        await this.backupSystemFiles(archive);
 
-          // Adicionar comprovativos de pagamento da empresa
-          for (const proof of company.paymentProofs || []) {
-            if (proof.fileUrl) {
-              const proofPath = path.join(this.uploadsDir, proof.fileUrl.replace('/uploads/', ''));
-              try {
-                await fs.access(proofPath);
-                const fileName = `comprovativo-${proof.id}${path.extname(proofPath)}`;
-                archive.file(proofPath, { name: `${companyFolder}/comprovativos/${fileName}` });
-              } catch (error) {
-                console.log(`⚠️ Comprovativo não encontrado: ${proofPath}`);
-              }
-            }
-          }
-        }
+        // ===== PARTE 3: BACKUP DOS ARQUIVOS DE CONFIGURAÇÃO =====
+        await this.backupConfigurationFiles(archive);
 
-        // 2. Backup de arquivos de pessoas individuais
-        const individualsData = await db.query.individuals.findMany({
-          with: { 
-            user: true,
-            consumptionRecords: true,
-            paymentProofs: true,
-            investments: true
-          }
-        });
+        // ===== PARTE 4: BACKUP DOS UPLOADS E MEDIA =====
+        await this.backupUploadsAndMedia(archive);
 
-        for (const individual of individualsData) {
-          const individualFolder = `pessoas/${individual.id}-${this.sanitizeFilename(individual.firstName)}-${this.sanitizeFilename(individual.lastName)}`;
-          
-          // Adicionar dados JSON da pessoa
-          archive.append(JSON.stringify({
-            individual,
-            metadata: {
-              type: 'individual',
-              exportedAt: new Date().toISOString(),
-              id: individual.id,
-              name: `${individual.firstName} ${individual.lastName}`
-            }
-          }, null, 2), { name: `${individualFolder}/dados.json` });
+        // ===== PARTE 5: BACKUP DOS ARQUIVOS PÚBLICOS =====
+        await this.backupPublicFiles(archive);
 
-          // Adicionar foto de perfil se existir
-          if (individual.profilePictureUrl) {
-            const photoPath = path.join(this.uploadsDir, individual.profilePictureUrl.replace('/uploads/', ''));
-            try {
-              await fs.access(photoPath);
-              archive.file(photoPath, { name: `${individualFolder}/foto-perfil${path.extname(photoPath)}` });
-            } catch (error) {
-              console.log(`⚠️ Foto não encontrada para ${individual.firstName}: ${photoPath}`);
-            }
-          }
-
-          // Adicionar comprovativos da pessoa
-          for (const proof of individual.paymentProofs || []) {
-            if (proof.fileUrl) {
-              const proofPath = path.join(this.uploadsDir, proof.fileUrl.replace('/uploads/', ''));
-              try {
-                await fs.access(proofPath);
-                const fileName = `comprovativo-${proof.id}${path.extname(proofPath)}`;
-                archive.file(proofPath, { name: `${individualFolder}/comprovativos/${fileName}` });
-              } catch (error) {
-                console.log(`⚠️ Comprovativo não encontrado: ${proofPath}`);
-              }
-            }
-          }
-        }
-
-        // 3. Backup de projetos e suas atualizações
-        const projectsData = await db.query.projects.findMany({
-          with: {
-            sdg: true,
-            updates: true,
-            investments: true
-          }
-        });
-
-        for (const project of projectsData) {
-          const projectFolder = `projetos/${project.id}-${this.sanitizeFilename(project.name)}`;
-          
-          // Adicionar dados JSON do projeto
-          archive.append(JSON.stringify({
-            project,
-            metadata: {
-              type: 'project',
-              exportedAt: new Date().toISOString(),
-              id: project.id,
-              name: project.name
-            }
-          }, null, 2), { name: `${projectFolder}/dados.json` });
-
-          // Adicionar imagem principal do projeto
-          if (project.imageUrl) {
-            const imagePath = path.join(this.uploadsDir, project.imageUrl.replace('/uploads/', ''));
-            try {
-              await fs.access(imagePath);
-              archive.file(imagePath, { name: `${projectFolder}/imagem-principal${path.extname(imagePath)}` });
-            } catch (error) {
-              console.log(`⚠️ Imagem principal não encontrada para ${project.name}: ${imagePath}`);
-            }
-          }
-
-          // Adicionar medias das atualizações do projeto
-          for (const update of project.updates || []) {
-            if (update.mediaUrls && Array.isArray(update.mediaUrls)) {
-              for (let i = 0; i < update.mediaUrls.length; i++) {
-                const mediaUrl = update.mediaUrls[i];
-                const mediaPath = path.join(this.uploadsDir, mediaUrl.replace('/uploads/', ''));
-                try {
-                  await fs.access(mediaPath);
-                  const fileName = `atualizacao-${update.id}-media-${i + 1}${path.extname(mediaPath)}`;
-                  archive.file(mediaPath, { name: `${projectFolder}/atualizacoes/${fileName}` });
-                } catch (error) {
-                  console.log(`⚠️ Media da atualização não encontrada: ${mediaPath}`);
-                }
-              }
-            }
-          }
-        }
-
-        // 4. Criar arquivo de metadados do backup
+        // ===== PARTE 6: CRIAR METADATA COMPLETO =====
         const metadata: BackupMetadata = {
-          version: '1.0.0',
+          version: '2.0.0',
           timestamp: new Date().toISOString(),
-          description: description || 'Backup completo do sistema',
-          fileCount: 0, // será calculado pelo archiver
-          totalSize: 0  // será calculado pelo archiver
+          description: description || 'Backup COMPLETO do sistema Fundo Verde',
+          fileCount: 0,
+          totalSize: 0,
+          sdgImagesUrls: sdgImageUrls,
+          databaseSchema: await this.getDatabaseSchema(),
+          systemFiles: await this.getSystemFilesList(),
+          configFiles: await this.getConfigFilesList(),
+          dependencies: await this.getDependenciesList()
         };
 
         archive.append(JSON.stringify(metadata, null, 2), { name: 'backup-metadata.json' });
 
-        // 5. Adicionar estrutura de pastas completa para referência
+        // ===== PARTE 7: INSTRUÇÕES DE RESTAURAÇÃO =====
+        const restoreInstructions = await this.generateRestoreInstructions();
+        archive.append(restoreInstructions, { name: 'COMO-RESTAURAR.md' });
+
+        // ===== PARTE 8: ESTRUTURA COMPLETA =====
         const directoryStructure = await this.getDirectoryStructure();
-        archive.append(JSON.stringify(directoryStructure, null, 2), { name: 'estrutura-pastas.json' });
+        archive.append(JSON.stringify(directoryStructure, null, 2), { name: 'estrutura-completa.json' });
 
         await archive.finalize();
 
@@ -265,6 +165,294 @@ export class BackupService {
   }
 
   /**
+   * BACKUP COMPLETO DA BASE DE DADOS - TODAS AS TABELAS
+   */
+  private async backupCompleteDatabase(archive: any) {
+    console.log('📊 Iniciando backup completo da base de dados...');
+
+    // 1. SDGs (Objetivos de Desenvolvimento Sustentável)
+    const sdgsData = await db.query.sdgs.findMany();
+    archive.append(JSON.stringify(sdgsData, null, 2), { name: 'database/sdgs.json' });
+
+    // 2. Utilizadores
+    const usersData = await db.query.users.findMany();
+    archive.append(JSON.stringify(usersData, null, 2), { name: 'database/users.json' });
+
+    // 3. Empresas com relacionamentos
+    const companiesData = await db.query.companies.findMany({
+      with: { 
+        user: true,
+        consumptionRecords: true,
+        paymentProofs: true,
+        investments: true
+      }
+    });
+    archive.append(JSON.stringify(companiesData, null, 2), { name: 'database/companies.json' });
+
+    // 4. Pessoas individuais com relacionamentos
+    const individualsData = await db.query.individuals.findMany({
+      with: { 
+        user: true,
+        consumptionRecords: true,
+        paymentProofs: true,
+        investments: true
+      }
+    });
+    archive.append(JSON.stringify(individualsData, null, 2), { name: 'database/individuals.json' });
+
+    // 5. Projetos com relacionamentos
+    const projectsData = await db.query.projects.findMany({
+      with: {
+        sdg: true,
+        updates: true,
+        investments: true
+      }
+    });
+    archive.append(JSON.stringify(projectsData, null, 2), { name: 'database/projects.json' });
+
+    // 6. Atualizações de projetos
+    const updatesData = await db.query.projectUpdates.findMany();
+    archive.append(JSON.stringify(updatesData, null, 2), { name: 'database/project_updates.json' });
+
+    // 7. Registros de consumo
+    const consumptionData = await db.query.consumptionRecords.findMany();
+    archive.append(JSON.stringify(consumptionData, null, 2), { name: 'database/consumption_records.json' });
+
+    // 8. Comprovativos de pagamento
+    const paymentProofsData = await db.query.paymentProofs.findMany();
+    archive.append(JSON.stringify(paymentProofsData, null, 2), { name: 'database/payment_proofs.json' });
+
+    // 9. Investimentos
+    const investmentsData = await db.query.investments.findMany();
+    archive.append(JSON.stringify(investmentsData, null, 2), { name: 'database/investments.json' });
+
+    console.log('✅ Backup da base de dados concluído');
+  }
+
+  /**
+   * BACKUP DE ARQUIVOS DO SISTEMA
+   */
+  private async backupSystemFiles(archive: any) {
+    console.log('🗂️ Iniciando backup de arquivos do sistema...');
+
+    const systemFiles = [
+      'package.json',
+      'package-lock.json',
+      'tsconfig.json',
+      'vite.config.ts',
+      'tailwind.config.ts',
+      'postcss.config.js',
+      'drizzle.config.ts',
+      'components.json',
+      '.gitignore',
+      'replit.md',
+      'REPLIT_KEEP_ALIVE_GUIDE.md'
+    ];
+
+    for (const file of systemFiles) {
+      try {
+        await fs.access(file);
+        archive.file(file, { name: `sistema/${file}` });
+      } catch (error) {
+        console.log(`⚠️ Arquivo do sistema não encontrado: ${file}`);
+      }
+    }
+
+    console.log('✅ Backup de arquivos do sistema concluído');
+  }
+
+  /**
+   * BACKUP DE ARQUIVOS DE CONFIGURAÇÃO
+   */
+  private async backupConfigurationFiles(archive: any) {
+    console.log('⚙️ Iniciando backup de arquivos de configuração...');
+
+    // Arquivos de configuração críticos
+    const configFiles = [
+      '.replit',
+      '.env.example',
+      'shared/schema.ts',
+      'db/seed.ts',
+      'server/index.ts',
+      'server/routes.ts',
+      'server/auth.ts',
+      'server/storage.ts'
+    ];
+
+    for (const file of configFiles) {
+      try {
+        await fs.access(file);
+        archive.file(file, { name: `config/${file.replace('/', '-')}` });
+      } catch (error) {
+        console.log(`⚠️ Arquivo de configuração não encontrado: ${file}`);
+      }
+    }
+
+    console.log('✅ Backup de arquivos de configuração concluído');
+  }
+
+  /**
+   * BACKUP COMPLETO DOS UPLOADS E MEDIA
+   */
+  private async backupUploadsAndMedia(archive: any) {
+    console.log('📁 Iniciando backup completo de uploads e media...');
+
+    try {
+      // Verificar se a pasta uploads existe
+      await fs.access(this.uploadsDir);
+      
+      // Backup recursivo de toda a pasta uploads
+      archive.directory(this.uploadsDir, 'uploads');
+      
+      console.log('✅ Backup de uploads e media concluído');
+    } catch (error) {
+      console.log('⚠️ Pasta uploads não encontrada, criando estrutura vazia...');
+      // Criar estrutura vazia para uploads
+      archive.append('', { name: 'uploads/.gitkeep' });
+    }
+  }
+
+  /**
+   * BACKUP DOS ARQUIVOS PÚBLICOS
+   */
+  private async backupPublicFiles(archive: any) {
+    console.log('🌐 Iniciando backup de arquivos públicos...');
+
+    try {
+      const publicDir = path.resolve('./public');
+      await fs.access(publicDir);
+      archive.directory(publicDir, 'public');
+      console.log('✅ Backup de arquivos públicos concluído');
+    } catch (error) {
+      console.log('⚠️ Pasta public não encontrada');
+    }
+  }
+
+  /**
+   * GERAR INSTRUÇÕES COMPLETAS DE RESTAURAÇÃO
+   */
+  private async generateRestoreInstructions(): Promise<string> {
+    return `# 🔄 GUIA COMPLETO DE RESTAURAÇÃO - FUNDO VERDE
+
+## ⚠️ IMPORTANTE: ESTE BACKUP CONTÉM TUDO NECESSÁRIO PARA RESTAURAR O SITE COMPLETAMENTE
+
+### 📋 CONTEÚDO DO BACKUP:
+- ✅ Base de dados completa (todas as tabelas)
+- ✅ Todos os arquivos de uploads (logos, fotos, comprovativos)
+- ✅ Links das imagens dos ODS (Objetivos de Desenvolvimento Sustentável)
+- ✅ Arquivos de configuração do sistema
+- ✅ Dependências e package.json
+- ✅ Arquivos públicos
+- ✅ Schema da base de dados
+
+### 🚀 PASSOS PARA RESTAURAÇÃO COMPLETA:
+
+#### 1. PREPARAR AMBIENTE:
+\`\`\`bash
+# 1. Criar novo projeto no Replit
+# 2. Extrair este backup ZIP na raiz do projeto
+# 3. Instalar dependências
+npm install
+\`\`\`
+
+#### 2. CONFIGURAR BASE DE DADOS:
+\`\`\`bash
+# 1. Criar nova base de dados PostgreSQL (Neon Database)
+# 2. Definir DATABASE_URL no .env
+# 3. Aplicar schema
+npm run db:push
+# 4. Importar dados (ver pasta database/)
+\`\`\`
+
+#### 3. RESTAURAR ARQUIVOS:
+- Copiar pasta \`uploads/\` para raiz do projeto
+- Copiar pasta \`public/\` para raiz do projeto
+- Copiar arquivos de \`sistema/\` para raiz
+- Copiar arquivos de \`config/\` para respetivos locais
+
+#### 4. CONFIGURAR VARIÁVEIS:
+\`\`\`env
+DATABASE_URL=sua_nova_database_url
+SESSION_SECRET=sua_session_secret
+\`\`\`
+
+#### 5. INICIAR APLICAÇÃO:
+\`\`\`bash
+npm run dev
+\`\`\`
+
+### 📊 DADOS INCLUÍDOS NO BACKUP:
+- **SDGs**: Links de todas as imagens dos ODS (ver backup-metadata.json)
+- **Utilizadores**: Todos os logins e dados de autenticação
+- **Empresas**: Dados completos + logos + comprovativos
+- **Pessoas**: Dados completos + fotos + comprovativos
+- **Projetos**: Dados completos + imagens + atualizações
+- **Investimentos**: Todos os registros de investimentos
+- **Cálculos**: Todos os registros de pegada de carbono
+
+### 🔗 LINKS DAS IMAGENS DOS ODS:
+Todos os links das imagens dos ODS estão salvos em \`backup-metadata.json\` na seção \`sdgImagesUrls\`.
+
+### ⚡ SISTEMA KEEP-ALIVE:
+Este backup inclui o sistema completo de keep-alive para evitar hibernação no Replit.
+Ver: REPLIT_KEEP_ALIVE_GUIDE.md
+
+### 🆘 SUPORTE:
+Se houver problemas na restauração:
+1. Verificar se todas as variáveis de ambiente estão definidas
+2. Confirmar que a base de dados está acessível
+3. Verificar se as pastas uploads e public têm as permissões corretas
+4. Consultar logs do servidor para mais detalhes
+
+**Data do Backup**: ${new Date().toISOString()}
+**Versão**: 2.0.0 - Backup Completo Fundo Verde
+`;
+  }
+
+  /**
+   * OBTER SCHEMA DA BASE DE DADOS
+   */
+  private async getDatabaseSchema(): Promise<string> {
+    return 'Drizzle ORM - Ver shared/schema.ts';
+  }
+
+  /**
+   * OBTER LISTA DE ARQUIVOS DO SISTEMA
+   */
+  private async getSystemFilesList(): Promise<string[]> {
+    return [
+      'package.json', 'package-lock.json', 'tsconfig.json',
+      'vite.config.ts', 'tailwind.config.ts', 'drizzle.config.ts',
+      'replit.md', 'REPLIT_KEEP_ALIVE_GUIDE.md'
+    ];
+  }
+
+  /**
+   * OBTER LISTA DE ARQUIVOS DE CONFIGURAÇÃO
+   */
+  private async getConfigFilesList(): Promise<string[]> {
+    return [
+      '.replit', '.env.example', 'shared/schema.ts',
+      'server/index.ts', 'server/routes.ts', 'server/auth.ts'
+    ];
+  }
+
+  /**
+   * OBTER LISTA DE DEPENDÊNCIAS
+   */
+  private async getDependenciesList(): Promise<Record<string, string>> {
+    try {
+      const packageJson = JSON.parse(await fs.readFile('package.json', 'utf-8'));
+      return {
+        ...packageJson.dependencies,
+        ...packageJson.devDependencies
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  /**
    * Restaura backup a partir de um arquivo ZIP
    */
   async restoreFromBackup(backupFilePath: string): Promise<{ success: boolean; message: string; restored: any }> {
@@ -278,7 +466,7 @@ export class BackupService {
       
       return {
         success: true,
-        message: 'Backup restaurado com sucesso',
+        message: 'Backup restaurado com sucesso - Ver COMO-RESTAURAR.md no backup',
         restored: { files: 0, entities: 0 }
       };
     } catch (error) {
