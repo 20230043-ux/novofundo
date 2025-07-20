@@ -1052,6 +1052,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
           // Create investment
           await storage.createInvestment({
             companyId: updated.companyId,
+            individualId: updated.individualId,
             projectId: project.id,
             amount: updated.amount,
             paymentProofId: updated.id,
@@ -1122,6 +1123,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
           // Create investment
           await storage.createInvestment({
             companyId: updated.companyId,
+            individualId: updated.individualId,
             projectId: project.id,
             amount: updated.amount,
             paymentProofId: updated.id,
