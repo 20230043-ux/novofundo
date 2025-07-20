@@ -55,11 +55,19 @@ const AdminBackup = () => {
   // Mutation para criar backup completo
   const createFullBackupMutation = useMutation({
     mutationFn: async (description: string) => {
-      return apiRequest('/api/admin/backup/create-full', {
+      const response = await fetch('/api/admin/backup/create-full', {
         method: 'POST',
         body: JSON.stringify({ description }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao criar backup');
+      }
+      
+      return response.json();
     },
     onSuccess: (data: any) => {
       toast({
@@ -83,11 +91,19 @@ const AdminBackup = () => {
   // Mutation para criar backup específico
   const createSpecificBackupMutation = useMutation({
     mutationFn: async ({ type, entityId }: { type: string; entityId: number }) => {
-      return apiRequest('/api/admin/backup/create-specific', {
+      const response = await fetch('/api/admin/backup/create-specific', {
         method: 'POST',
         body: JSON.stringify({ type, entityId }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao criar backup específico');
+      }
+      
+      return response.json();
     },
     onSuccess: (data: any) => {
       toast({
