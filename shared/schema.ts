@@ -97,6 +97,7 @@ export const consumptionRecords = pgTable('consumption_records', {
   id: serial('id').primaryKey(),
   companyId: integer('company_id').references(() => companies.id),
   individualId: integer('individual_id').references(() => individuals.id),
+  description: text('description'), // Nome/descrição do cálculo (ex: "Consumo Janeiro 2025", "Fábrica Principal")
   energyKwh: decimal('energy_kwh', { precision: 10, scale: 2 }).default('0'),
   fuelLiters: decimal('fuel_liters', { precision: 10, scale: 2 }).default('0'),
   fuelType: text('fuel_type'),
@@ -371,6 +372,7 @@ export const consumptionRecordInsertSchema = z.object({
   id: z.number().optional(),
   companyId: z.number().optional(),
   individualId: z.number().optional(),
+  description: z.string().optional(),
   energyKwh: z.union([z.string(), z.number()]).transform(val => 
     typeof val === 'string' ? val : val.toString()
   ).default('0'),

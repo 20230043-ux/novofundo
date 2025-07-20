@@ -49,6 +49,9 @@ import {
 
 // Define schema for calculator form
 const calculatorSchema = z.object({
+  // Descrição/Nome
+  description: z.string().optional(),
+  
   // Transporte
   transporteCarroKm: z.coerce.number().min(0, "Valor inválido").default(0),
   transporteCarroTipo: z.string().default("gasolina"),
@@ -330,6 +333,7 @@ export default function CarbonCalculatorPage() {
   const form = useForm<CalculatorValues>({
     resolver: zodResolver(calculatorSchema),
     defaultValues: {
+      description: '',
       transporteCarroKm: 100,
       transporteCarroTipo: "gasolina",
       transportePublicoKm: 50,
@@ -426,6 +430,27 @@ export default function CarbonCalculatorPage() {
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    {/* Campo de Descrição */}
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome do Cálculo (Opcional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Ex: Escritório Central Janeiro 2025, Filial Luanda, Fábrica Principal..."
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Dê um nome para identificar este cálculo de pegada de carbono
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
                     <Tabs defaultValue="transporte" className="w-full">
                       <TabsList className="grid grid-cols-5 mb-6">
                         <TabsTrigger value="transporte" className="flex items-center justify-center">

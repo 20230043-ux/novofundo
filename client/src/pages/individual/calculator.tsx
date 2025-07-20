@@ -48,6 +48,7 @@ const COMPENSATION_RATE = 100;
 
 // Form validation schema
 const consumptionSchema = z.object({
+  description: z.string().optional(),
   energyKwh: z.coerce.number().min(0, "Valor deve ser positivo").optional(),
   fuelLiters: z.coerce.number().min(0, "Valor deve ser positivo").optional(),
   fuelTypes: z.array(z.string()).optional(),
@@ -111,6 +112,7 @@ const IndividualCalculator = () => {
   const form = useForm<ConsumptionFormValues>({
     resolver: zodResolver(consumptionSchema),
     defaultValues: {
+      description: '',
       energyKwh: undefined,
       fuelLiters: undefined,
       fuelTypes: [],
@@ -260,6 +262,29 @@ const IndividualCalculator = () => {
                 <CardContent>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      {/* Description Field */}
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome do Cálculo (Opcional)</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Ex: Consumo Janeiro 2025, Casa Principal, Escritório..."
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Dê um nome para identificar este cálculo de pegada de carbono
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Separator />
+                      
                       {/* Period - Moved to top */}
                       <div className="p-4 border border-gray-200 rounded-md bg-blue-50">
                         <div className="flex items-center gap-2 mb-4">
