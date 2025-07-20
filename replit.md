@@ -291,6 +291,19 @@ Changelog:
   • Updated backend to include full user and entity relationships for payment proofs
   • Fixed null pointer exceptions in both admin companies and pending ODS assignment pages
   • Improved data validation requiring calculation before allowing data saving
+- July 20, 2025. Added description/naming functionality to carbon footprint calculators:
+  • Added optional "description" field to consumption_records table in database
+  • Updated both individual and company calculator schemas to include description field
+  • Added "Nome do Cálculo" input field in calculator interfaces with helpful placeholders
+  • Users can now name their calculations (e.g., "Consumo Janeiro 2025", "Escritório Central")
+  • Enhanced user experience allowing better organization and identification of calculation records
+- July 20, 2025. Dashboard UX improvements with motivational messaging:
+  • Changed "Progresso da Pegada de Carbono" card to "Seu Impacto Positivo" for more positive messaging
+  • Updated card description to "Cada ação sua faz a diferença para o planeta! 🌍"
+  • Replaced TrendingUp icon with green Leaf icon to emphasize sustainability
+  • Added real data display showing total investments, calculated CO₂, and compensation values
+  • Included motivational message: "🎯 Continue assim! Você está contribuindo para um futuro mais verde"
+  • Enhanced visual design with positive green, blue, and yellow color scheme
 - July 18, 2025. Complete WebSocket real-time system implementation:
   • Implemented comprehensive WebSocket server using ws library for real-time communication
   • Created WebSocketProvider and useWebSocket hook for client-side real-time functionality

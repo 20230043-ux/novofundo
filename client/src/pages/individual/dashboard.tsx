@@ -144,18 +144,48 @@ const IndividualDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Progress Card */}
+              {/* Impact Card */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Progresso da Pegada de Carbono
+                    <Leaf className="h-5 w-5 text-green-600" />
+                    Seu Impacto Positivo
                   </CardTitle>
                   <CardDescription>
-                    Sua jornada para um estilo de vida mais sustentável
+                    Cada ação sua faz a diferença para o planeta! 🌍
                   </CardDescription>
                 </CardHeader>
-                
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600 mb-2">
+                        {stats?.totalInvestments ? `${parseFloat(stats.totalInvestments).toLocaleString('pt-BR')} Kz` : '0 Kz'}
+                      </div>
+                      <p className="text-sm text-gray-600">Investido em projetos sustentáveis</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="text-xl font-bold text-green-600">
+                          {stats?.totalEmissions ? `${parseFloat(stats.totalEmissions).toFixed(1)}t` : '0t'}
+                        </div>
+                        <div className="text-xs text-green-700">CO₂ Calculado</div>
+                      </div>
+                      <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="text-xl font-bold text-blue-600">
+                          {stats?.compensationValue ? `${parseFloat(stats.compensationValue).toLocaleString('pt-BR')} Kz` : '0 Kz'}
+                        </div>
+                        <div className="text-xs text-blue-700">Para Compensar</div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <p className="text-sm font-medium text-yellow-800">
+                        🎯 Continue assim! Você está contribuindo para um futuro mais verde
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
               </Card>
 
               {/* Quick Actions */}
