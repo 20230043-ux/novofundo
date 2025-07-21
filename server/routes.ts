@@ -4,6 +4,7 @@ import { storage } from "./storage";
 // Importar setupAuth do arquivo auth
 import { setupAuth } from "./auth";
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
+import { db } from "@db";
 import { keepAliveHandler } from "./keep-alive";
 import { backupService } from "./backup-service";
 import { createReadStream } from "fs";
@@ -94,7 +95,6 @@ import {
   investments
 } from "@shared/schema";
 import { z } from "zod";
-import { db } from "@db";
 
 // Configure multer for file uploads
 const uploadsDir = path.resolve(process.cwd(), "uploads");
@@ -2105,23 +2105,125 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
     }
   });
 
+  // Database administration routes
+  app.get("/api/admin/database/stats", isAdmin, async (req, res) => {
+    try {
+      const stats = await storage.db.execute(sql`
+        SELECT 
+          (SELECT COUNT(*) FROM users) as users,
+          (SELECT COUNT(*) FROM companies) as companies,
+          (SELECT COUNT(*) FROM individuals) as individuals,
+          (SELECT COUNT(*) FROM projects) as projects,
+          (SELECT COUNT(*) FROM investments) as investments,
+          (SELECT COALESCE(SUM(amount), 0) FROM investments) as total_investment_amount,
+          (SELECT COUNT(*) FROM sdgs) as sdgs,
+          (SELECT COUNT(*) FROM payment_proofs) as payment_proofs
+      `);
+      
+      res.json(stats.rows[0]);
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas da base de dados:", error);
+      res.status(500).json({ message: "Erro ao buscar estatísticas" });
+    }
+  });
 
+  app.get("/api/admin/database/tables", isAdmin, async (req, res) => {
+    try {
+      const tables = await storage.db.execute(sql`
+        SELECT 
+          table_name as name
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
+        ORDER BY table_name
+      `);
 
+      // Get count for each table
+      const tablesWithCounts = await Promise.all(
+        tables.rows.map(async (table: any) => {
+          try {
+            const countResult = await storage.db.execute(sql.raw(`SELECT COUNT(*) FROM ${table.name}`));
+            return {
+              name: table.name,
+              count: parseInt(countResult.rows[0].count),
+              last_updated: new Date().toISOString()
+            };
+          } catch (error) {
+            return {
+              name: table.name,
+              count: 0,
+              last_updated: new Date().toISOString()
+            };
+          }
+        })
+      );
+      
+      res.json(tablesWithCounts);
+    } catch (error) {
+      console.error("Erro ao buscar informações das tabelas:", error);
+      res.status(500).json({ message: "Erro ao buscar tabelas" });
+    }
+  });
 
+  app.get("/api/admin/database/recent-activity", isAdmin, async (req, res) => {
+    try {
+      const activity = await storage.db.execute(sql`
+        SELECT 'Empresa' as tipo, name as nome, created_at::date as data
+        FROM companies 
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+        UNION ALL
+        SELECT 'Projecto' as tipo, name as nome, created_at::date as data
+        FROM projects
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+        UNION ALL
+        SELECT 'Investimento' as tipo, 
+               CONCAT('AOA ', amount::text) as nome, 
+               created_at::date as data
+        FROM investments
+        WHERE created_at >= NOW() - INTERVAL '30 days'
+        ORDER BY data DESC 
+        LIMIT 20
+      `);
+      
+      res.json(activity.rows);
+    } catch (error) {
+      console.error("Erro ao buscar actividade recente:", error);
+      res.status(500).json({ message: "Erro ao buscar actividade" });
+    }
+  });
 
+  app.post("/api/admin/database/query", isAdmin, async (req, res) => {
+    try {
+      const { query } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ message: "Consulta SQL é obrigatória" });
+      }
 
+      // Security check - only allow SELECT queries
+      const trimmedQuery = query.trim().toLowerCase();
+      if (!trimmedQuery.startsWith('select')) {
+        return res.status(400).json({ 
+          message: "Apenas consultas SELECT são permitidas por segurança" 
+        });
+      }
 
-
-
-
-
-
-
-
-
-
-
-
+      const result = await storage.db.execute(sql.raw(query));
+      
+      // Get column names
+      const columns = result.fields?.map(field => field.name) || [];
+      
+      res.json({
+        columns,
+        rows: result.rows,
+        rowCount: result.rows.length
+      });
+    } catch (error) {
+      console.error("Erro ao executar consulta:", error);
+      res.status(400).json({ 
+        message: "Erro na consulta SQL: " + error.message 
+      });
+    }
+  });
 
   const httpServer = createServer(app);
 

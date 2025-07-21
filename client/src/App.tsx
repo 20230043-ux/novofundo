@@ -50,6 +50,7 @@ import AdminOdsInvestimentos from "@/pages/admin/ods-investimentos";
 import AdminSetoresPoluentes from "@/pages/admin/setores-poluentes";
 import AdminRelatorios from "@/pages/admin/relatorios";
 import AdminBackup from "@/pages/admin/backup";
+import DatabaseAdmin from "@/pages/DatabaseAdmin";
 
 
 import LoadingScreen from "@/components/loading-screen";
@@ -93,6 +94,7 @@ function Router() {
       <AdminRoute path="/admin/relatorios" component={AdminRelatorios} />
       <AdminRoute path="/admin/publications" component={AdminPublications} />
       <AdminRoute path="/admin/backup" component={AdminBackup} />
+      <AdminRoute path="/admin/database" component={DatabaseAdmin} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />
