@@ -8,6 +8,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Database, Users, Building2, Target, DollarSign, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import Navbar from '@/components/layout/navbar';
+import Sidebar from '@/components/layout/sidebar';
 
 interface DatabaseStats {
   users: number;
@@ -141,14 +143,19 @@ export default function DatabaseAdmin() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Database className="h-8 w-8 text-green-600" />
-        <div>
-          <h1 className="text-3xl font-bold">Administração da Base de Dados</h1>
-          <p className="text-muted-foreground">Visualizar e gerir dados do sistema</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="flex-1 flex flex-col md:flex-row">
+        <Sidebar type="admin" />
+        <div className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Database className="h-8 w-8 text-green-600" />
+              <div>
+                <h1 className="text-3xl font-bold">Administração da Base de Dados</h1>
+                <p className="text-muted-foreground">Visualizar e gerir dados do sistema</p>
+              </div>
+            </div>
 
       {/* Estatísticas Gerais */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -352,6 +359,9 @@ export default function DatabaseAdmin() {
           </Card>
         </TabsContent>
       </Tabs>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
