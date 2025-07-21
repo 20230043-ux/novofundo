@@ -8,14 +8,34 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Optimized connection pool for high concurrency
+// Ultra-robust connection pool optimized for data persistence
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  max: 20, // Maximum number of clients in the pool
-  min: 5,  // Minimum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 10000, // Return an error after 10 seconds if connection could not be established
-  acquireTimeoutMillis: 10000, // Return an error after 10 seconds if a client could not be acquired
+  max: 25, // Increased for higher concurrency
+  min: 8,  // Higher minimum to maintain connections
+  idleTimeoutMillis: 60000, // Longer idle timeout for stability
+  connectionTimeoutMillis: 15000, // Longer timeout for reliability
+  acquireTimeoutMillis: 15000, // More time to acquire connections
+  keepAlive: true, // Keep connections alive
+  keepAliveInitialDelayMillis: 0,
+  allowExitOnIdle: false, // Never exit on idle to maintain persistence
 });
 
-export const db = drizzle(pool, { schema });
+// Event listeners for connection health monitoring
+pool.on('connect', (client) => {
+  console.log('🔌 Nova conexão estabelecida com a base de dados');
+});
+
+pool.on('error', (err, client) => {
+  console.error('❌ Erro inesperado no cliente da base de dados:', err);
+  console.log('🔄 Tentando reestabelecer conexão...');
+});
+
+pool.on('remove', (client) => {
+  console.log('🔌 Conexão removida do pool');
+});
+
+export const db = drizzle(pool, { 
+  schema,
+  logger: process.env.NODE_ENV === 'development' ? true : false
+});

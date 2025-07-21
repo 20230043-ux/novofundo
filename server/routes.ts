@@ -2108,7 +2108,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
   // Database administration routes
   app.get("/api/admin/database/stats", isAdmin, async (req, res) => {
     try {
-      const stats = await storage.db.execute(sql`
+      const stats = await db.execute(sql`
         SELECT 
           (SELECT COUNT(*) FROM users) as users,
           (SELECT COUNT(*) FROM companies) as companies,
@@ -2129,7 +2129,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
 
   app.get("/api/admin/database/tables", isAdmin, async (req, res) => {
     try {
-      const tables = await storage.db.execute(sql`
+      const tables = await db.execute(sql`
         SELECT 
           table_name as name
         FROM information_schema.tables 
@@ -2141,7 +2141,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       const tablesWithCounts = await Promise.all(
         tables.rows.map(async (table: any) => {
           try {
-            const countResult = await storage.db.execute(sql.raw(`SELECT COUNT(*) FROM ${table.name}`));
+            const countResult = await db.execute(sql.raw(`SELECT COUNT(*) FROM ${table.name}`));
             return {
               name: table.name,
               count: parseInt(countResult.rows[0].count),
@@ -2166,7 +2166,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
 
   app.get("/api/admin/database/recent-activity", isAdmin, async (req, res) => {
     try {
-      const activity = await storage.db.execute(sql`
+      const activity = await db.execute(sql`
         SELECT 'Empresa' as tipo, name as nome, created_at::date as data
         FROM companies 
         WHERE created_at >= NOW() - INTERVAL '30 days'
@@ -2188,6 +2188,105 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
     } catch (error) {
       console.error("Erro ao buscar actividade recente:", error);
       res.status(500).json({ message: "Erro ao buscar actividade" });
+    }
+  });
+
+  // Robust persistence system administration routes
+  app.get("/api/admin/database/health", isAdmin, async (req, res) => {
+    try {
+      const { verifyDataIntegrity } = await import('./data-persistence');
+      const healthCheck = await verifyDataIntegrity();
+      
+      res.json({
+        ...healthCheck,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Erro na verificação de saúde:", error);
+      res.status(500).json({ 
+        message: "Erro na verificação de saúde",
+        isHealthy: false,
+        issues: ["Erro no sistema de verificação"],
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  app.post("/api/admin/database/cleanup", isAdmin, async (req, res) => {
+    try {
+      const { cleanOrphanedData } = await import('./data-persistence');
+      const cleanupResult = await cleanOrphanedData();
+      
+      res.json({
+        success: true,
+        ...cleanupResult,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Erro na limpeza de dados:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Erro na limpeza de dados",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  app.post("/api/admin/database/backup-incremental", isAdmin, async (req, res) => {
+    try {
+      const { createIncrementalBackup } = await import('./data-persistence');
+      const backupResult = await createIncrementalBackup();
+      
+      res.json({
+        ...backupResult,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Erro no backup incremental:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Erro no backup incremental",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  app.post("/api/admin/database/sync-critical", isAdmin, async (req, res) => {
+    try {
+      const { forceCriticalDataSync } = await import('./data-persistence');
+      const syncResult = await forceCriticalDataSync();
+      
+      res.json({
+        ...syncResult,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Erro na sincronização crítica:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Erro na sincronização crítica",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  app.get("/api/admin/database/pool-stats", isAdmin, async (req, res) => {
+    try {
+      const { pool } = await import('@db');
+      
+      res.json({
+        totalCount: pool.totalCount,
+        idleCount: pool.idleCount,
+        waitingCount: pool.waitingCount,
+        timestamp: new Date().toISOString(),
+        healthy: pool.waitingCount < 5 && pool.totalCount > 0
+      });
+    } catch (error) {
+      console.error("Erro nas estatísticas do pool:", error);
+      res.status(500).json({ 
+        message: "Erro nas estatísticas do pool",
+        timestamp: new Date().toISOString()
+      });
     }
   });
 

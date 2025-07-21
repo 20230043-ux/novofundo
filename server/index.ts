@@ -5,6 +5,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { ensureDatabaseReady, startDatabaseHealthCheck } from "./database-init";
 import { webSocketService } from "./websocket-service";
+import { initializeRobustPersistence } from "./data-persistence";
 
 import { preloadCache } from "./preload-cache";
 import { instantProjectCache } from "./instant-project-cache";
@@ -44,9 +45,9 @@ app.use(compression({
   }
 }));
 
-// Optimized JSON parsing with smaller limits for faster processing
-app.use(express.json({ limit: '5mb' }));
-app.use(express.urlencoded({ extended: false, limit: '5mb' }));
+// Enhanced JSON parsing with larger limits for robust data handling
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -88,6 +89,15 @@ app.use((req, res, next) => {
   } else {
     // Iniciar monitoramento de saúde do banco de dados
     startDatabaseHealthCheck();
+    
+    // Inicializar sistema robusto de persistência
+    log("🛡️ Inicializando sistema robusto de persistência...");
+    try {
+      await initializeRobustPersistence();
+      log("✅ Sistema robusto de persistência inicializado com sucesso!");
+    } catch (error) {
+      log("⚠️ Aviso: Sistema robusto teve problemas na inicialização:", error);
+    }
     
     // Inicializar cache instantâneo e pré-carregar dados essenciais
     setTimeout(async () => {
