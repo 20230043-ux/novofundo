@@ -1,0 +1,165 @@
+> rest-express@1.0.0 dev
+> tsx server/index.ts
+
+9:45:24 AM [express] 🗄️ Inicializando banco de dados...
+🗄️ Verificando conexão com o banco de dados...
+❌ Erro na conexão com o banco de dados: error: The endpoint has been disabled. Enable it using Neon API and retry.
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async initializeDatabase (/home/runner/workspace/server/database-init.ts:9:5)
+    at async ensureDatabaseReady (/home/runner/workspace/server/database-init.ts:63:21)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:85:25) {
+  length: 88,
+  severity: 'ERROR',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+🔄 Tentativa 1/5 de conexão com o banco...
+🗄️ Verificando conexão com o banco de dados...
+❌ Erro na conexão com o banco de dados: error: The endpoint has been disabled. Enable it using Neon API and retry.
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async initializeDatabase (/home/runner/workspace/server/database-init.ts:9:5)
+    at async ensureDatabaseReady (/home/runner/workspace/server/database-init.ts:63:21)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:85:25) {
+  length: 88,
+  severity: 'ERROR',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+🔄 Tentativa 2/5 de conexão com o banco...
+🗄️ Verificando conexão com o banco de dados...
+❌ Erro na conexão com o banco de dados: error: The endpoint has been disabled. Enable it using Neon API and retry.
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async initializeDatabase (/home/runner/workspace/server/database-init.ts:9:5)
+    at async ensureDatabaseReady (/home/runner/workspace/server/database-init.ts:63:21)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:85:25) {
+  length: 88,
+  severity: 'ERROR',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+🔄 Tentativa 3/5 de conexão com o banco...
+🗄️ Verificando conexão com o banco de dados...
+❌ Erro na conexão com o banco de dados: error: The endpoint has been disabled. Enable it using Neon API and retry.
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async initializeDatabase (/home/runner/workspace/server/database-init.ts:9:5)
+    at async ensureDatabaseReady (/home/runner/workspace/server/database-init.ts:63:21)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:85:25) {
+  length: 88,
+  severity: 'ERROR',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+🔄 Tentativa 4/5 de conexão com o banco...
+🗄️ Verificando conexão com o banco de dados...
+❌ Erro na conexão com o banco de dados: error: The endpoint has been disabled. Enable it using Neon API and retry.
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async initializeDatabase (/home/runner/workspace/server/database-init.ts:9:5)
+    at async ensureDatabaseReady (/home/runner/workspace/server/database-init.ts:63:21)
+    at async <anonymous> (/home/runner/workspace/server/index.ts:85:25) {
+  length: 88,
+  severity: 'ERROR',
+  code: 'XX000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: undefined,
+  line: undefined,
+  routine: undefined
+}
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+🔄 Tentativa 5/5 de conexão com o banco...
+❌ Não foi possível estabelecer conexão com o banco após múltiplas tentativas.
+9:45:37 AM [express] ❌ Falha na inicialização do banco de dados. O servidor será iniciado mesmo assim.
+🔌 WebSocket server initialized on /ws
+9:45:37 AM [express] serving on port 5000
+9:45:37 AM [express] 🔌 WebSocket service available at ws://localhost:5000/ws
+🔌 WebSocket client connected: rcfprvovxc
+9:45:41 AM [express] ⚡ Inicializando cache instantâneo de projetos...
+9:45:47 AM [express] ❌ Erro ao inicializar cache instantâneo: error: The endpoint has been disabled. Enable it using Neon API and retry.
+9:45:47 AM [express] GET /api/projects 304 in 6167ms :: []
+9:45:51 AM [express] ⚡ Inicializando cache instantâneo de projetos...
+9:45:52 AM [express] ❌ Erro ao inicializar cache instantâneo: error: The endpoint has been disabled. Enable it using Neon API and retry.
+9:45:52 AM [express] GET /api/projects 304 in 694ms :: []
+9:45:52 AM [express] ⚡ Inicializando cache instantâneo de projetos...
+9:45:52 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
+9:45:53 AM [express] ❌ Erro ao inicializar cache instantâneo: error: The endpoint has been disabled. Enable it using Neon API and retry.
+9:45:53 AM [express] GET /api/projects 304 in 688ms :: []
+🔌 WebSocket client connected: 134x9pfn3d1o
+9:46:16 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
+9:46:17 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
+9:48:08 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
+🔌 WebSocket client disconnected: rcfprvovxc
+9:58:16 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
+9:58:18 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
+9:59:24 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
+9:59:30 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
+9:59:39 AM [express] GET /api/user 401 in 1ms :: {"message":"Usuário não autenticado"}
