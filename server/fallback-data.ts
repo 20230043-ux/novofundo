@@ -1,5 +1,72 @@
 // Dados estáticos de fallback quando o banco não está disponível
 export const fallbackData = {
+  // Authentication fallback - temporary credentials for offline mode
+  authFallback: {
+    tempUsers: [
+      {
+        id: 999,
+        name: "Utilizador Demo",
+        email: "demo@demo.com", 
+        password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // "password"
+        role: "company",
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 998,
+        name: "Admin Demo",
+        email: "admin@demo.com",
+        password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // "password"
+        role: "admin",
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 997,
+        name: "Pessoa Demo",
+        email: "pessoa@demo.com",
+        password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // "password"
+        role: "individual",
+        created_at: new Date().toISOString()
+      }
+    ],
+    sessionCounter: 1000,
+    offlineMode: false
+  },
+
+  // Future data templates for when database is offline
+  futureDataTemplates: {
+    newCompany: {
+      id: () => Date.now() + Math.floor(Math.random() * 1000),
+      name: "Nova Empresa",
+      email: "empresa@exemplo.com",
+      sector: "Tecnologia", 
+      size: "Média",
+      location: "Luanda",
+      created_at: () => new Date().toISOString(),
+      logo_url: null
+    },
+    newIndividual: {
+      id: () => Date.now() + Math.floor(Math.random() * 1000),
+      name: "Nova Pessoa",
+      email: "pessoa@exemplo.com", 
+      age: 25,
+      location: "Luanda",
+      created_at: () => new Date().toISOString(),
+      photo_url: null
+    },
+    newProject: {
+      id: () => Date.now() + Math.floor(Math.random() * 1000),
+      name: "Novo Projeto Sustentável",
+      description: "Descrição do projeto",
+      target_amount: 1000000,
+      current_investment: 0,
+      sdg_id: 1,
+      location: "Angola",
+      status: "active",
+      created_at: () => new Date().toISOString(),
+      cover_image: "/projects/placeholder.svg"
+    }
+  },
+
   sdgs: [
     { id: 1, number: 1, name: "Erradicação da Pobreza", color: "#E5243B", icon: "🎯", description: "Acabar com a pobreza em todas as suas formas, em todos os lugares", created_at: "2024-01-01T00:00:00Z" },
     { id: 2, number: 2, name: "Fome Zero", color: "#DDA63A", icon: "🌾", description: "Acabar com a fome, alcançar a segurança alimentar", created_at: "2024-01-01T00:00:00Z" },

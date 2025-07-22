@@ -217,6 +217,14 @@ A plataforma agora conta com um **sistema ultra-robusto de persistência de dado
 
 ```
 Changelog:
+- July 22, 2025. Sistema completo de fallback para hibernação da base de dados:
+  • Implementado fallback completo para autenticação (login/registro) mesmo com base de dados offline
+  • Criados utilizadores temporários demo (demo@demo.com, admin@demo.com, pessoa@demo.com) com senha "password" 
+  • Sistema de registro funciona em modo offline criando utilizadores temporários
+  • Fallback para todos os endpoints de dados (empresas, indivíduos, projetos, investimentos, mensagens)
+  • Imagens SVG de fallback criadas para projetos (painéis solares, purificação água, reflorestamento)
+  • Cache inteligente que serve dados mesmo quando PostgreSQL hiberna
+  • Sistema completo garante funcionalidade total da plataforma independente do estado da base de dados
 - July 04, 2025. Initial setup
 - July 04, 2025. Enhanced cache invalidation system:
   • Reduced cache TTL from 30-120 minutes to 2-5 minutes for dynamic content

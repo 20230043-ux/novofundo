@@ -2462,6 +2462,22 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
     }
   });
 
+  // User endpoint with fallback authentication
+  app.get("/api/user", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+
+      // Return current user from session (already includes fallback from auth.ts)
+      const user = req.user;
+      res.json(user);
+    } catch (error) {
+      console.error("Erro ao buscar usuário:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2"/>
+      <stop offset="100%" style="stop-color:#2E7D4A"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgGradient)"/>
+  
+  <!-- Grid pattern for design -->
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#grid)"/>
+  
+  <!-- Central icon -->
+  <circle cx="200" cy="120" r="40" fill="rgba(255,255,255,0.9)"/>
+  <path d="M170 120 L190 140 L230 100" stroke="#2E7D4A" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Title -->
+  <text x="200" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">Projeto Sustentável</text>
+  
+  <!-- Subtitle -->
+  <text x="200" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.8)">Contribuindo para um futuro melhor</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="80" cy="80" r="3" fill="rgba(255,255,255,0.6)" opacity="0.8"/>
+  <circle cx="320" cy="60" r="2" fill="rgba(255,255,255,0.6)" opacity="0.6"/>
+  <circle cx="350" cy="200" r="4" fill="rgba(255,255,255,0.6)" opacity="0.7"/>
+  <circle cx="50" cy="220" r="2" fill="rgba(255,255,255,0.6)" opacity="0.5"/>
+  
+  <!-- Bottom accent -->
+  <rect x="0" y="270" width="400" height="30" fill="rgba(0,0,0,0.2)"/>
+  <text x="200" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.7)">Fundo Verde Initiative</text>
+</svg>
