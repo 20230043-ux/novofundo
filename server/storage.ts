@@ -123,14 +123,6 @@ export class DatabaseStorage implements IStorage {
       tableName: 'sessions' // Especificando o nome da tabela para garantir que usamos a correta
     });
   }
-
-  // Test database connection for intelligent fallback system
-  async testConnection(): Promise<void> {
-    const result = await db.execute(sql`SELECT 1 as test`);
-    if (!result || !result.rows || result.rows.length === 0) {
-      throw new Error("Database connection failed");
-    }
-  }
   
   // User & Auth
   async getUser(id: number): Promise<User | undefined> {
