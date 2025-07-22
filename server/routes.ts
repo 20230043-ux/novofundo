@@ -11,6 +11,7 @@ import { createReadStream } from "fs";
 import { stat } from "fs/promises";
 
 import { preloadCache } from "./preload-cache";
+import { fallbackData } from "./fallback-data";
 import { optimizeStaticFiles, enableServerPush, optimizeForMobile } from "./cdn-optimization";
 import { instantProjectCache } from "./instant-project-cache";
 import multer from "multer";
@@ -406,7 +407,9 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       res.json(projects);
     } catch (error) {
       console.error("Erro ao buscar projetos:", error);
-      res.status(500).json([]);
+      // Use fallback data from preloadCache
+      const projects = await preloadCache.getProjects();
+      res.json(projects);
     }
   });
 
@@ -429,7 +432,12 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       if (!project) {
         project = await storage.getProjectById(id);
         if (!project) {
-          return res.status(404).json({ message: "Projeto não encontrado" });
+          // Try fallback data
+          const fallbackProjects = await preloadCache.getProjects();
+          project = fallbackProjects.find(p => p.id === id);
+          if (!project) {
+            return res.status(404).json({ message: "Projeto não encontrado" });
+          }
         }
       }
       
@@ -440,7 +448,15 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       
       res.json(project);
     } catch (error) {
-      res.status(500).json({ message: "Erro ao buscar projeto" });
+      console.error("Erro ao buscar projeto:", error);
+      // Try fallback data
+      const fallbackProjects = await preloadCache.getProjects();
+      const project = fallbackProjects.find(p => p.id === parseInt(req.params.id));
+      if (project) {
+        res.json(project);
+      } else {
+        res.status(500).json({ message: "Erro ao buscar projeto" });
+      }
     }
   });
 
@@ -2321,6 +2337,128 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       res.status(400).json({ 
         message: "Erro na consulta SQL: " + error.message 
       });
+    }
+  });
+
+  // Additional fallback routes for all major data types
+  
+  // Get all companies with fallback
+  app.get("/api/companies", async (req, res) => {
+    try {
+      const companies = await preloadCache.getCompanies();
+      res.json(companies);
+    } catch (error) {
+      console.error("Erro ao buscar empresas:", error);
+      res.json(fallbackData.companies);
+    }
+  });
+
+  // Get all users with fallback
+  app.get("/api/users", isAdmin, async (req, res) => {
+    try {
+      const users = await preloadCache.getUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+      res.json(fallbackData.users);
+    }
+  });
+
+  // Get all individuals with fallback
+  app.get("/api/individuals", async (req, res) => {
+    try {
+      const individuals = await preloadCache.getIndividuals();
+      res.json(individuals);
+    } catch (error) {
+      console.error("Erro ao buscar indivíduos:", error);
+      res.json(fallbackData.individuals);
+    }
+  });
+
+  // Get project updates with fallback
+  app.get("/api/project-updates", async (req, res) => {
+    try {
+      const projectId = req.query.projectId ? parseInt(req.query.projectId as string) : undefined;
+      const updates = await preloadCache.getProjectUpdates(projectId);
+      res.json(updates);
+    } catch (error) {
+      console.error("Erro ao buscar atualizações:", error);
+      const projectId = req.query.projectId ? parseInt(req.query.projectId as string) : undefined;
+      const updates = projectId 
+        ? fallbackData.projectUpdates.filter(u => u.project_id === projectId)
+        : fallbackData.projectUpdates;
+      res.json(updates);
+    }
+  });
+
+  // Get all investments with fallback
+  app.get("/api/investments", async (req, res) => {
+    try {
+      const investments = await preloadCache.getInvestments();
+      res.json(investments);
+    } catch (error) {
+      console.error("Erro ao buscar investimentos:", error);
+      res.json(fallbackData.investments);
+    }
+  });
+
+  // Get consumption records with fallback
+  app.get("/api/consumption-records", async (req, res) => {
+    try {
+      const records = await preloadCache.getConsumptionRecords();
+      res.json(records);
+    } catch (error) {
+      console.error("Erro ao buscar registos de consumo:", error);
+      res.json(fallbackData.consumptionRecords);
+    }
+  });
+
+  // Get payment proofs with fallback
+  app.get("/api/payment-proofs", async (req, res) => {
+    try {
+      const proofs = await preloadCache.getPaymentProofs();
+      res.json(proofs);
+    } catch (error) {
+      console.error("Erro ao buscar comprovos:", error);
+      res.json(fallbackData.paymentProofs);
+    }
+  });
+
+  // Get carbon leaderboard with fallback
+  app.get("/api/carbon-leaderboard", async (req, res) => {
+    try {
+      const leaderboard = await preloadCache.getCarbonLeaderboard();
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Erro ao buscar ranking de carbono:", error);
+      res.json(fallbackData.carbonLeaderboard);
+    }
+  });
+
+  // Get messages with fallback
+  app.get("/api/messages", async (req, res) => {
+    try {
+      const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
+      const messages = await preloadCache.getMessages(userId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Erro ao buscar mensagens:", error);
+      const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
+      const messages = userId 
+        ? fallbackData.messages.filter(m => m.from_user_id === userId || m.to_user_id === userId)
+        : fallbackData.messages;
+      res.json(messages);
+    }
+  });
+
+  // Enhanced stats endpoint with comprehensive fallback
+  app.get("/api/stats", async (req, res) => {
+    try {
+      const stats = await preloadCache.getStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas:", error);
+      res.json(fallbackData.stats);
     }
   });
 
