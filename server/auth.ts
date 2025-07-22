@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { fallbackData } from "./fallback-data";
+import { dbStatus } from "./database-status";
 import { userRoles, User, UserWithCompany, UserWithIndividual } from "@shared/schema";
 
 declare global {

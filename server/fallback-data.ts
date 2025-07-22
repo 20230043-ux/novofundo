@@ -1,35 +1,30 @@
 // Dados estáticos de fallback quando o banco não está disponível
 export const fallbackData = {
-  // Authentication fallback - temporary credentials for offline mode
+  // Authentication fallback - TEMPORARY credentials ONLY during database hibernation
   authFallback: {
+    // Only used when database is completely unavailable
     tempUsers: [
       {
         id: 999,
-        name: "Utilizador Demo",
-        email: "demo@demo.com", 
+        name: "🔴 Demo Temporário (Base Offline)",
+        email: "demo.temporario@offline.local", 
         password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // "password"
         role: "company",
         created_at: new Date().toISOString()
       },
       {
         id: 998,
-        name: "Admin Demo",
-        email: "admin@demo.com",
+        name: "🔴 Admin Temporário (Base Offline)",
+        email: "admin.temporario@offline.local",
         password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // "password"
         role: "admin",
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 997,
-        name: "Pessoa Demo",
-        email: "pessoa@demo.com",
-        password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // "password"
-        role: "individual",
         created_at: new Date().toISOString()
       }
     ],
     sessionCounter: 1000,
-    offlineMode: false
+    // Dynamic users created during offline registration (cleared when DB comes back)
+    dynamicTempUsers: [],
+    isOfflineMode: false
   },
 
   // Future data templates for when database is offline
