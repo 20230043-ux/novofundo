@@ -541,6 +541,20 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       // Include user data with updated logo in response
       const updatedUser = await storage.getUserWithCompany(req.user.id);
       
+      // Broadcast real-time update to admin users
+      if (webSocketService && updatedUser) {
+        webSocketService.broadcast({
+          type: 'user_update',
+          data: {
+            action: 'company_logo_updated',
+            companyId: req.user.company.id,
+            companyName: updatedUser.company.name,
+            logoUrl: logoUrl
+          },
+          targetUsers: ['admin']
+        });
+      }
+      
       res.json({ 
         logoUrl,
         user: updatedUser
@@ -644,6 +658,16 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       
       // Create payment proof
       const proof = await storage.createPaymentProof(paymentProofData);
+      
+      // Broadcast real-time update to admin users
+      if (webSocketService) {
+        webSocketService.broadcastPaymentProofUpdate({
+          action: 'payment_proof_uploaded',
+          paymentProof: proof,
+          companyId: req.user!.company.id,
+          companyName: req.user.company.name
+        });
+      }
       
       res.status(201).json(proof);
     } catch (error) {
@@ -751,6 +775,20 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         }
       };
       
+      // Broadcast real-time update to admin users
+      if (webSocketService) {
+        webSocketService.broadcast({
+          type: 'user_update',
+          data: {
+            action: 'individual_photo_updated',
+            individualId: req.user!.individual.id,
+            individualName: `${req.user!.individual.firstName} ${req.user!.individual.lastName}`,
+            profilePictureUrl: imageUrl
+          },
+          targetUsers: ['admin']
+        });
+      }
+      
       res.json(updatedUser);
     } catch (error) {
       res.status(500).json({ message: "Erro ao fazer upload da foto" });
@@ -828,6 +866,17 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       }
       
       const proof = await storage.createPaymentProof(paymentProofData);
+      
+      // Broadcast real-time update to admin users
+      if (webSocketService) {
+        webSocketService.broadcastPaymentProofUpdate({
+          action: 'payment_proof_uploaded',
+          paymentProof: proof,
+          individualId: req.user!.individual.id,
+          individualName: `${req.user!.individual.firstName} ${req.user!.individual.lastName}`
+        });
+      }
+      
       res.status(201).json(proof);
     } catch (error) {
       res.status(500).json({ message: "Erro ao fazer upload do comprovativo" });
@@ -1762,6 +1811,17 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         amount: parseFloat(amount)
       });
       
+      // Broadcast real-time update to all connected clients
+      if (webSocketService) {
+        webSocketService.broadcastInvestmentUpdate({
+          action: 'create',
+          investment: investment,
+          companyId: parseInt(companyId),
+          projectId: parseInt(projectId),
+          amount: parseFloat(amount)
+        });
+      }
+      
       res.status(201).json(investment);
     } catch (error) {
       res.status(500).json({ message: "Erro ao criar investimento" });
@@ -1831,6 +1891,15 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       // Recalcular o ranking
       await storage.calculateCarbonRanking();
       
+      // Broadcast real-time update to all connected clients
+      if (webSocketService) {
+        webSocketService.broadcastCarbonUpdate({
+          action: 'carbon_data_updated',
+          companyId,
+          carbonData: updatedStats
+        });
+      }
+      
       res.json(updatedStats);
     } catch (error) {
       console.error("Erro ao atualizar estatísticas de carbono:", error);
@@ -1849,6 +1918,15 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
     try {
       await storage.calculateCarbonRanking();
       const leaderboard = await storage.getCarbonLeaderboard();
+      
+      // Broadcast real-time update to all connected clients
+      if (webSocketService) {
+        webSocketService.broadcastCarbonUpdate({
+          action: 'ranking_recalculated',
+          leaderboard
+        });
+      }
+      
       res.json({ message: "Ranking recalculado com sucesso", leaderboard });
     } catch (error) {
       console.error("Erro ao recalcular ranking:", error);

@@ -7,6 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { fallbackData } from "./fallback-data";
 import { userRoles, User, UserWithCompany, UserWithIndividual } from "@shared/schema";
+import { webSocketService } from "./websocket-service";
 
 declare global {
   namespace Express {
@@ -152,6 +153,16 @@ export function setupAuth(app: Express) {
 
         // Get user with company profile
         newUser = await storage.getUserWithCompany(user.id);
+        
+        // Broadcast real-time update to admin users
+        if (webSocketService && newUser) {
+          webSocketService.broadcastUserUpdate({
+            action: 'company_registered',
+            user: newUser,
+            companyName: name,
+            sector: sector
+          });
+        }
       } catch (dbError) {
         console.log("⚠️ Database unavailable for registration, using fallback...");
         // Database unavailable, create fallback user
@@ -228,6 +239,16 @@ export function setupAuth(app: Express) {
 
         // Get user with individual profile
         newUser = await storage.getUserWithIndividual(user.id);
+        
+        // Broadcast real-time update to admin users
+        if (webSocketService && newUser) {
+          webSocketService.broadcastUserUpdate({
+            action: 'individual_registered',
+            user: newUser,
+            name: `${firstName} ${lastName}`,
+            location: location
+          });
+        }
       } catch (dbError) {
         console.log("⚠️ Database unavailable for individual registration, using fallback...");
         // Database unavailable, create fallback user

@@ -13,6 +13,8 @@ import ScrollToTop from "@/components/scroll-to-top";
 import { performanceOptimizer } from "@/lib/performance";
 import { lazyLoader } from "@/lib/lazy-loading";
 
+const { lazy } = React;
+
 // Pages
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
@@ -95,6 +97,7 @@ function Router() {
       <AdminRoute path="/admin/publications" component={AdminPublications} />
       <AdminRoute path="/admin/backup" component={AdminBackup} />
       <AdminRoute path="/admin/database" component={DatabaseAdmin} />
+      <AdminRoute path="/admin/real-time" component={lazy(() => import("./pages/admin/real-time-monitor"))} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

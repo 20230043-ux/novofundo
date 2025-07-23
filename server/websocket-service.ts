@@ -9,7 +9,7 @@ interface WebSocketClient {
 }
 
 interface RealTimeMessage {
-  type: 'project_update' | 'investment_update' | 'payment_proof_update' | 'sdg_update' | 'user_notification';
+  type: 'project_update' | 'investment_update' | 'payment_proof_update' | 'sdg_update' | 'user_notification' | 'user_update' | 'carbon_update';
   data: any;
   targetUsers?: string[]; // If specified, only send to these user types
   userId?: number; // If specified, only send to this specific user
@@ -143,6 +143,21 @@ class WebSocketService {
       type: 'user_notification',
       data: notification,
       userId
+    });
+  }
+
+  broadcastUserUpdate(userData: any) {
+    this.broadcast({
+      type: 'user_update',
+      data: userData,
+      targetUsers: ['admin'] // Only send to admin users
+    });
+  }
+
+  broadcastCarbonUpdate(carbonData: any) {
+    this.broadcast({
+      type: 'carbon_update',
+      data: carbonData
     });
   }
 

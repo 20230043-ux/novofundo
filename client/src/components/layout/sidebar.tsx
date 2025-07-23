@@ -17,7 +17,8 @@ import {
   X,
   Menu,
   Download,
-  Database
+  Database,
+  Activity
 } from "lucide-react";
 
 interface SidebarProps {
@@ -179,6 +180,10 @@ const Sidebar = ({ type }: SidebarProps) => {
               <Link href="/admin/database" className={`flex items-center px-6 py-3 ${isActive('/admin/database') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
                 <Database className="w-5 h-5 mr-3" />
                 <span>Base de Dados</span>
+              </Link>
+              <Link href="/admin/real-time" className={`flex items-center px-6 py-3 ${isActive('/admin/real-time') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+                <Activity className="w-5 h-5 mr-3" />
+                <span>Monitor Tempo Real</span>
               </Link>
             </>
           )}

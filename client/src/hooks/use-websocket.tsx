@@ -117,7 +117,7 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
     switch (message.type) {
       case 'connection':
       case 'authenticated':
-        console.log('✅ WebSocket:', message.data?.message || message.message);
+        console.log('✅ WebSocket:', message.data?.message || (message as any).message);
         break;
 
       case 'project_update':
@@ -176,6 +176,31 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
       case 'user_notification':
         // Handle user-specific notifications
         console.log('🔔 User notification:', message.data);
+        break;
+
+      case 'user_update':
+        // Handle user registration updates (for admin)
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/companies'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/individuals'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+        console.log('👤 User updated via WebSocket');
+        
+        // Trigger custom event for notifications
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('websocket:user_update', { detail: message.data }));
+        }
+        break;
+
+      case 'carbon_update':
+        // Invalidate carbon-related queries
+        queryClient.invalidateQueries({ queryKey: ['/api/carbon-leaderboard'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+        console.log('🌱 Carbon data updated via WebSocket');
+        
+        // Trigger custom event for notifications
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('websocket:carbon_update', { detail: message.data }));
+        }
         break;
 
       case 'pong':
