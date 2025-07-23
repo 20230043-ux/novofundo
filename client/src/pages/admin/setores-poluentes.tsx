@@ -1,332 +1,357 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, AlertCircle, Building2, Factory } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { ArrowLeft, Factory, AlertTriangle } from "lucide-react";
+import { Link } from "wouter";
 
-// Componente de detalhe do setor
-const SectorDetail = ({ sector, companies }: { sector: string, companies: any[] }) => (
-  <Card className="mb-8">
-    <CardHeader>
-      <div className="flex justify-between items-start">
-        <div>
-          <CardTitle className="flex items-center gap-2">
-            <Factory className="h-5 w-5 text-red-500" />
-            Setor: {sector}
-          </CardTitle>
-          <CardDescription>
-            Empresas deste setor e suas emissões de carbono
-          </CardDescription>
-        </div>
-      </div>
-    </CardHeader>
-    <CardContent>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Empresa</TableHead>
-            <TableHead className="text-right">Emissões (kg CO₂)</TableHead>
-            <TableHead className="text-right">Compensações (kg CO₂)</TableHead>
-            <TableHead className="text-right">Redução (%)</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {companies.map((company) => (
-            <TableRow key={company.id}>
-              <TableCell className="font-medium">{company.name}</TableCell>
-              <TableCell className="text-right">{parseFloat(company.emissions).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
-              <TableCell className="text-right">{parseFloat(company.compensations).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
-              <TableCell className="text-right">
-                <Badge 
-                  variant="outline"
-                  className={parseFloat(company.reduction) > 50 ? "bg-green-100 text-green-800" : ""}
-                >
-                  {parseFloat(company.reduction).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}%
-                </Badge>
-              </TableCell>
-            </TableRow>
-          ))}
-          {companies.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center py-4 text-gray-500">
-                Nenhuma empresa encontrada neste setor
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </CardContent>
-  </Card>
-);
+const SECTOR_COLORS = {
+  'Telecomunicações': '#3b82f6',
+  'Aviação': '#ef4444', 
+  'Bebidas': '#22c55e',
+  'Indústria de Bebidas': '#f97316',
+  'Serviços Financeiros': '#8b5cf6',
+  'Agricultura': '#84cc16',
+  'Administração Pública': '#06b6d4',
+  'Varejo / Supermercados': '#f59e0b'
+};
 
 export default function SetoresPoluentes() {
-  const { user } = useAuth();
-  const [, setLocation] = useLocation();
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const queryClient = useQueryClient();
 
-  // Redirecionar se não for admin
-  useEffect(() => {
-    if (user && user.role !== 'admin') {
-      setLocation('/');
-    }
-  }, [user, setLocation]);
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['/api/admin/stats'],
+    refetchInterval: 30000
+  }) as { data: any, isLoading: boolean };
 
-  // Timestamp to force fresh requests
-  const [timestamp, setTimestamp] = useState(Date.now());
-
-  // Buscar estatísticas do dashboard admin com real-time updates
-  const { data: stats, isLoading, error, refetch } = useQuery({
-    queryKey: ['/api/admin/stats', timestamp],
-    enabled: user?.role === 'admin',
-    staleTime: 0, // Always consider data stale for immediate updates
-    gcTime: 0, // Don't cache query results
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchInterval: 1000 * 15, // Auto-refetch every 15 seconds
-    queryFn: async () => {
-      const response = await fetch(`/api/admin/stats?t=${timestamp}`, {
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch admin stats');
-      }
-      return response.json();
-    }
-  });
-
-  // Force cache invalidation and refetch on component mount and when data changes
-  useEffect(() => {
-    if (user?.role !== 'admin') return;
-
-    const invalidateAndRefresh = async () => {
-      console.log('🔄 SetoresPoluentes: Invalidating stats cache...');
-      
-      // Update timestamp to force new request
-      const newTimestamp = Date.now();
-      setTimestamp(newTimestamp);
-      
-      // Clear all caches completely
-      queryClient.removeQueries({ queryKey: ['/api/admin/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
-      
-      // Clear browser cache for this URL
-      if ('caches' in window) {
-        try {
-          const cacheNames = await caches.keys();
-          await Promise.all(cacheNames.map(name => caches.delete(name)));
-        } catch (error) {
-          console.log('No service worker caches to clear');
-        }
-      }
-      
-      // Force refetch
-      refetch();
-    };
-
-    // Invalidate immediately on mount
-    invalidateAndRefresh();
-
-    // Listen for storage events (cross-tab updates)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'project-updated' || e.key === 'project-cache-clear' || e.key === 'consumption-updated') {
-        console.log('📢 SetoresPoluentes: Detected update via localStorage');
-        invalidateAndRefresh();
-      }
-    };
-
-    // Listen for focus events to refresh when user returns to tab
-    const handleFocus = () => {
-      console.log('👁️ SetoresPoluentes: Window focused, refreshing stats...');
-      invalidateAndRefresh();
-    };
-
-    // Listen for visibility change to refresh when tab becomes visible
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log('🔍 SetoresPoluentes: Tab became visible, refreshing stats...');
-        invalidateAndRefresh();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('focus', handleFocus);
-    window.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Set up periodic refresh
-    const interval = setInterval(invalidateAndRefresh, 1000 * 45); // Every 45 seconds
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [user?.role, queryClient, refetch]);
-
-  // Agrupar empresas por setor
-  const sectorCompanies = stats?.sectorEmissions?.reduce((acc: any, item: any) => {
-    const { sector, company_id, company_name, emissions, compensations, reduction } = item;
-    
-    if (!acc[sector]) {
-      acc[sector] = [];
-    }
-    
-    acc[sector].push({
-      id: company_id,
-      name: company_name,
-      emissions,
-      compensations,
-      reduction
-    });
-    
-    return acc;
-  }, {}) || {};
-
-  // Sort sectors by total emissions (highest to lowest)
-  const sectors = Object.keys(sectorCompanies).sort((a, b) => {
-    const totalEmissionsA = sectorCompanies[a].reduce(
-      (sum: number, company: any) => sum + parseFloat(company.emissions), 0
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
     );
-    const totalEmissionsB = sectorCompanies[b].reduce(
-      (sum: number, company: any) => sum + parseFloat(company.emissions), 0
-    );
-    return totalEmissionsB - totalEmissionsA; // Sort descending (highest first)
-  });
+  }
+
+  // Processar dados por setor
+  const sectorData = stats?.sectorEmissions ? 
+    Object.entries(
+      stats.sectorEmissions.reduce((acc: any, item: any) => {
+        const sector = item.sector || "Sem setor";
+        if (!acc[sector]) {
+          acc[sector] = {
+            name: sector,
+            totalEmissions: 0,
+            totalCompensations: 0,
+            companies: [],
+            count: 0
+          };
+        }
+        
+        const emissions = parseFloat(item.emissions || 0);
+        const compensations = parseFloat(item.compensations || 0);
+        
+        acc[sector].totalEmissions += emissions;
+        acc[sector].totalCompensations += compensations;
+        acc[sector].count += 1;
+        acc[sector].companies.push({
+          name: item.company_name,
+          id: item.company_id,
+          emissions,
+          compensations
+        });
+        
+        return acc;
+      }, {})
+    ).map(([, value]) => value).sort((a: any, b: any) => b.totalEmissions - a.totalEmissions)
+    : [];
+
+  const totalEmissions = sectorData.reduce((sum: number, sector: any) => sum + sector.totalEmissions, 0);
 
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Setores Mais Poluentes</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Análise das emissões de carbono por setor empresarial
-          </p>
+          <div className="flex items-center gap-2 mb-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/admin/relatorios">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <h1 className="text-2xl font-bold">Setores Mais Poluentes</h1>
+          </div>
+          <p className="text-gray-600">Análise das emissões de carbono por setor empresarial</p>
         </div>
         <Button asChild variant="outline">
-          <Link href="/admin/dashboard">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar ao Dashboard
-          </Link>
+          <Link href="/admin/dashboard">Voltar ao Dashboard</Link>
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      ) : error ? (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Erro</AlertTitle>
-          <AlertDescription>
-            Não foi possível carregar os dados dos setores.
-          </AlertDescription>
-        </Alert>
+      {sectorData.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center h-64">
+              <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
+              <h3 className="text-lg font-medium mb-2">Sem dados de emissões</h3>
+              <p className="text-gray-500 text-center">
+                Ainda não há registros de consumo das empresas cadastradas.
+                <br />
+                Entre em contato com as empresas para submeterem seus dados.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <>
-          {/* Visão geral dos setores */}
-          {!selectedSector ? (
-            <>
-              <Card className="mb-8">
+          {/* Visão Geral dos Setores */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Estatísticas Gerais */}
+            <div className="lg:col-span-1 space-y-4">
+              <Card>
                 <CardHeader>
-                  <CardTitle>Visão Geral dos Setores</CardTitle>
-                  <CardDescription>
-                    Clique em um setor para ver detalhes das empresas
-                  </CardDescription>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Factory className="h-5 w-5" />
+                    Resumo Geral
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {sectors.map((sector) => {
-                      // Calcular totais do setor
-                      const totalEmissions = sectorCompanies[sector].reduce(
-                        (sum: number, company: any) => sum + parseFloat(company.emissions), 0
-                      );
-                      
-                      return (
-                        <Card 
-                          key={sector}
-                          className="cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => setSelectedSector(sector)}
-                        >
-                          <CardContent className="p-6">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <Building2 className="h-5 w-5 text-gray-500" />
-                              <h3 className="font-semibold text-lg">{sector}</h3>
-                            </div>
-                            <div className="flex flex-col space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-500">Empresas:</span>
-                                <span className="font-medium">{sectorCompanies[sector].length}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-500">Emissões totais:</span>
-                                <span className="font-medium text-red-600">
-                                  {totalEmissions.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} kg CO₂
-                                </span>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                    
-                    {sectors.length === 0 && (
-                      <div className="col-span-3 text-center py-10 text-gray-500">
-                        Não há dados disponíveis sobre setores e emissões
-                      </div>
-                    )}
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Total de Setores</p>
+                    <p className="text-2xl font-bold">{sectorData.length}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Total de Emissões</p>
+                    <p className="text-2xl font-bold text-red-600">
+                      {totalEmissions.toLocaleString('pt-BR')} kg CO₂
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Setor Mais Poluente</p>
+                    <p className="text-lg font-medium">
+                      {sectorData[0]?.name || 'N/A'}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
-            </>
-          ) : (
-            <>
-              {/* Botão para voltar à visão geral */}
-              <div className="mb-4">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setSelectedSector(null)}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Voltar para todos os setores
-                </Button>
+
+              {/* Top 3 Setores */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Top 3 Setores</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {sectorData.slice(0, 3).map((sector: any, index: number) => (
+                    <div 
+                      key={sector.name}
+                      className="flex items-center justify-between p-3 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => setSelectedSector(sector.name)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-500 text-white text-sm font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium">{sector.name}</p>
+                          <p className="text-sm text-gray-500">{sector.count} empresas</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-red-600">
+                          {sector.totalEmissions.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                        </p>
+                        <p className="text-xs text-gray-500">kg CO₂</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Gráficos */}
+            <div className="lg:col-span-2 space-y-6">
+              <Tabs defaultValue="bar">
+                <TabsList>
+                  <TabsTrigger value="bar">Gráfico de Barras</TabsTrigger>
+                  <TabsTrigger value="pie">Gráfico de Pizza</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="bar">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Emissões por Setor</CardTitle>
+                      <CardDescription>Comparação de emissões de CO₂ entre setores</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={sectorData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="name" 
+                              angle={-45}
+                              textAnchor="end"
+                              height={80}
+                              fontSize={12}
+                            />
+                            <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} />
+                            <Tooltip 
+                              formatter={(value: any) => [
+                                `${parseFloat(value).toLocaleString('pt-BR')} kg CO₂`,
+                                'Emissões'
+                              ]}
+                            />
+                            <Bar 
+                              dataKey="totalEmissions" 
+                              name="Emissões" 
+                              fill="#ef4444"
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="pie">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Distribuição de Emissões</CardTitle>
+                      <CardDescription>Percentual de emissões por setor</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={sectorData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({name, percent}) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                              outerRadius={100}
+                              fill="#8884d8"
+                              dataKey="totalEmissions"
+                            >
+                              {sectorData.map((entry: any, index: number) => (
+                                <Cell 
+                                  key={`cell-${index}`} 
+                                  fill={SECTOR_COLORS[entry.name as keyof typeof SECTOR_COLORS] || '#8884d8'} 
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              formatter={(value: any) => [
+                                `${parseFloat(value).toLocaleString('pt-BR')} kg CO₂`,
+                                'Emissões'
+                              ]}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+
+          {/* Tabela Detalhada */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Detalhamento por Setor</CardTitle>
+              <CardDescription>Clique em um setor para ver detalhes das empresas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="py-3 px-4 text-left">Setor</th>
+                      <th className="py-3 px-4 text-center">Empresas</th>
+                      <th className="py-3 px-4 text-right">Emissões Totais</th>
+                      <th className="py-3 px-4 text-right">Compensações</th>
+                      <th className="py-3 px-4 text-center">% do Total</th>
+                      <th className="py-3 px-4 text-center">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sectorData.map((sector: any) => (
+                      <React.Fragment key={sector.name}>
+                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded-full" 
+                                style={{ backgroundColor: SECTOR_COLORS[sector.name as keyof typeof SECTOR_COLORS] || '#8884d8' }}
+                              ></div>
+                              <span className="font-medium">{sector.name}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <Badge variant="secondary">{sector.count}</Badge>
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono">
+                            {sector.totalEmissions.toLocaleString('pt-BR')} kg CO₂
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono text-green-600">
+                            {sector.totalCompensations.toLocaleString('pt-BR')} Kz
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <Badge variant={
+                              (sector.totalEmissions / totalEmissions) > 0.3 ? "destructive" : 
+                              (sector.totalEmissions / totalEmissions) > 0.15 ? "default" : "secondary"
+                            }>
+                              {((sector.totalEmissions / totalEmissions) * 100).toFixed(1)}%
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setSelectedSector(selectedSector === sector.name ? null : sector.name)}
+                            >
+                              {selectedSector === sector.name ? 'Ocultar' : 'Ver Empresas'}
+                            </Button>
+                          </td>
+                        </tr>
+                        {selectedSector === sector.name && (
+                          <tr>
+                            <td colSpan={6} className="p-4 bg-gray-50">
+                              <div className="space-y-2">
+                                <h4 className="font-medium text-sm text-gray-700">
+                                  Empresas do setor {sector.name}:
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                  {sector.companies.map((company: any) => (
+                                    <div key={company.id} className="flex justify-between items-center p-2 bg-white rounded border">
+                                      <span className="text-sm">{company.name}</span>
+                                      <div className="text-xs text-gray-500">
+                                        {company.emissions.toLocaleString('pt-BR')} kg CO₂
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              
-              {/* Detalhe do setor selecionado */}
-              <SectorDetail 
-                sector={selectedSector} 
-                companies={sectorCompanies[selectedSector] || []} 
-              />
-            </>
-          )}
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

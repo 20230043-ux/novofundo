@@ -1212,21 +1212,22 @@ export class DatabaseStorage implements IStorage {
       ORDER BY total_amount DESC
     `);
     
-    // Most polluting sectors
+    // Most polluting sectors - show all sectors with or without consumption data
     const sectorEmissions = await db.execute(sql`
       SELECT 
         c.sector,
         c.id as company_id,
         c.name as company_name,
-        SUM(cr.emission_kg_co2) as emissions,
+        COALESCE(SUM(cr.emission_kg_co2), 0) as emissions,
         COALESCE(SUM(cr.compensation_value_kz), 0) as compensations,
         CASE 
           WHEN SUM(cr.emission_kg_co2) > 0 
           THEN (COALESCE(SUM(cr.compensation_value_kz), 0) / SUM(cr.emission_kg_co2)) * 100
           ELSE 0
         END as reduction
-      FROM ${consumptionRecords} cr
-      JOIN ${companies} c ON cr.company_id = c.id
+      FROM ${companies} c
+      LEFT JOIN ${consumptionRecords} cr ON cr.company_id = c.id
+      WHERE c.sector IS NOT NULL AND c.sector != ''
       GROUP BY c.sector, c.id, c.name
       ORDER BY c.sector, emissions DESC
     `);
