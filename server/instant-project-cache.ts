@@ -13,7 +13,10 @@ interface ProjectData {
   totalInvested: string;
   peopleCount: number;
   createdAt: Date;
+  updatedAt?: Date;
+  sdg?: any;
   updates?: any[];
+  investments?: any[];
 }
 
 class InstantProjectCache {
@@ -78,15 +81,20 @@ class InstantProjectCache {
     const updatedProject = await storage.updateProject(id, updateData);
     
     if (updatedProject) {
+      // Get the full project with relations to ensure we have all data
+      const fullProject = await storage.getProjectById(id);
+      const projectToCache = fullProject || updatedProject;
+      
       // Update memory cache instantly
-      this.projects.set(id, updatedProject);
+      this.projects.set(id, projectToCache);
       const index = this.projectsList.findIndex(p => p.id === id);
       if (index !== -1) {
-        this.projectsList[index] = updatedProject;
+        this.projectsList[index] = projectToCache;
       }
       this.lastUpdate = Date.now();
       
-      log(`⚡ Projeto ${updatedProject.name} atualizado no cache instantâneo`);
+      log(`⚡ Projeto ${projectToCache.name} atualizado no cache instantâneo`);
+      return projectToCache;
     }
     
     return updatedProject;

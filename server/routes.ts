@@ -396,7 +396,14 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       await instantProjectCache.initialize();
       
       // Get projects instantly from memory (no database query)
-      const projects = instantProjectCache.getProjectsInstant();
+      let projects = instantProjectCache.getProjectsInstant();
+      
+      // If no projects in cache or projects missing SDG data, force refresh
+      if (!projects || projects.length === 0 || !projects[0]?.sdg) {
+        console.log("🔄 Cache vazia ou sem dados SDG, forçando refresh...");
+        await instantProjectCache.forceRefresh();
+        projects = instantProjectCache.getProjectsInstant();
+      }
       
       const responseTime = Date.now() - startTime;
       res.setHeader('X-Response-Time', `${responseTime}ms`);
