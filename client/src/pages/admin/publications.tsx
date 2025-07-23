@@ -93,6 +93,7 @@ const AdminPublications = () => {
   const [updateToEdit, setUpdateToEdit] = useState<any | null>(null);
   const [isViewUpdatesOpen, setIsViewUpdatesOpen] = useState(false);
   const [projectForUpdates, setProjectForUpdates] = useState<any | null>(null);
+  const [existingMediaUrls, setExistingMediaUrls] = useState<string[]>([]);
   
   // Multiple timestamps for immediate cache busting
   const [imageTimestamp, setImageTimestamp] = useState(Date.now());
@@ -376,12 +377,15 @@ const AdminPublications = () => {
 
   // Edit project update mutation
   const editUpdateMutation = useMutation({
-    mutationFn: async ({ updateId, data, files }: { updateId: number, data: UpdateFormValues, files: File[] }) => {
+    mutationFn: async ({ updateId, data, files, existingMediaUrls }: { updateId: number, data: UpdateFormValues, files: File[], existingMediaUrls: string[] }) => {
       const formData = new FormData();
       formData.append("title", data.title);
       formData.append("content", data.content);
       
-      // Add files to formData
+      // Add existing media URLs that should be kept
+      formData.append("existingMediaUrls", JSON.stringify(existingMediaUrls));
+      
+      // Add new files to formData
       if (files.length > 0) {
         files.forEach((file, index) => {
           formData.append("media", file);
@@ -413,6 +417,7 @@ const AdminPublications = () => {
       setUpdateToEdit(null);
       updateForm.reset();
       setUpdateMediaFiles([]);
+      setExistingMediaUrls([]);
       
       toast({
         title: "Atualização editada",
@@ -554,8 +559,14 @@ const AdminPublications = () => {
     editUpdateMutation.mutate({ 
       updateId: updateToEdit.id, 
       data,
-      files: updateMediaFiles
+      files: updateMediaFiles,
+      existingMediaUrls: existingMediaUrls
     });
+  };
+
+  // Remove existing media URL
+  const removeExistingMedia = (urlToRemove: string) => {
+    setExistingMediaUrls(prev => prev.filter(url => url !== urlToRemove));
   };
   
 
@@ -614,6 +625,11 @@ const AdminPublications = () => {
     setUpdateToEdit(update);
     setIsEditUpdateOpen(true);
     setUpdateMediaFiles([]);
+    
+    // Set existing media URLs from the update
+    const mediaUrls = Array.isArray(update.mediaUrls) ? update.mediaUrls : [];
+    setExistingMediaUrls(mediaUrls);
+    
     updateForm.reset({
       title: update.title,
       content: update.content,
@@ -1622,7 +1638,36 @@ const AdminPublications = () => {
                     />
                     
                     <div>
-                      <Label>Arquivos de Media (opcional)</Label>
+                      <Label>Gestão de Arquivos Media</Label>
+                      
+                      {/* Existing Media URLs */}
+                      {existingMediaUrls.length > 0 && (
+                        <div className="mt-4">
+                          <p className="text-sm font-medium text-gray-700 mb-2">Fotos atuais (clique no X para remover):</p>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {existingMediaUrls.map((url, index) => (
+                              <div key={index} className="relative group">
+                                <div className="w-20 h-20 border rounded-md overflow-hidden bg-gray-50">
+                                  <img 
+                                    src={url} 
+                                    alt={`Media ${index + 1}`} 
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => removeExistingMedia(url)}
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Upload new files */}
                       <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                         <div className="space-y-1 text-center">
                           <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
@@ -1631,7 +1676,7 @@ const AdminPublications = () => {
                               htmlFor="edit-update-media-upload"
                               className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-600"
                             >
-                              <span>Escolher arquivos</span>
+                              <span>Adicionar novas fotos</span>
                               <input
                                 id="edit-update-media-upload"
                                 name="edit-update-media-upload"
@@ -1648,9 +1693,10 @@ const AdminPublications = () => {
                         </div>
                       </div>
                       
+                      {/* New files to upload */}
                       {updateMediaFiles.length > 0 && (
                         <div className="mt-4">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Arquivos selecionados:</p>
+                          <p className="text-sm font-medium text-gray-700 mb-2">Novas fotos a adicionar:</p>
                           <div className="flex flex-wrap gap-2">
                             {updateMediaFiles.map((file, index) => (
                               <div key={index} className="relative group">

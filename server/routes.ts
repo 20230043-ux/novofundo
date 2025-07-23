@@ -1582,18 +1582,18 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
     }
   });
 
-  // Update a project update
-  app.put("/api/admin/project-updates/:id", isAdmin, async (req, res) => {
+  // Update a project update with media
+  app.put("/api/admin/project-updates/:id", isAdmin, upload.array("media"), async (req, res) => {
     try {
       const updateId = parseInt(req.params.id);
       if (isNaN(updateId)) {
         return res.status(400).json({ message: "ID inválido" });
       }
       
-      const { title, content } = req.body;
+      const { title, content, existingMediaUrls } = req.body;
       
-      if (!title && !content) {
-        return res.status(400).json({ message: "Título ou conteúdo são obrigatórios" });
+      if (!title || !content) {
+        return res.status(400).json({ message: "Título e conteúdo são obrigatórios" });
       }
       
       // Buscar a atualização atual
@@ -1601,22 +1601,56 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       if (!currentUpdate) {
         return res.status(404).json({ message: "Atualização não encontrada" });
       }
+
+      // Process existing media URLs from frontend
+      let finalMediaUrls: string[] = [];
+      if (existingMediaUrls) {
+        try {
+          const parsedUrls = JSON.parse(existingMediaUrls);
+          if (Array.isArray(parsedUrls)) {
+            finalMediaUrls = [...parsedUrls];
+          }
+        } catch (err) {
+          console.log("Error parsing existing URLs, using current ones");
+          finalMediaUrls = Array.isArray(currentUpdate.mediaUrls) ? [...currentUpdate.mediaUrls] : [];
+        }
+      } else {
+        // If no existing URLs provided, keep current ones
+        finalMediaUrls = Array.isArray(currentUpdate.mediaUrls) ? [...currentUpdate.mediaUrls] : [];
+      }
+
+      // Process new uploaded files
+      if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        for (const file of req.files) {
+          const fileUrl = `/uploads/${file.filename}`;
+          finalMediaUrls.push(fileUrl);
+        }
+      }
       
-      // Atualizar apenas título e conteúdo, deixando as imagens como estão
-      const updateData: Record<string, any> = {};
-      if (title) updateData.title = title;
-      if (content) updateData.content = content;
+      // Prepare update data
+      const updateData: Record<string, any> = {
+        title,
+        content,
+        mediaUrls: finalMediaUrls
+      };
       
-      // Manter explicitamente as imagens existentes (não alterar)
-      // updateData.mediaUrls = currentUpdate.mediaUrls || [];
+      console.log("Dados de atualização completos:", updateData);
       
-      console.log("Dados de atualização (texto):", updateData);
+      // Update the project update with all operations in parallel for instant response
+      const [updatedUpdate] = await Promise.all([
+        storage.updateProjectUpdate(updateId, updateData),
+        Promise.resolve(clearCacheByPattern('projects')),
+        Promise.resolve(clearCacheByPattern(`project:${currentUpdate.projectId}`)),
+        Promise.resolve(clearCacheByPattern(`project_${currentUpdate.projectId}`)),
+        preloadCache.forceRefresh(),
+        instantProjectCache.forceRefresh()
+      ]);
       
-      const updatedUpdate = await storage.updateProjectUpdate(updateId, updateData);
       if (!updatedUpdate) {
         return res.status(404).json({ message: "Falha ao atualizar" });
       }
       
+      res.setHeader('X-Cache-Invalidated', 'true');
       res.json(updatedUpdate);
     } catch (error) {
       console.error("Error updating project update:", error);
