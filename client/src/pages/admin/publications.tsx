@@ -88,6 +88,12 @@ const AdminPublications = () => {
   const [projectToEdit, setProjectToEdit] = useState<any | null>(null);
   const [editProjectImage, setEditProjectImage] = useState<File | null>(null);
   
+  // Estados para edição de atualizações
+  const [isEditUpdateOpen, setIsEditUpdateOpen] = useState(false);
+  const [updateToEdit, setUpdateToEdit] = useState<any | null>(null);
+  const [isViewUpdatesOpen, setIsViewUpdatesOpen] = useState(false);
+  const [projectForUpdates, setProjectForUpdates] = useState<any | null>(null);
+  
   // Multiple timestamps for immediate cache busting
   const [imageTimestamp, setImageTimestamp] = useState(Date.now());
   const [projectTimestamps, setProjectTimestamps] = useState<Record<number, number>>({});
@@ -367,6 +373,60 @@ const AdminPublications = () => {
       });
     },
   });
+
+  // Edit project update mutation
+  const editUpdateMutation = useMutation({
+    mutationFn: async ({ updateId, data, files }: { updateId: number, data: UpdateFormValues, files: File[] }) => {
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("content", data.content);
+      
+      // Add files to formData
+      if (files.length > 0) {
+        files.forEach((file, index) => {
+          formData.append("media", file);
+        });
+      }
+      
+      const res = await fetch(`/api/admin/project-updates/${updateId}`, {
+        method: "PUT",
+        body: formData,
+        credentials: "include",
+      });
+      
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || "Erro ao editar atualização");
+      }
+      
+      return await res.json();
+    },
+    onSuccess: () => {
+      // Invalidate all related queries for comprehensive updates
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      // Force refetch to ensure fresh data
+      queryClient.refetchQueries({ queryKey: ['/api/projects'] });
+      
+      // Close dialog
+      setIsEditUpdateOpen(false);
+      setUpdateToEdit(null);
+      updateForm.reset();
+      setUpdateMediaFiles([]);
+      
+      toast({
+        title: "Atualização editada",
+        description: "A atualização foi modificada com sucesso.",
+      });
+    },
+    onError: (err) => {
+      toast({
+        title: "Erro ao editar atualização",
+        description: "Houve um erro. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
   
   // Edit project mutation with optimistic update
   const editProjectMutation = useMutation({
@@ -479,6 +539,24 @@ const AdminPublications = () => {
       files: updateMediaFiles
     });
   };
+
+  // Submit edit update
+  const onEditUpdateSubmit = (data: UpdateFormValues) => {
+    if (!updateToEdit) {
+      toast({
+        title: "Erro",
+        description: "Nenhuma atualização selecionada para edição.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    editUpdateMutation.mutate({ 
+      updateId: updateToEdit.id, 
+      data,
+      files: updateMediaFiles
+    });
+  };
   
 
   
@@ -522,6 +600,23 @@ const AdminPublications = () => {
     updateForm.reset({
       title: "",
       content: "",
+    });
+  };
+
+  // Open view updates dialog
+  const openViewUpdatesDialog = (project: any) => {
+    setProjectForUpdates(project);
+    setIsViewUpdatesOpen(true);
+  };
+
+  // Open edit update dialog
+  const openEditUpdateDialog = (update: any) => {
+    setUpdateToEdit(update);
+    setIsEditUpdateOpen(true);
+    setUpdateMediaFiles([]);
+    updateForm.reset({
+      title: update.title,
+      content: update.content,
     });
   };
   
@@ -700,15 +795,27 @@ const AdminPublications = () => {
                                   {formatCurrency(project.totalInvested)}
                                 </TableCell>
                                 <TableCell>
-                                  {project.updates && project.updates.length > 0 ? (
-                                    <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
-                                      {project.updates.length} atualizações
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
-                                      Sem atualizações
-                                    </Badge>
-                                  )}
+                                  <div className="flex items-center gap-2">
+                                    {project.updates && project.updates.length > 0 ? (
+                                      <>
+                                        <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+                                          {project.updates.length} atualizações
+                                        </Badge>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => openViewUpdatesDialog(project)}
+                                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 h-6"
+                                        >
+                                          <Eye className="h-3 w-3" />
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
+                                        Sem atualizações
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex items-center gap-2">
@@ -1401,6 +1508,205 @@ const AdminPublications = () => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+
+            {/* View Updates Dialog */}
+            <Dialog open={isViewUpdatesOpen} onOpenChange={setIsViewUpdatesOpen}>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-lg flex items-center gap-2">
+                    <Eye className="h-5 w-5 text-blue-600" />
+                    Atualizações do Projeto
+                  </DialogTitle>
+                  <DialogDescription>
+                    {projectForUpdates && (
+                      <div className="flex items-center mt-1">
+                        <Badge
+                          style={{ backgroundColor: projectForUpdates.sdg?.color }}
+                          className="text-white mr-2"
+                        >
+                          ODS {projectForUpdates.sdg?.number}
+                        </Badge>
+                        <span>{projectForUpdates.name}</span>
+                      </div>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  {projectForUpdates?.updates && projectForUpdates.updates.length > 0 ? (
+                    projectForUpdates.updates.map((update: any) => (
+                      <Card key={update.id} className="border-l-4 border-l-blue-500">
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between items-start">
+                            <CardTitle className="text-base">{update.title}</CardTitle>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditUpdateDialog(update)}
+                                className="text-amber-600 hover:text-amber-800 hover:bg-amber-50"
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Editar
+                              </Button>
+                              <Badge variant="outline" className="text-xs">
+                                {formatDate(update.createdAt)}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-700 whitespace-pre-wrap">{update.content}</p>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg">
+                      <Clock className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500">Este projeto ainda não tem atualizações.</p>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Update Dialog */}
+            <Dialog open={isEditUpdateOpen} onOpenChange={setIsEditUpdateOpen}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-lg flex items-center gap-2">
+                    <Edit className="h-5 w-5 text-amber-600" />
+                    Editar Atualização
+                  </DialogTitle>
+                  <DialogDescription>
+                    {updateToEdit && (
+                      <span className="text-sm text-gray-600">
+                        Modificando: "{updateToEdit.title}"
+                      </span>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <Form {...updateForm}>
+                  <form onSubmit={updateForm.handleSubmit(onEditUpdateSubmit)} className="space-y-6">
+                    <FormField
+                      control={updateForm.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Título da Atualização</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: Plantio de 500 árvores concluído" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={updateForm.control}
+                      name="content"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Conteúdo da Atualização</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Descreva os progressos, resultados ou novidades do projeto..." 
+                              className="min-h-32"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div>
+                      <Label>Arquivos de Media (opcional)</Label>
+                      <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div className="space-y-1 text-center">
+                          <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+                          <div className="flex text-sm text-gray-600">
+                            <label
+                              htmlFor="edit-update-media-upload"
+                              className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-600"
+                            >
+                              <span>Escolher arquivos</span>
+                              <input
+                                id="edit-update-media-upload"
+                                name="edit-update-media-upload"
+                                type="file"
+                                className="sr-only"
+                                multiple
+                                accept="image/*,video/*"
+                                onChange={handleUpdateMediaChange}
+                              />
+                            </label>
+                            <p className="pl-1">ou arraste e solte</p>
+                          </div>
+                          <p className="text-xs text-gray-500">PNG, JPG, MP4 até 10MB cada</p>
+                        </div>
+                      </div>
+                      
+                      {updateMediaFiles.length > 0 && (
+                        <div className="mt-4">
+                          <p className="text-sm font-medium text-gray-700 mb-2">Arquivos selecionados:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {updateMediaFiles.map((file, index) => (
+                              <div key={index} className="relative group">
+                                <div className="w-16 h-16 border rounded-md flex items-center justify-center bg-gray-50">
+                                  {file.type.startsWith('image/') ? (
+                                    <img 
+                                      src={URL.createObjectURL(file)} 
+                                      alt={file.name} 
+                                      className="max-w-full max-h-full object-contain rounded-md"
+                                    />
+                                  ) : (
+                                    <FileVideo className="w-8 h-8 text-gray-400" />
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => {
+                                    const newFiles = [...updateMediaFiles];
+                                    newFiles.splice(index, 1);
+                                    setUpdateMediaFiles(newFiles);
+                                  }}
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                                <p className="text-xs text-gray-500 truncate w-16 text-center mt-1">
+                                  {file.name.length > 10 ? `${file.name.substring(0, 7)}...` : file.name}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setIsEditUpdateOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={editUpdateMutation.isPending}
+                        className="bg-amber-600 hover:bg-amber-700"
+                      >
+                        {editUpdateMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+
           </div>
         </div>
 
