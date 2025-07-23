@@ -16,12 +16,9 @@ import {
   BookOpen,
   X,
   Menu,
-  MessageCircle,
   Download,
   Database
 } from "lucide-react";
-import { useMessages } from "@/hooks/use-messages";
-import { Badge } from "@/components/ui/badge";
 
 interface SidebarProps {
   type: 'company' | 'admin';
@@ -32,7 +29,6 @@ const Sidebar = ({ type }: SidebarProps) => {
   const { user, logout } = useAuth();
   const isMobile = useMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { unreadCount } = useMessages();
   
   // Close sidebar on route change
   useEffect(() => {
@@ -151,15 +147,6 @@ const Sidebar = ({ type }: SidebarProps) => {
               <Link href="/empresa/historico" className={`flex items-center px-6 py-3 ${isActive('/empresa/historico') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
                 <History className="w-5 h-5 mr-3" />
                 <span>Histórico</span>
-              </Link>
-              <Link href="/mensagens" className={`flex items-center px-6 py-3 ${isActive('/mensagens') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
-                <MessageCircle className="w-5 h-5 mr-3" />
-                <span>Mensagens</span>
-                {unreadCount > 0 && (
-                  <Badge variant="destructive" className="ml-auto text-xs">
-                    {unreadCount}
-                  </Badge>
-                )}
               </Link>
             </>
           ) : (
