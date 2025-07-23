@@ -18,11 +18,12 @@ import {
   Menu,
   Download,
   Database,
-  Activity
+  Activity,
+  FileText
 } from "lucide-react";
 
 interface SidebarProps {
-  type: 'company' | 'admin';
+  type: 'company' | 'admin' | 'individual';
 }
 
 const Sidebar = ({ type }: SidebarProps) => {
@@ -149,6 +150,10 @@ const Sidebar = ({ type }: SidebarProps) => {
                 <History className="w-5 h-5 mr-3" />
                 <span>Histórico</span>
               </Link>
+              <Link href="/empresa/comprovativos" className={`flex items-center px-6 py-3 ${isActive('/empresa/comprovativos') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+                <FileText className="w-5 h-5 mr-3" />
+                <span>Comprovativos</span>
+              </Link>
             </>
           ) : (
             // Admin Navigation
@@ -185,6 +190,10 @@ const Sidebar = ({ type }: SidebarProps) => {
                 <Activity className="w-5 h-5 mr-3" />
                 <span>Monitor Tempo Real</span>
               </Link>
+              <Link href="/admin/comprovativos" className={`flex items-center px-6 py-3 ${isActive('/admin/comprovativos') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+                <FileText className="w-5 h-5 mr-3" />
+                <span>Histórico Comprovativos</span>
+              </Link>
             </>
           )}
           
@@ -218,6 +227,19 @@ const Sidebar = ({ type }: SidebarProps) => {
             <div>
               <h2 className="font-semibold text-gray-800">{user.company.name}</h2>
               <p className="text-xs text-gray-500">{user.company.sector}</p>
+            </div>
+          </div>
+        ) : type === 'individual' && user?.individual ? (
+          <div className="flex items-center">
+            <Avatar className="w-10 h-10 mr-3">
+              <AvatarImage src={user.individual.photoUrl || undefined} alt={user.individual.fullName} />
+              <AvatarFallback className="bg-primary text-white">
+                {getInitials(user.individual.fullName)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="font-semibold text-gray-800">{user.individual.fullName}</h2>
+              <p className="text-xs text-gray-500">{user.individual.age} anos</p>
             </div>
           </div>
         ) : (
@@ -256,6 +278,38 @@ const Sidebar = ({ type }: SidebarProps) => {
             <Link href="/empresa/historico" className={`flex items-center px-6 py-3 ${isActive('/empresa/historico') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
               <History className="w-5 h-5 mr-3" />
               <span>Histórico</span>
+            </Link>
+              <Link href="/empresa/comprovativos" className={`flex items-center px-6 py-3 ${isActive('/empresa/comprovativos') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+                <FileText className="w-5 h-5 mr-3" />
+                <span>Comprovativos</span>
+              </Link>
+          </>
+        ) : type === 'individual' ? (
+          // Individual Navigation
+          <>
+            <Link href="/individual/dashboard" className={`flex items-center px-6 py-3 ${isActive('/individual/dashboard') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+              <LayoutDashboard className="w-5 h-5 mr-3" />
+              <span>Dashboard</span>
+            </Link>
+            <Link href="/individual/profile" className={`flex items-center px-6 py-3 ${isActive('/individual/profile') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+              <User className="w-5 h-5 mr-3" />
+              <span>Perfil</span>
+            </Link>
+            <Link href="/individual/calculator" className={`flex items-center px-6 py-3 ${isActive('/individual/calculator') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+              <Droplets className="w-5 h-5 mr-3" />
+              <span>Calculadora Carbono</span>
+            </Link>
+            <Link href="/individual/payment-proof" className={`flex items-center px-6 py-3 ${isActive('/individual/payment-proof') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+              <FileUp className="w-5 h-5 mr-3" />
+              <span>Enviar Comprovativo</span>
+            </Link>
+            <Link href="/individual/investments" className={`flex items-center px-6 py-3 ${isActive('/individual/investments') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+              <TrendingUp className="w-5 h-5 mr-3" />
+              <span>Meus Investimentos</span>
+            </Link>
+            <Link href="/individual/comprovativos" className={`flex items-center px-6 py-3 ${isActive('/individual/comprovativos') ? 'bg-primary-50 text-primary border-l-4 border-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}>
+              <FileText className="w-5 h-5 mr-3" />
+              <span>Histórico Comprovativos</span>
             </Link>
           </>
         ) : (

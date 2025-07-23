@@ -76,6 +76,7 @@ function Router() {
       <ProtectedRoute path="/empresa/consumo" component={CompanyConsumption} role="company" />
       <ProtectedRoute path="/empresa/comprovativo" component={CompanyPaymentProof} role="company" />
       <ProtectedRoute path="/empresa/historico" component={CompanyHistory} role="company" />
+      <ProtectedRoute path="/empresa/comprovativos" component={lazy(() => import("./pages/company/payment-history"))} role="company" />
       
       {/* Individual Routes */}
       <ProtectedRoute path="/individual/dashboard" component={IndividualDashboard} role="individual" />
@@ -83,6 +84,7 @@ function Router() {
       <ProtectedRoute path="/individual/profile" component={IndividualProfile} role="individual" />
       <ProtectedRoute path="/individual/payment-proof" component={IndividualPaymentProof} role="individual" />
       <ProtectedRoute path="/individual/investments" component={IndividualInvestments} role="individual" />
+      <ProtectedRoute path="/individual/comprovativos" component={lazy(() => import("./pages/individual/payment-history"))} role="individual" />
       
       {/* Admin Routes */}
       <AdminRoute path="/admin/dashboard" component={AdminDashboard} />
@@ -98,6 +100,7 @@ function Router() {
       <AdminRoute path="/admin/backup" component={AdminBackup} />
       <AdminRoute path="/admin/database" component={DatabaseAdmin} />
       <AdminRoute path="/admin/real-time" component={lazy(() => import("./pages/admin/real-time-monitor"))} />
+      <AdminRoute path="/admin/comprovativos" component={lazy(() => import("./pages/admin/payment-history"))} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

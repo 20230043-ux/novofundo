@@ -1155,6 +1155,17 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
     }
   });
 
+  // Get all payment proofs for admin history
+  app.get("/api/admin/payment-proofs/all", isAdmin, async (req, res) => {
+    try {
+      const proofs = await storage.getAllPaymentProofs();
+      res.json(proofs);
+    } catch (error) {
+      console.error('Erro ao buscar todos os comprovativos:', error);
+      res.status(500).json({ message: "Erro ao buscar comprovativos" });
+    }
+  });
+
   // Get payment proofs without SDG
   app.get("/api/admin/payment-proofs/without-sdg", isAdmin, async (req, res) => {
     try {

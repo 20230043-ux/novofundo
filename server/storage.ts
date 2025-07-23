@@ -1287,6 +1287,31 @@ export class DatabaseStorage implements IStorage {
     };
   }
   
+  async getAllPaymentProofs() {
+    return await db.query.paymentProofs.findMany({
+      with: {
+        company: {
+          with: {
+            user: true
+          }
+        },
+        individual: {
+          with: {
+            user: true
+          }
+        },
+        consumptionRecord: true,
+        sdg: true,
+        investments: {
+          with: {
+            project: true
+          }
+        }
+      },
+      orderBy: [desc(paymentProofs.createdAt)]
+    });
+  }
+  
   async getPaymentProofsWithoutSdg() {
     return await db.query.paymentProofs.findMany({
       where: and(
