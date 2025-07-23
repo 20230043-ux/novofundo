@@ -66,6 +66,16 @@ const ProjectDetail = () => {
   // WebSocket connection for real-time updates
   const { isConnected } = useWebSocket();
   
+  // Fetch project details with real-time optimized caching
+  const { data: project, isLoading, refetch } = useQuery({
+    queryKey: [`/api/projects/${id}`],
+    staleTime: 0, // Always consider data stale for immediate updates
+    gcTime: 1000 * 60 * 5, // 5 minutes garbage collection
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: 5000, // Refetch every 5 seconds to ensure updates are visible
+  });
+
   // Listen for WebSocket project updates and refresh data
   useEffect(() => {
     const handleWebSocketMessage = (event: MessageEvent) => {
@@ -105,16 +115,6 @@ const ProjectDetail = () => {
       };
     }
   }, [isConnected, id, refetch]);
-  
-  // Fetch project details with real-time optimized caching
-  const { data: project, isLoading, refetch } = useQuery({
-    queryKey: [`/api/projects/${id}`],
-    staleTime: 0, // Always consider data stale for immediate updates
-    gcTime: 1000 * 60 * 5, // 5 minutes garbage collection
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchInterval: 5000, // Refetch every 5 seconds to ensure updates are visible
-  });
   
   // React Hook Form para edição de atualização
   const updateForm = useForm<UpdateFormValues>({
@@ -499,7 +499,7 @@ const ProjectDetail = () => {
             </Button>
           </Link>
           
-          {project.sdg && (
+          {project?.sdg && (
             <Link href={`/ods/${project.sdg.id}`}>
               <Button variant="outline" className="flex items-center">
                 <Badge 
@@ -518,11 +518,11 @@ const ProjectDetail = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
           <div className="h-80 overflow-hidden relative">
             <img 
-              src={project.imageUrl} 
-              alt={project.name} 
+              src={project?.imageUrl || ''} 
+              alt={project?.name || ''} 
               className="w-full h-full object-cover"
             />
-            {project.sdg && (
+            {project?.sdg && (
               <div className="absolute top-4 left-4">
                 <Badge 
                   style={{ backgroundColor: project.sdg.color }}
@@ -535,19 +535,19 @@ const ProjectDetail = () => {
           </div>
           
           <div className="p-6">
-            <h1 className="font-bold text-3xl text-gray-800 mb-4">{project.name}</h1>
+            <h1 className="font-bold text-3xl text-gray-800 mb-4">{project?.name || ''}</h1>
             
             <div className="flex items-center mb-6">
               <Badge variant="outline" className="flex items-center mr-4">
                 <CalendarDays className="h-4 w-4 mr-1" />
-                Criado em {formatDate(project.createdAt)}
+                Criado em {formatDate(project?.createdAt)}
               </Badge>
               <Badge className="bg-green-100 text-green-800 font-medium">
-                {formatCurrency(project.displayInvestment?.displayAmount || project.totalInvested)} investidos
+                {formatCurrency(project?.displayInvestment?.displayAmount || project?.totalInvested)} investidos
               </Badge>
             </div>
             
-            <p className="text-gray-600 whitespace-pre-line">{project.description}</p>
+            <p className="text-gray-600 whitespace-pre-line">{project?.description || ''}</p>
           </div>
         </div>
         
@@ -566,7 +566,7 @@ const ProjectDetail = () => {
               Atualizações do Projeto
             </h2>
             
-            {project.updates && project.updates.length > 0 ? (
+            {project?.updates && project.updates.length > 0 ? (
               <div className="space-y-6">
                 {project.updates.map((update: any) => (
                   <div key={update.id} className="bg-white rounded-lg shadow-md p-6 animate-eco-fade-in">
@@ -792,7 +792,7 @@ const ProjectDetail = () => {
             </DialogTitle>
             {updateToEdit && (
               <DialogDescription>
-                Atualização do projeto <span className="font-medium">{project.name}</span>
+                Atualização do projeto <span className="font-medium">{project?.name || ''}</span>
               </DialogDescription>
             )}
           </DialogHeader>
