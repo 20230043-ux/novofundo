@@ -1699,6 +1699,53 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
     }
   });
 
+  // Delete a project update
+  app.delete("/api/admin/project-updates/:id", isAdmin, async (req, res) => {
+    try {
+      const updateId = parseInt(req.params.id);
+      if (isNaN(updateId)) {
+        return res.status(400).json({ message: "ID inválido" });
+      }
+
+      // Get the update to find the project ID before deletion
+      const existingUpdate = await storage.getProjectUpdateById(updateId);
+      if (!existingUpdate) {
+        return res.status(404).json({ message: "Atualização não encontrada" });
+      }
+
+      // Delete the update from database
+      const deleted = await storage.deleteProjectUpdate(updateId);
+      if (!deleted) {
+        return res.status(404).json({ message: "Falha ao apagar atualização" });
+      }
+
+      // Clear all related caches
+      await Promise.all([
+        Promise.resolve(clearCacheByPattern('projects')),
+        Promise.resolve(clearCacheByPattern(`project:${existingUpdate.projectId}`)),
+        Promise.resolve(clearCacheByPattern(`project_${existingUpdate.projectId}`)),
+        preloadCache.forceRefresh(),
+        instantProjectCache.forceRefresh()
+      ]);
+
+      // Get the updated project with all related data for WebSocket broadcast
+      const updatedProject = await storage.getProjectById(existingUpdate.projectId);
+      if (updatedProject) {
+        // Broadcast project update via WebSocket
+        webSocketService.broadcastProjectUpdate({
+          action: 'update',
+          project: updatedProject
+        });
+      }
+
+      res.setHeader('X-Cache-Invalidated', 'true');
+      res.json({ message: "Atualização apagada com sucesso" });
+    } catch (error) {
+      console.error("Error deleting project update:", error);
+      res.status(500).json({ message: "Erro ao apagar a atualização do projeto" });
+    }
+  });
+
   // Create an investment
   app.post("/api/admin/investments", isAdmin, async (req, res) => {
     try {

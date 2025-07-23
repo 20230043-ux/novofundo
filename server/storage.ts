@@ -706,6 +706,24 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  async deleteProjectUpdate(id: number) {
+    try {
+      // Check if the update exists
+      const existingUpdate = await this.getProjectUpdateById(id);
+      if (!existingUpdate) {
+        return false;
+      }
+      
+      // Delete the project update
+      await db.delete(projectUpdates).where(eq(projectUpdates.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting project update:', error);
+      return false;
+    }
+  }
+  
   // Consumption
   async createConsumptionRecord(data: InsertConsumptionRecord) {
     const [record] = await db.insert(consumptionRecords).values(data).returning();

@@ -439,6 +439,48 @@ const AdminPublications = () => {
       });
     },
   });
+
+  // Delete project update mutation
+  const deleteUpdateMutation = useMutation({
+    mutationFn: async (updateId: number) => {
+      const res = await fetch(`/api/admin/project-updates/${updateId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || "Erro ao apagar atualização");
+      }
+      
+      return await res.json();
+    },
+    onSuccess: () => {
+      // Force immediate cache invalidation
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectForUpdates?.id] });
+      
+      // Remove stale cache and force refetch
+      queryClient.removeQueries({ queryKey: ['/api/projects'] });
+      
+      // Force immediate refetch
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/projects'] });
+      }, 50);
+      
+      toast({
+        title: "Atualização apagada",
+        description: "A atualização foi removida com sucesso.",
+      });
+    },
+    onError: (err) => {
+      toast({
+        title: "Erro ao apagar atualização",
+        description: "Houve um erro. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
   
   // Edit project mutation with optimistic update
   const editProjectMutation = useMutation({
@@ -1572,6 +1614,37 @@ const AdminPublications = () => {
                                 <Edit className="h-4 w-4 mr-1" />
                                 Editar
                               </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-1" />
+                                    Apagar
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja apagar a atualização "{update.title}"? 
+                                      Esta ação não pode ser desfeita e todas as imagens associadas serão removidas.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteUpdateMutation.mutate(update.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                      disabled={deleteUpdateMutation.isPending}
+                                    >
+                                      {deleteUpdateMutation.isPending ? "Apagando..." : "Apagar Atualização"}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                               <Badge variant="outline" className="text-xs">
                                 {formatDate(update.createdAt)}
                               </Badge>
