@@ -432,12 +432,12 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       // Initialize instant cache if needed
       await instantProjectCache.initialize();
       
-      // Try to get from instant cache first
-      let project = instantProjectCache.getProjectInstant(id);
+      // Always get from database for individual project to ensure updates are included
+      let project = await storage.getProjectById(id);
       
-      // If not in cache, get from database and cache it
+      // If not found in database, try instant cache as fallback
       if (!project) {
-        project = await storage.getProjectById(id);
+        project = instantProjectCache.getProjectInstant(id);
         if (!project) {
           // Try fallback data
           const fallbackProjects = await preloadCache.getProjects();
@@ -1429,7 +1429,8 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         Promise.resolve(clearCacheByPattern('projects')),
         Promise.resolve(clearCacheByPattern(`project:${projectId}`)),
         Promise.resolve(clearCacheByPattern(`project_${projectId}`)),
-        preloadCache.forceRefresh()
+        preloadCache.forceRefresh(),
+        instantProjectCache.forceRefresh() // Force instant cache refresh to include new updates
       ]);
       
       res.setHeader('X-Cache-Invalidated', 'true');
