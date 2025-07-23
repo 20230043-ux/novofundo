@@ -592,9 +592,23 @@ const ProjectDetail = () => {
                     {update.mediaUrls && update.mediaUrls.length > 0 && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
                         {update.mediaUrls.map((url: string, index: number) => {
-                          // Garantir que a URL comece com / se necessário
-                          const fullUrl = url.startsWith('/') ? url : `/${url}`;
-                          const allImages = update.mediaUrls.map((u: string) => u.startsWith('/') ? u : `/${u}`);
+                          // Corrigir URLs antigas que não tinham o caminho projects
+                          let fullUrl = url.startsWith('/') ? url : `/${url}`;
+                          
+                          // Se a URL está no formato antigo (/uploads/filename), corrigir para o novo formato
+                          if (fullUrl.startsWith('/uploads/') && !fullUrl.startsWith('/uploads/projects/')) {
+                            const filename = fullUrl.replace('/uploads/', '');
+                            fullUrl = `/uploads/projects/${filename}`;
+                          }
+                          
+                          const allImages = update.mediaUrls.map((u: string) => {
+                            let correctedUrl = u.startsWith('/') ? u : `/${u}`;
+                            if (correctedUrl.startsWith('/uploads/') && !correctedUrl.startsWith('/uploads/projects/')) {
+                              const filename = correctedUrl.replace('/uploads/', '');
+                              correctedUrl = `/uploads/projects/${filename}`;
+                            }
+                            return correctedUrl;
+                          });
                           return (
                             <div 
                               key={index} 
@@ -837,7 +851,14 @@ const ProjectDetail = () => {
                   <div className="mt-2 flex flex-wrap gap-2 mb-4">
                     {existingMediaUrls.map((url, index) => {
                       // Garantir que a URL esteja no formato correto
-                      const displayUrl = url.startsWith('/') ? url : `/${url}`;
+                      let displayUrl = url.startsWith('/') ? url : `/${url}`;
+                      
+                      // Corrigir URLs antigas que não tinham o caminho projects
+                      if (displayUrl.startsWith('/uploads/') && !displayUrl.startsWith('/uploads/projects/')) {
+                        const filename = displayUrl.replace('/uploads/', '');
+                        displayUrl = `/uploads/projects/${filename}`;
+                      }
+                      
                       return (
                         <div key={`existing-${index}`} className="relative group">
                           <img 

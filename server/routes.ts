@@ -116,7 +116,7 @@ const uploadsDir = path.resolve(process.cwd(), "uploads");
 
 const storage_config = multer.diskStorage({
   destination: (req, file, cb) => {
-    let folder = "uploads";
+    let folder = uploadsDir;
     
     if (req.path.includes("/company/logo")) {
       folder = path.join(uploadsDir, "logos");
@@ -124,10 +124,11 @@ const storage_config = multer.diskStorage({
       folder = path.join(uploadsDir, "proofs");
     } else if (req.path.includes("/profile/photo")) {
       folder = path.join(uploadsDir, "profiles");
-    } else if (req.path.includes("/project")) {
+    } else if (req.path.includes("/project") || req.path.includes("/updates")) {
       folder = path.join(uploadsDir, "projects");
     }
     
+    console.log(`📁 Salvando arquivo em: ${folder} (rota: ${req.path})`);
     cb(null, folder);
   },
   filename: (req, file, cb) => {
@@ -1184,7 +1185,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         return res.status(400).json({ message: "Imagem do projeto é obrigatória" });
       }
       
-      const imageUrl = `/uploads/${req.file.filename}`;
+      const imageUrl = `/uploads/projects/${req.file.filename}`;
       
       const projectData = {
         name: req.body.name,
@@ -1288,7 +1289,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         
         // Adicione a imagem se foi enviada
         if (req.file) {
-          projectData.imageUrl = `/uploads/${req.file.filename}`;
+          projectData.imageUrl = `/uploads/projects/${req.file.filename}`;
         }
         
       } catch (error) {
@@ -1412,7 +1413,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       const mediaUrls = [];
       if (req.files && Array.isArray(req.files)) {
         for (const file of req.files) {
-          const fileUrl = `/uploads/${file.filename}`;
+          const fileUrl = `/uploads/projects/${file.filename}`;
           mediaUrls.push(fileUrl);
         }
       }
@@ -1535,7 +1536,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
         console.log("NOVOS ARQUIVOS:", req.files.map(f => f.filename));
         for (const file of req.files) {
-          const fileUrl = `/uploads/${file.filename}`;
+          const fileUrl = `/uploads/projects/${file.filename}`;
           newMediaUrls.push(fileUrl);
         }
       }
@@ -1652,7 +1653,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       // Process new uploaded files
       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
         for (const file of req.files) {
-          const fileUrl = `/uploads/${file.filename}`;
+          const fileUrl = `/uploads/projects/${file.filename}`;
           finalMediaUrls.push(fileUrl);
         }
       }
