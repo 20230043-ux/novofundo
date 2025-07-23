@@ -6,17 +6,17 @@ import archiver from 'archiver';
 import { createWriteStream } from 'fs';
 
 /**
- * Sistema Robusto de Persistência de Dados
+ * Data Persistence System for External Neon Database
  * 
- * Este módulo implementa múltiplas camadas de protecção para garantir
- * que todos os dados actuais e futuros sejam mantidos de forma segura
+ * Optimized for external Neon Database that never hibernates.
+ * Provides data integrity monitoring and automated backup functionality.
  */
 
-// Configurações de robustez
-const RETRY_ATTEMPTS = 3;
-const RETRY_DELAY = 1000; // 1 segundo
-const BACKUP_INTERVAL = 6 * 60 * 60 * 1000; // 6 horas
-const HEALTH_CHECK_INTERVAL = 60 * 1000; // 1 minuto
+// Configuration for external Neon Database (optimized for never-hibernating database)
+const RETRY_ATTEMPTS = 2; // Reduced since Neon is more stable
+const RETRY_DELAY = 500; // Faster retry for external DB
+const BACKUP_INTERVAL = 12 * 60 * 60 * 1000; // 12 hours (reduced frequency)
+const HEALTH_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes (reduced frequency)
 
 // Sistema de retry para operações críticas
 export async function executeWithRetry<T>(
@@ -24,14 +24,14 @@ export async function executeWithRetry<T>(
   maxRetries: number = RETRY_ATTEMPTS,
   delayMs: number = RETRY_DELAY
 ): Promise<T> {
-  let lastError: Error;
+  let lastError: Error = new Error('Operation failed');
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error) {
-      lastError = error as Error;
-      console.warn(`⚠️ Tentativa ${attempt}/${maxRetries} falhou:`, error.message);
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.warn(`⚠️ Tentativa ${attempt}/${maxRetries} falhou:`, lastError.message);
       
       if (attempt < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
@@ -79,7 +79,7 @@ export async function verifyDataIntegrity(): Promise<{
       try {
         await db.execute(sql.raw(`SELECT COUNT(*) FROM ${table} LIMIT 1`));
       } catch (error) {
-        issues.push(`Tabela crítica ${table} não acessível: ${error.message}`);
+        issues.push(`Tabela crítica ${table} não acessível: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
     
@@ -126,7 +126,7 @@ export async function verifyDataIntegrity(): Promise<{
     };
     
   } catch (error) {
-    issues.push(`Erro geral na verificação: ${error.message}`);
+    issues.push(`Erro geral na verificação: ${error instanceof Error ? error.message : String(error)}`);
     return {
       isHealthy: false,
       issues,
@@ -167,7 +167,7 @@ export async function createIncrementalBackup(): Promise<{
         console.error('❌ Erro no backup incremental:', err);
         reject({
           success: false,
-          message: `Erro no backup: ${err.message}`
+          message: `Erro no backup: ${err instanceof Error ? err.message : String(err)}`
         });
       });
       
@@ -232,7 +232,7 @@ export async function createIncrementalBackup(): Promise<{
     console.error('❌ Erro no backup incremental:', error);
     return {
       success: false,
-      message: `Erro no backup incremental: ${error.message}`
+      message: `Erro no backup incremental: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }
@@ -295,16 +295,16 @@ export async function cleanOrphanedData(): Promise<{
     console.error('❌ Erro na limpeza de dados órfãos:', error);
     return { 
       cleaned: 0, 
-      summary: [`Erro na limpeza: ${error.message}`] 
+      summary: [`Erro na limpeza: ${error instanceof Error ? error.message : String(error)}`] 
     };
   }
 }
 
-// Monitorização contínua de saúde
+// Simplified health monitoring for external Neon Database
 export function startDataHealthMonitoring(): void {
-  console.log('🔄 Iniciando monitorização contínua de saúde dos dados...');
+  console.log('🔄 Iniciando monitoramento simplificado para Neon Database...');
   
-  // Verificação de integridade a cada minuto
+  // Reduced frequency health check since Neon never hibernates
   setInterval(async () => {
     try {
       const health = await verifyDataIntegrity();
@@ -312,7 +312,7 @@ export function startDataHealthMonitoring(): void {
       if (!health.isHealthy) {
         console.warn('⚠️ Problemas de integridade detectados:', health.issues);
         
-        // Tentar limpeza automática se houver dados órfãos
+        // Auto-cleanup orphaned data if detected
         if (health.issues.some(issue => issue.includes('órfã'))) {
           console.log('🧹 Iniciando limpeza automática de dados órfãos...');
           const cleanResult = await cleanOrphanedData();
@@ -324,78 +324,78 @@ export function startDataHealthMonitoring(): void {
     }
   }, HEALTH_CHECK_INTERVAL);
   
-  // Backup automático incremental a cada 6 horas
+  // Less frequent backup for stable external database
   setInterval(async () => {
-    console.log('💾 Iniciando backup automático incremental...');
+    console.log('💾 Backup automático para Neon Database...');
     const backupResult = await createIncrementalBackup();
     
     if (backupResult.success) {
-      console.log('✅ Backup automático concluído:', backupResult.message);
+      console.log('✅ Backup Neon concluído:', backupResult.message);
     } else {
-      console.error('❌ Falha no backup automático:', backupResult.message);
+      console.error('❌ Falha no backup Neon:', backupResult.message);
     }
   }, BACKUP_INTERVAL);
 }
 
-// Optimização do pool de conexões
+// Optimized connection pool monitoring for external Neon Database
 export async function optimizeConnectionPool(): Promise<void> {
-  console.log('⚡ Optimizando pool de conexões...');
+  console.log('⚡ Verificando pool de conexões Neon...');
   
-  // Verificar estatísticas do pool
+  // Check pool statistics
   const totalCount = pool.totalCount;
   const idleCount = pool.idleCount;
   const waitingCount = pool.waitingCount;
   
-  console.log(`📊 Pool stats: Total: ${totalCount}, Idle: ${idleCount}, Waiting: ${waitingCount}`);
+  console.log(`📊 Neon Pool: Total: ${totalCount}, Idle: ${idleCount}, Waiting: ${waitingCount}`);
   
-  // Se há muitas conexões em espera, alertar
-  if (waitingCount > 5) {
-    console.warn('⚠️ Alto número de conexões em espera. Considere aumentar o pool.');
+  // Optimized thresholds for external database
+  if (waitingCount > 3) {
+    console.warn('⚠️ Conexões em espera detectadas no Neon. Pool pode precisar de ajuste.');
   }
   
-  // Se há muitas conexões inativas, pode estar sobre-dimensionado
-  if (idleCount > 15) {
-    console.log('ℹ️ Muitas conexões inactivas. Pool pode estar sobre-dimensionado.');
+  // Lower threshold since we use fewer connections with Neon
+  if (idleCount > 8) {
+    console.log('ℹ️ Pool Neon com muitas conexões inativas.');
   }
 }
 
-// Função de inicialização do sistema robusto
+// Simplified initialization for external Neon Database
 export async function initializeRobustPersistence(): Promise<void> {
-  console.log('🛡️ Iniciando sistema robusto de persistência de dados...');
+  console.log('🛡️ Iniciando sistema otimizado para Neon Database...');
   
   try {
-    // Verificar integridade inicial
+    // Initial integrity check
     const initialHealth = await verifyDataIntegrity();
-    console.log('📋 Verificação inicial de integridade:', {
+    console.log('📋 Verificação inicial Neon:', {
       healthy: initialHealth.isHealthy,
       issues: initialHealth.issues.length,
       stats: initialHealth.stats
     });
     
-    // Limpeza inicial se necessária
+    // Initial cleanup if needed
     if (!initialHealth.isHealthy) {
-      console.log('🧹 Executando limpeza inicial...');
+      console.log('🧹 Limpeza inicial Neon...');
       const cleanResult = await cleanOrphanedData();
-      console.log('✅ Limpeza inicial concluída:', cleanResult.summary);
+      console.log('✅ Limpeza Neon concluída:', cleanResult.summary);
     }
     
-    // Optimizar pool de conexões
+    // Optimize connection pool for external database
     await optimizeConnectionPool();
     
-    // Iniciar monitorização contínua
+    // Start simplified monitoring
     startDataHealthMonitoring();
     
-    // Criar backup inicial
-    console.log('💾 Criando backup inicial...');
+    // Create initial backup
+    console.log('💾 Backup inicial Neon...');
     const initialBackup = await createIncrementalBackup();
     if (initialBackup.success) {
-      console.log('✅ Backup inicial criado:', initialBackup.message);
+      console.log('✅ Backup Neon criado:', initialBackup.message);
     }
     
-    console.log('🛡️ Sistema robusto de persistência totalmente inicializado!');
+    console.log('🛡️ Sistema Neon Database totalmente inicializado!');
     
   } catch (error) {
-    console.error('❌ Erro na inicialização do sistema robusto:', error);
+    console.error('❌ Erro na inicialização Neon:', error);
     throw error;
   }
 }
@@ -436,7 +436,7 @@ export async function forceCriticalDataSync(): Promise<{
     console.error('❌ Erro na sincronização de dados críticos:', error);
     return {
       success: false,
-      message: `Erro na sincronização: ${error.message}`
+      message: `Erro na sincronização: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }

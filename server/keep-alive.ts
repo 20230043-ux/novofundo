@@ -4,49 +4,49 @@ import { users } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
 /**
- * Keep-alive endpoint que mantém o banco de dados ativo
- * Faz uma consulta leve para evitar hibernação
+ * Health check endpoint for external Neon Database
+ * Provides system status and database connectivity
  */
 export const keepAliveHandler = async (req: Request, res: Response) => {
   try {
-    // Consulta simples para manter o banco ativo
+    // Simple query to verify Neon Database connection
     const result = await db.execute(sql`SELECT 1 as alive`);
     
     const status = {
       status: 'online',
       timestamp: new Date().toISOString(),
-      database: 'connected',
+      database: 'neon_connected',
       uptime: process.uptime(),
       memory: process.memoryUsage(),
     };
     
     res.json(status);
   } catch (error) {
-    console.error('Keep-alive error:', error);
+    console.error('Neon Database connection error:', error);
     res.status(500).json({ 
       status: 'error', 
       timestamp: new Date().toISOString(),
-      error: 'Database connection failed' 
+      error: 'Neon Database connection failed' 
     });
   }
 };
 
 /**
- * Sistema automático de keep-alive interno
- * Executa consultas periódicas para manter o banco ativo
+ * Simplified health monitoring for external Neon Database
+ * Since Neon never hibernates, this provides basic connectivity monitoring
  */
 export const startKeepAliveService = () => {
-  const KEEP_ALIVE_INTERVAL = 4 * 60 * 1000; // 4 minutos
+  const HEALTH_CHECK_INTERVAL = 10 * 60 * 1000; // 10 minutes (reduced frequency)
   
   setInterval(async () => {
     try {
-      // Consulta leve para manter o banco ativo
+      // Light health check for Neon Database
       await db.execute(sql`SELECT 1`);
-      console.log('🔄 Keep-alive: Banco de dados mantido ativo');
+      console.log('🌐 Neon Database: Conectividade verificada');
     } catch (error) {
-      console.error('❌ Keep-alive error:', error);
+      console.error('❌ Neon Database error:', error);
     }
-  }, KEEP_ALIVE_INTERVAL);
+  }, HEALTH_CHECK_INTERVAL);
   
-  console.log('✅ Serviço keep-alive iniciado (consulta a cada 4 minutos)');
+  console.log('✅ Monitoramento Neon Database iniciado (verificação a cada 10 minutos)');
 };

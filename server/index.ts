@@ -96,7 +96,7 @@ app.use((req, res, next) => {
       await initializeRobustPersistence();
       log("✅ Sistema robusto de persistência inicializado com sucesso!");
     } catch (error) {
-      log("⚠️ Aviso: Sistema robusto teve problemas na inicialização:", error);
+      log("⚠️ Aviso: Sistema robusto teve problemas na inicialização:", error instanceof Error ? error.message : String(error));
     }
     
     // Inicializar cache instantâneo e pré-carregar dados essenciais

@@ -4,7 +4,7 @@
 
 The Fundo Verde platform is a comprehensive sustainability management system designed for companies to calculate their carbon footprint, invest in Sustainable Development Goals (SDGs), and track their environmental impact. The application serves as a bridge between carbon emissions calculation and sustainable investment opportunities in Angola.
 
-**Current Status**: Production-ready with full keep-alive system implemented to prevent Replit hibernation on free tier.
+**Current Status**: Production-ready with optimized external Neon Database connection. No hibernation concerns since Neon never hibernates.
 
 ## System Architecture
 
@@ -25,7 +25,7 @@ The application follows a modern full-stack architecture with clear separation o
 
 - **Frontend**: React 18, TypeScript, TailwindCSS, shadcn/ui components
 - **Backend**: Express.js with TypeScript, comprehensive API endpoints
-- **Database**: PostgreSQL via Neon Database (serverless), Drizzle ORM
+- **Database**: PostgreSQL via Neon Database (external, never hibernates), Drizzle ORM
 - **Authentication**: Custom session-based authentication with bcrypt
 - **Build Tools**: Vite for frontend bundling, esbuild for backend compilation
 - **Deployment**: Optimized for Replit hosting environment
@@ -217,6 +217,14 @@ A plataforma agora conta com um **sistema ultra-robusto de persistência de dado
 
 ```
 Changelog:
+- July 23, 2025. Otimização completa para base de dados externa Neon:
+  • Removido sistema keep-alive desnecessário (Neon nunca hiberna)
+  • Otimizado pool de conexões: max=15, min=3 (reduzido para eficiência externa)
+  • Simplificado monitoramento de saúde: verificações a cada 10 min (vs 4 min)
+  • Removida documentação obsoleta (BASE_DADOS_EXTERNA.md, REPLIT_KEEP_ALIVE_GUIDE.md)
+  • Ajustado sistema de backup: a cada 12h (vs 6h) para base externa estável
+  • Configuração otimizada para nunca hibernar com conectividade Neon estável
+  • Logs atualizados para refletir uso de "Neon Database" em vez de "base interna"
 - July 22, 2025. Sistema completo de fallback para hibernação da base de dados:
   • Implementado fallback completo para autenticação (login/registro) mesmo com base de dados offline
   • Criados utilizadores temporários demo (demo@demo.com, admin@demo.com, pessoa@demo.com) com senha "password" 

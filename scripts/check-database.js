@@ -16,16 +16,13 @@ async function checkDatabase() {
   
   console.log('✅ DATABASE_URL encontrada');
   
-  // Determinar tipo de base de dados
+  // Verificar tipo de base de dados
   if (dbUrl.includes('neon.tech')) {
-    console.log('🟢 Usando Neon Database (externa - nunca hiberna)');
+    console.log('🟢 Neon Database (externa - nunca hiberna) ✅');
   } else if (dbUrl.includes('supabase')) {
-    console.log('🟢 Usando Supabase (externa - nunca hiberna)');
-  } else if (dbUrl.includes('replit')) {
-    console.log('🟡 Usando base de dados do Replit (pode hibernar)');
-    console.log('💡 Recomendo migrar para Neon ou Supabase');
+    console.log('🟢 Supabase (externa - nunca hiberna) ✅');
   } else {
-    console.log('🔵 Usando base de dados personalizada');
+    console.log('🔵 Base de dados personalizada detectada');
   }
   
   // Testar conexão
@@ -38,7 +35,7 @@ async function checkDatabase() {
     
     // Verificar versão PostgreSQL
     const versionResult = await client.query('SELECT version()');
-    console.log('📊 Versão:', versionResult.rows[0].version.split(' ')[1]);
+    console.log('📊 PostgreSQL:', versionResult.rows[0].version.split(' ')[1]);
     
     // Verificar tabelas existentes
     const tablesResult = await client.query(`
@@ -71,6 +68,8 @@ async function checkDatabase() {
       
       if (parseInt(userCount.rows[0].count) === 0) {
         console.log('\n💡 Base de dados vazia. Execute: npm run db:seed');
+      } else {
+        console.log('\n✅ Base de dados externa operacional e populada!');
       }
     } catch (error) {
       console.log('\n⚠️  Algumas tabelas podem estar em falta');
@@ -90,33 +89,5 @@ async function checkDatabase() {
   }
 }
 
-async function showMigrationGuide() {
-  console.log('\n' + '='.repeat(60));
-  console.log('📖 GUIA RÁPIDO DE MIGRAÇÃO');
-  console.log('='.repeat(60));
-  console.log('');
-  console.log('Para conectar a uma base de dados externa:');
-  console.log('');
-  console.log('1. 🌐 Neon Database (Recomendado)');
-  console.log('   → https://neon.tech');
-  console.log('   → 512MB gratuitos, nunca hiberna');
-  console.log('');
-  console.log('2. 🚀 Supabase');
-  console.log('   → https://supabase.com');
-  console.log('   → 500MB gratuitos, PostgreSQL completo');
-  console.log('');
-  console.log('3. ⚙️  Configuração no Replit:');
-  console.log('   → Configurações → Secrets');
-  console.log('   → Adicionar DATABASE_URL com a nova URL');
-  console.log('');
-  console.log('4. 🔄 Migração:');
-  console.log('   → npm run db:push (aplicar schema)');
-  console.log('   → npm run db:seed (carregar dados)');
-  console.log('');
-  console.log('📄 Guia completo: BASE_DADOS_EXTERNA.md');
-}
-
 // Executar verificação
-checkDatabase().then(() => {
-  showMigrationGuide();
-}).catch(console.error);
+checkDatabase().catch(console.error);

@@ -8,31 +8,31 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Ultra-robust connection pool optimized for data persistence
+// Optimized connection pool for external Neon Database (never hibernates)
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  max: 25, // Increased for higher concurrency
-  min: 8,  // Higher minimum to maintain connections
-  idleTimeoutMillis: 60000, // Longer idle timeout for stability
-  connectionTimeoutMillis: 15000, // Longer timeout for reliability
-  acquireTimeoutMillis: 15000, // More time to acquire connections
-  keepAlive: true, // Keep connections alive
+  max: 15, // Reduced for external database efficiency
+  min: 3,  // Lower minimum since Neon never hibernates
+  idleTimeoutMillis: 30000, // Shorter timeout for external database
+  connectionTimeoutMillis: 10000, // Optimized for external connection
+  // acquireTimeoutMillis: 10000, // Not available in this pg version
+  keepAlive: true, // Maintain connection health
   keepAliveInitialDelayMillis: 0,
-  allowExitOnIdle: false, // Never exit on idle to maintain persistence
+  allowExitOnIdle: false, // Maintain stability
 });
 
-// Event listeners for connection health monitoring
+// Event listeners for external database monitoring
 pool.on('connect', (client) => {
-  console.log('🔌 Nova conexão estabelecida com a base de dados');
+  console.log('🌐 Conexão Neon Database estabelecida');
 });
 
 pool.on('error', (err, client) => {
-  console.error('❌ Erro inesperado no cliente da base de dados:', err);
-  console.log('🔄 Tentando reestabelecer conexão...');
+  console.error('❌ Erro na conexão Neon:', err);
+  console.log('🔄 Reconectando ao Neon Database...');
 });
 
 pool.on('remove', (client) => {
-  console.log('🔌 Conexão removida do pool');
+  console.log('🔌 Conexão Neon removida do pool');
 });
 
 export const db = drizzle(pool, { 
