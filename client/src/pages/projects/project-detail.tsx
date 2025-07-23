@@ -172,8 +172,12 @@ const ProjectDetail = () => {
         description: "A atualização foi editada com sucesso.",
       });
       
-      // Reset apenas os arquivos novos, mantendo o modal aberto
+      // Reset form and close dialog
+      updateForm.reset();
+      setIsEditUpdateOpen(false);
+      setUpdateToEdit(null);
       setUpdateMediaFiles([]);
+      setExistingMediaUrls([]);
     },
     onError: (error: Error) => {
       toast({
