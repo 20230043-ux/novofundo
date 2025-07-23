@@ -69,6 +69,7 @@ const ProjectDetail = () => {
     gcTime: 1000 * 60 * 5, // 5 minutes garbage collection
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    refetchInterval: 5000, // Refetch every 5 seconds to ensure updates are visible
   });
   
   // React Hook Form para edição de atualização
@@ -177,60 +178,38 @@ const ProjectDetail = () => {
     }
     
     try {
-      // 1. Primeiro, atualizar título e conteúdo
-      const textResponse = await fetch(`/api/admin/project-updates/${updateToEdit.id}`, {
+      // Use a single FormData request that handles both text and media updates
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("content", data.content);
+      
+      // Add existing media URLs that should be kept
+      formData.append("existingMediaUrls", JSON.stringify(existingMediaUrls));
+      
+      // Add new media files
+      updateMediaFiles.forEach(file => {
+        formData.append("media", file);
+      });
+      
+      const response = await fetch(`/api/admin/project-updates/${updateToEdit.id}`, {
         method: "PUT",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: data.title,
-          content: data.content
-        }),
+        body: formData,
         credentials: "include",
       });
       
-      if (!textResponse.ok) {
-        const error = await textResponse.text();
-        throw new Error(error || "Erro ao atualizar textos");
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || "Erro ao editar atualização");
       }
       
-      // 2. Depois, fazer upload das imagens em uma requisição separada
-      // Apenas se houver novas imagens OU se a lista de imagens existentes mudou
-      const hasMediaChanges = updateMediaFiles.length > 0 || 
-        (updateToEdit.mediaUrls?.length || 0) !== existingMediaUrls.length;
-      
-      if (hasMediaChanges) {
-        console.log("Atualizando imagens...");
-        const mediaFormData = new FormData();
-        
-        // Adicionar imagens existentes que queremos manter
-        mediaFormData.append("existingMediaUrls", JSON.stringify(existingMediaUrls));
-        
-        // Adicionar novas imagens
-        updateMediaFiles.forEach(file => {
-          mediaFormData.append("media", file);
-        });
-        
-        const mediaResponse = await fetch(`/api/admin/project-updates/${updateToEdit.id}/replace-images`, {
-          method: "POST",
-          body: mediaFormData,
-          credentials: "include",
-        });
-        
-        if (!mediaResponse.ok) {
-          const error = await mediaResponse.text();
-          throw new Error(error || "Erro ao atualizar imagens");
-        }
-      }
-      
-      // Sucesso! Invalidate all related queries for comprehensive updates
+      // Sucesso! Force immediate update
       queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       
-      // Force refetch to ensure fresh data across all project-related components
-      queryClient.refetchQueries({ queryKey: [`/api/projects/${id}`] });
-      queryClient.refetchQueries({ queryKey: ['/api/projects'] });
+      // Wait a bit then refetch to ensure we get the latest data
+      setTimeout(() => {
+        refetch();
+      }, 100);
       
       toast({
         title: "Atualização editada",
