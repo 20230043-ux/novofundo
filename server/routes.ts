@@ -14,6 +14,7 @@ import { preloadCache } from "./preload-cache";
 import { fallbackData } from "./fallback-data";
 import { optimizeStaticFiles, enableServerPush, optimizeForMobile } from "./cdn-optimization";
 import { instantProjectCache } from "./instant-project-cache";
+import { webSocketService } from "./websocket-service";
 import multer from "multer";
 import path from "path";
 import { mkdir } from "fs/promises";
@@ -1183,7 +1184,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         return res.status(400).json({ message: "Imagem do projeto é obrigatória" });
       }
       
-      const imageUrl = `/uploads/projects/${req.file.filename}`;
+      const imageUrl = `/uploads/${req.file.filename}`;
       
       const projectData = {
         name: req.body.name,
@@ -1287,7 +1288,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         
         // Adicione a imagem se foi enviada
         if (req.file) {
-          projectData.imageUrl = `/uploads/projects/${req.file.filename}`;
+          projectData.imageUrl = `/uploads/${req.file.filename}`;
         }
         
       } catch (error) {
@@ -1407,11 +1408,11 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         return res.status(400).json({ message: "Título e conteúdo são obrigatórios" });
       }
       
-      // Process uploaded files
+      // Process uploaded files with consistent path
       const mediaUrls = [];
       if (req.files && Array.isArray(req.files)) {
         for (const file of req.files) {
-          const fileUrl = `/uploads/projects/${file.filename}`;
+          const fileUrl = `/uploads/${file.filename}`;
           mediaUrls.push(fileUrl);
         }
       }
@@ -1432,6 +1433,16 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         preloadCache.forceRefresh(),
         instantProjectCache.forceRefresh() // Force instant cache refresh to include new updates
       ]);
+      
+      // Get the updated project with all related data for WebSocket broadcast
+      const updatedProject = await storage.getProjectById(projectId);
+      if (updatedProject) {
+        // Broadcast project update via WebSocket
+        webSocketService.broadcastProjectUpdate({
+          action: 'update',
+          project: updatedProject
+        });
+      }
       
       res.setHeader('X-Cache-Invalidated', 'true');
       res.status(201).json(update);
@@ -1524,7 +1535,7 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
         console.log("NOVOS ARQUIVOS:", req.files.map(f => f.filename));
         for (const file of req.files) {
-          const fileUrl = `/uploads/projects/${file.filename}`;
+          const fileUrl = `/uploads/${file.filename}`;
           newMediaUrls.push(fileUrl);
         }
       }
@@ -1566,10 +1577,29 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
         console.error("DETALHES DO ERRO:", sqlError instanceof Error ? sqlError.message : sqlError);
       }
       
+      // Clear cache and update instant cache
+      await Promise.all([
+        Promise.resolve(clearCacheByPattern('projects')),
+        Promise.resolve(clearCacheByPattern(`project:${currentUpdate.projectId}`)),
+        Promise.resolve(clearCacheByPattern(`project_${currentUpdate.projectId}`)),
+        preloadCache.forceRefresh(),
+        instantProjectCache.forceRefresh()
+      ]);
+
       // Buscar o registro atualizado para confirmar as mudanças
       const updatedUpdate = await storage.getProjectUpdateById(updateId);
       if (!updatedUpdate) {
         return res.status(404).json({ message: "Falha ao buscar atualização após ação" });
+      }
+
+      // Get the updated project with all related data for WebSocket broadcast
+      const updatedProject = await storage.getProjectById(currentUpdate.projectId);
+      if (updatedProject) {
+        // Broadcast project update via WebSocket
+        webSocketService.broadcastProjectUpdate({
+          action: 'update',
+          project: updatedProject
+        });
       }
       
       console.log("RESULTADO FINAL VERIFICADO:", updatedUpdate.mediaUrls);
@@ -1648,6 +1678,16 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
       
       if (!updatedUpdate) {
         return res.status(404).json({ message: "Falha ao atualizar" });
+      }
+
+      // Get the updated project with all related data for WebSocket broadcast
+      const updatedProject = await storage.getProjectById(currentUpdate.projectId);
+      if (updatedProject) {
+        // Broadcast project update via WebSocket
+        webSocketService.broadcastProjectUpdate({
+          action: 'update',
+          project: updatedProject
+        });
       }
       
       res.setHeader('X-Cache-Invalidated', 'true');

@@ -123,7 +123,13 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
       case 'project_update':
         // Invalidate project-related queries
         queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-        queryClient.invalidateQueries({ queryKey: [`/api/projects/${message.data.projectId}`] });
+        
+        // Invalidate specific project query if project ID is available
+        const projectId = message.data?.project?.id;
+        if (projectId) {
+          queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
+        }
+        
         queryClient.invalidateQueries({ queryKey: ['/api/sdgs'] });
         console.log('📦 Project updated via WebSocket');
         

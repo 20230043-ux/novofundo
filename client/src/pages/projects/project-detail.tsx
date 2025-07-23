@@ -63,9 +63,12 @@ const ProjectDetail = () => {
   const isAdmin = user?.role === 'admin';
   
   // Fetch project details with real-time optimized caching
-  const { data: project, isLoading } = useQuery({
+  const { data: project, isLoading, refetch } = useQuery({
     queryKey: [`/api/projects/${id}`],
-    staleTime: 1000 * 30, // 30 seconds - shorter for real-time updates
+    staleTime: 0, // Always consider data stale for immediate updates
+    gcTime: 1000 * 60 * 5, // 5 minutes garbage collection
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
   
   // React Hook Form para edição de atualização
@@ -341,6 +344,30 @@ const ProjectDetail = () => {
     // Navega de volta
     setLocation('/projetos');
   };
+
+  // WebSocket listener for real-time updates
+  useEffect(() => {
+    const handleProjectUpdate = (event: CustomEvent) => {
+      const data = event.detail;
+      if (data?.project?.id === parseInt(id || '0')) {
+        // Force refetch project data when updates are received
+        refetch();
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}`] });
+        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      }
+    };
+
+    // Listen for WebSocket project update events
+    if (typeof window !== 'undefined') {
+      window.addEventListener('websocket:project_update', handleProjectUpdate as EventListener);
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('websocket:project_update', handleProjectUpdate as EventListener);
+      }
+    };
+  }, [id, refetch]);
 
   // Navegação por teclado
   useEffect(() => {
