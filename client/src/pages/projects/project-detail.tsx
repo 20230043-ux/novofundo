@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EcoLoading } from "@/components/ui/eco-loading";
 import { EcoBackground } from "@/components/ui/eco-background";
+import { useWebSocket } from "@/hooks/use-websocket";
 
 // Define schema para o formulário de edição de atualização
 const updateSchema = z.object({
@@ -61,6 +62,49 @@ const ProjectDetail = () => {
   
   // Verificar se o usuário é admin
   const isAdmin = user?.role === 'admin';
+  
+  // WebSocket connection for real-time updates
+  const { isConnected } = useWebSocket();
+  
+  // Listen for WebSocket project updates and refresh data
+  useEffect(() => {
+    const handleWebSocketMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'project_update' && data.data?.project?.id === parseInt(id!)) {
+          console.log("📦 Received project update via WebSocket, refreshing...");
+          // Force immediate cache invalidation and refetch
+          queryClient.removeQueries({ queryKey: [`/api/projects/${id}`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}`] });
+          setTimeout(() => refetch(), 100);
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    // Add WebSocket event listener if connected
+    if (isConnected && typeof window !== 'undefined') {
+      window.addEventListener('message', handleWebSocketMessage);
+      
+      // Also listen for custom project update events
+      const handleProjectUpdate = (event: CustomEvent) => {
+        if (event.detail?.projectId === parseInt(id!)) {
+          console.log("📦 Received custom project update event, refreshing...");
+          queryClient.removeQueries({ queryKey: [`/api/projects/${id}`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}`] });
+          setTimeout(() => refetch(), 100);
+        }
+      };
+      
+      window.addEventListener('projectUpdate', handleProjectUpdate as EventListener);
+      
+      return () => {
+        window.removeEventListener('message', handleWebSocketMessage);
+        window.removeEventListener('projectUpdate', handleProjectUpdate as EventListener);
+      };
+    }
+  }, [isConnected, id, refetch]);
   
   // Fetch project details with real-time optimized caching
   const { data: project, isLoading, refetch } = useQuery({
@@ -110,13 +154,18 @@ const ProjectDetail = () => {
       return await res.json();
     },
     onSuccess: () => {
-      // Invalidate all related queries for comprehensive updates
+      // Force immediate cache removal and invalidation
+      queryClient.removeQueries({ queryKey: [`/api/projects/${id}`] });
+      queryClient.removeQueries({ queryKey: ['/api/projects'] });
+      
+      // Invalidate all related queries 
       queryClient.invalidateQueries({ queryKey: [`/api/projects/${id}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       
-      // Force refetch to ensure fresh data across all project-related components
-      queryClient.refetchQueries({ queryKey: [`/api/projects/${id}`] });
-      queryClient.refetchQueries({ queryKey: ['/api/projects'] });
+      // Force immediate refetch with a slight delay
+      setTimeout(() => {
+        refetch();
+      }, 50);
       
       toast({
         title: "Atualização editada",

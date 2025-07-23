@@ -122,10 +122,11 @@ const AdminPublications = () => {
   const { data: projects, isLoading: isLoadingProjects, refetch: refetchProjects } = useQuery({
     queryKey: ['/api/projects'],
     enabled: !!user && user.role === 'admin',
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
+    staleTime: 0, // Always consider data stale for immediate updates
     gcTime: 5 * 60 * 1000, // Keep cached data for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    refetchInterval: 3000, // Refetch every 3 seconds for real-time updates
     queryFn: async () => {
       const response = await fetch(`/api/projects?t=${Date.now()}`, {
         headers: {
@@ -405,12 +406,18 @@ const AdminPublications = () => {
       
       return await res.json();
     },
-    onSuccess: () => {
-      // Invalidate all related queries for comprehensive updates
+    onSuccess: (data) => {
+      // Force immediate cache invalidation with more aggressive approach
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectForUpdates?.id] });
       
-      // Force refetch to ensure fresh data
-      queryClient.refetchQueries({ queryKey: ['/api/projects'] });
+      // Remove stale cache and force refetch
+      queryClient.removeQueries({ queryKey: ['/api/projects'] });
+      
+      // Force immediate refetch
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/projects'] });
+      }, 50);
       
       // Close dialog
       setIsEditUpdateOpen(false);
