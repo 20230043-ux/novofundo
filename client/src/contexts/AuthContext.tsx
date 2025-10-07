@@ -69,48 +69,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const queryClient = useQueryClient();
   
   const { data: user, isLoading } = useQuery({
-    queryKey: ['/api/user'],
+    queryKey: ['/api/auth/user'],
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const loginMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const response = await apiRequest('POST', '/api/login', { email, password });
+      const response = await apiRequest('POST', '/api/auth/login', { email, password });
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['/api/user'], data);
+      queryClient.setQueryData(['/api/auth/user'], data.user);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     },
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('POST', '/api/logout');
+      await apiRequest('POST', '/api/auth/logout');
     },
     onSuccess: () => {
-      queryClient.setQueryData(['/api/user'], null);
+      queryClient.setQueryData(['/api/auth/user'], null);
       queryClient.clear();
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
-      const response = await apiRequest('POST', '/api/register', data);
+      const response = await apiRequest('POST', '/api/auth/register', {
+        ...data,
+        role: 'company',
+      });
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['/api/user'], data);
+      queryClient.setQueryData(['/api/auth/user'], data.user);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     },
   });
 
   const registerIndividualMutation = useMutation({
     mutationFn: async (data: RegisterIndividualData) => {
-      const response = await apiRequest('POST', '/api/register-individual', data);
+      const response = await apiRequest('POST', '/api/auth/register', {
+        ...data,
+        role: 'individual',
+      });
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['/api/user'], data);
+      queryClient.setQueryData(['/api/auth/user'], data.user);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     },
   });
 
@@ -131,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUser = (userData: User) => {
-    queryClient.setQueryData(['/api/user'], userData);
+    queryClient.setQueryData(['/api/auth/user'], userData);
   };
 
   return (
