@@ -45,13 +45,13 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
     try {
       const wsUrl = getWebSocketUrl();
       console.log('🔌 Connecting to WebSocket:', wsUrl);
-      
+
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
         console.log('🔌 WebSocket connected');
         setIsConnected(true);
-        
+
         // Authenticate if user is logged in
         if (user) {
           const authMessage = {
@@ -80,7 +80,7 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         console.log('🔌 WebSocket disconnected');
         setIsConnected(false);
         stopHeartbeat();
-        
+
         // Attempt to reconnect after 3 seconds
         reconnectTimeoutRef.current = setTimeout(() => {
           connect();
@@ -123,16 +123,16 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
       case 'project_update':
         // Invalidate project-related queries
         queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-        
+
         // Invalidate specific project query if project ID is available
         const projectId = message.data?.project?.id;
         if (projectId) {
           queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
         }
-        
+
         queryClient.invalidateQueries({ queryKey: ['/api/sdgs'] });
         console.log('📦 Project updated via WebSocket');
-        
+
         // Trigger custom event for notifications
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('websocket:project_update', { detail: message.data }));
@@ -146,7 +146,7 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         queryClient.invalidateQueries({ queryKey: ['/api/sdgs'] });
         queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
         console.log('💰 Investment updated via WebSocket');
-        
+
         // Trigger custom event for notifications
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('websocket:investment_update', { detail: message.data }));
@@ -159,7 +159,7 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         queryClient.invalidateQueries({ queryKey: ['/api/admin/payment-proofs'] });
         queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
         console.log('📋 Payment proof updated via WebSocket');
-        
+
         // Trigger custom event for notifications
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('websocket:payment_proof_update', { detail: message.data }));
@@ -184,7 +184,7 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         queryClient.invalidateQueries({ queryKey: ['/api/admin/individuals'] });
         queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
         console.log('👤 User updated via WebSocket');
-        
+
         // Trigger custom event for notifications
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('websocket:user_update', { detail: message.data }));
@@ -196,7 +196,7 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         queryClient.invalidateQueries({ queryKey: ['/api/carbon-leaderboard'] });
         queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
         console.log('🌱 Carbon data updated via WebSocket');
-        
+
         // Trigger custom event for notifications
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('websocket:carbon_update', { detail: message.data }));
