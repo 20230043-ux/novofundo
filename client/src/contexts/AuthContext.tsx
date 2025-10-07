@@ -68,58 +68,58 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
   
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['/api/auth/user'],
+  const { data: user, isLoading } = useQuery<User>({
+    queryKey: ['/api/user'],
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const loginMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const response = await apiRequest('POST', '/api/auth/login', { email, password });
+      const response = await apiRequest('POST', '/api/login', { email, password });
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['/api/auth/user'], data.user);
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.setQueryData(['/api/user'], data.user);
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('POST', '/api/auth/logout');
+      await apiRequest('POST', '/api/logout');
     },
     onSuccess: () => {
-      queryClient.setQueryData(['/api/auth/user'], null);
+      queryClient.setQueryData(['/api/user'], null);
       queryClient.clear();
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
-      const response = await apiRequest('POST', '/api/auth/register', {
+      const response = await apiRequest('POST', '/api/register', {
         ...data,
         role: 'company',
       });
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['/api/auth/user'], data.user);
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.setQueryData(['/api/user'], data.user);
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
   });
 
   const registerIndividualMutation = useMutation({
     mutationFn: async (data: RegisterIndividualData) => {
-      const response = await apiRequest('POST', '/api/auth/register', {
+      const response = await apiRequest('POST', '/api/register-individual', {
         ...data,
         role: 'individual',
       });
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['/api/auth/user'], data.user);
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.setQueryData(['/api/user'], data.user);
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
   });
 
@@ -140,13 +140,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUser = (userData: User) => {
-    queryClient.setQueryData(['/api/auth/user'], userData);
+    queryClient.setQueryData(['/api/user'], userData);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user: user || null,
+        user: user ?? null,
         isLoading,
         isAuthenticated: !!user,
         login,
