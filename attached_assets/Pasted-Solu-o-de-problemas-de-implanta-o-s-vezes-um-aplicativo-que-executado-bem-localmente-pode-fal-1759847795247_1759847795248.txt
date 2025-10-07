@@ -1,0 +1,115 @@
+Solução de problemas de implantação
+Às vezes, um aplicativo que é executado bem localmente pode falhar ao implantar no Render no início. Quando isso acontece, quase sempre é devido a diferenças entre seu ambiente de desenvolvimento local e o ambiente que o Render usa para criar e executar seu código.
+
+Essas diferenças ambientais podem incluir:
+
+O versão da sua linguagem de programação
+Os valores de importantes variáveis de ambiente
+A disponibilidade de Ferramentas e utilitários
+As versões das dependências do seu projeto
+Para ver as etapas recomendadas para resolver problemas com a implantação de renderização do seu aplicativo, veja abaixo.
+
+1. Verifique os logs
+Sempre que seu aplicativo se comportar mal de alguma forma, sempre verifique os logs primeiro. Os logs estão disponíveis no Painel de renderização:
+
+Se uma implantação específica falhar, visualize seus registros clicando na palavra Implantar no feed de eventos do seu aplicativo:
+
+Selecionando uma implantação para visualizar logs
+
+Se o aplicativo em execução encontrar um erro, abra a página Logs para pesquisar e filtrar logs de tempo de execução com o explorer:
+
+Explorador de logs no painel de renderização
+
+Em ambos os casos, pesquisar a palavra no explorador de logs geralmente pode direcioná-lo para uma linha de log relevante. Se o significado da mensagem de erro completa não estiver claro, tente pesquisar na Web (ou em um site individual como o Stack Overflow ou o errorRenderizar comunidade) para ajudar a identificar uma causa raiz.
+
+Saiba mais sobre o registro em log.
+
+2. Ensure matching versions and configuration
+Render's runtime environment might use a different version of your app's programming language, or of an installed dependency. The values of certain environment variables might also differ from those on your local machine.
+
+Check your app's configuration for the following:
+
+Runtime mismatches
+
+While creating a service, you select the runtime that corresponds to your language (Node, Python, and so on). There's also a Docker runtime for projects that build from a Dockerfile or pull a prebuilt image.
+If you've selected an incorrect runtime for your app, the fastest fix is usually to create a new service with the correct runtime.
+You can also change an existing service's runtime via Render Blueprints or the API. See details.
+Version mismatches
+
+Each programming language has a default version on Render, which you can override to match your local machine's version. See details.
+Perform a fresh install of your project on your local machine to confirm that you're using exactly the dependency versions specified in your repository (such as in your file).yarn.lock
+Configuration mismatches
+
+Your local machine might set environment variables as part of your app's start script, or via a file like . Make sure you're .envsetting necessary environment variables on Render as well.
+When applicable, confirm that you've set necessary configuration to run your app in "production mode" (e.g., by setting to ).NODE_ENVproduction
+To use any tools or utilities besides those included by default in Render's native runtimes, make that sure you install them as part of your app's build command.
+Confirm that all of your app's dependencies are compatible with a Linux runtime and file system.
+Check your logs to confirm the following:
+Your app's dependencies are all installed as expected.
+Your service's start command runs and completes successfully.
+Common errors
+Build & deploy errors
+Many first-time build and deploy errors are caused by one of the following issues:
+
+Missing or incorrectly referenced resources
+Module Not Found / ModuleNotFoundError: Usually indicates one of the following:
+A referenced dependency was not found (e.g., in your or file).package.jsonrequirements.txt
+A referenced file (such as or ) was not found at a specified location.app.jsapp.py
+If you're developing on Windows or another platform with a case-insensitive filesystem, make sure that all file paths, names, and extensions are cased correctly. You might need to check the contents of your Git repo directly.
+Language / dependency version conflicts
+SyntaxError: Unexpected token '??=': The app's Node.js version doesn't support the indicated operator or method.
+The engine "node" is incompatible with this module. Expected version…: The app's Node.js version doesn't work with the specified module.
+requires Python >= 3.8: A dependency is not compatible with the app's Python version.
+Invalid configuration
+Invalid build command: The command that Render runs to install your project's dependencies and/or perform a build is missing or invalid.
+This usually should match the command you run to build your app locally.
+Common build commands include (Node.js) and (Python).npm installpip install -r requirements.txt
+Invalid start command: The command that Render runs to start your app is missing or invalid.
+This usually should match the command you run to start your app locally.
+Common start command formats include (Node.js) and (Python).npm startgunicorn myapp:app
+Missing environment variables: Some apps require certain environment variables to be set for them to build and start successfully.
+Add environment variables to your app in the Render Dashboard, or via a render.yaml blueprint file.
+Missing Dockerfile CMD or :ENTRYPOINT If you build and run your app from a , that file must include a or directive. DockerfileCMDENTRYPOINT
+Render uses one of these directives to run your app after the build completes.
+If you omit both of these directives, your deploy might appear to hang indefinitely in the Render Dashboard.
+Misconfigured health checks: If you've added a health check endpoint to your app, Render uses it to verify that your app is responsive before marking it as live.
+If the health check endpoint responds with an unexpected value (or doesn't respond at all), Render cancels your deploy.
+Runtime errors
+Many common runtime errors surface as error codes returned to your browser or other client. For errors returned to your browser, the Network panel of your browser's developer tools helps provide more details about the error.HTTP
+
+Listed below are the most common error codes and some of their most common causes:
+
+400 Bad Request
+A Django app doesn't include its associated custom domain in its ALLOWED_HOSTS setting.
+404 Not Found
+A static site has misconfigured redirects and/or rewrites.
+A web service or static site has misconfigured its routing.
+A service is attempting to access a nonexistent file on disk. This might be because:
+The file is no longer available because the service doesn't have a persistent disk.
+The service has provided the wrong path (such as by misspelling or incorrectly capitalizing a path component).
+A Django app is not correctly serving its static files.
+500 Internal Server Error
+A service has thrown an uncaught exception while responding to a request, possibly causing the service to crash or restart.
+A service is experiencing database connection issues, such as SSL connection has been closed unexpectedly.
+In this case, setting and/or a setting up a sslmode=requireconnection pool can help.
+A service or database is overwhelmed, often by too many concurrent connections or constrained resources (such as CPU or RAM).
+In this case, warnings about resource constraints usually appear in the service's logs and on the service's Events page in the Render Dashboard.
+To resolve, consider scaling your service to help alleviate load.
+502 Bad Gateway
+A web service has misconfigured its host and port.
+Bind your host to and optionally set the environment variable to use a custom port (the default port is ).0.0.0.0PORT10000
+A newly added custom domain is not yet redirecting to its web service.
+In most cases this resolves within a few minutes, but it might take up to an hour.
+A Node.js web service is experiencing intermittent timeouts or errors. Try increasing the values for and (such as to for 120 seconds).Connection reset by peerserver.keepAliveTimeoutserver.headersTimeout120000
+A service is experiencing , , or warnings (e.g., ). WORKERSIGKILLSIGTERM[CRITICAL] WORKER TIMEOUT
+Consider increasing your timeout values and worker limits (e.g., via the gunicorn timeout parameter).
+Quando entrar em contato com o suporte
+A equipe de suporte da Render está disponível e feliz em ajudar com problemas específicos dos recursos, convenções e infraestrutura subjacente de nossa plataforma.
+
+Nossa equipe de suporte não pode ajudar com problemas de desenvolvimento mais gerais, como os seguintes:
+
+Depuração do código do aplicativo
+Design e arquitetura de software
+Otimização de desempenho
+Nuances de programação específicas de uma biblioteca ou estrutura específica
+Para obter ajuda com questões como essas, consulte sites e serviços especializados nessas formas de assistência.
