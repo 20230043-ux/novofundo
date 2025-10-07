@@ -18,7 +18,7 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
 
       const records = await db.query.consumptionRecords.findMany({
         where: (records, { eq }) => eq(records.companyId, user.company!.id),
-        orderBy: [desc(consumptionRecords.recordDate)],
+        orderBy: [desc(consumptionRecords.createdAt)],
       });
 
       return res.status(200).json(records);

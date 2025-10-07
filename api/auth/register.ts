@@ -46,30 +46,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const companyData: InsertCompany = {
         userId: newUser.id,
         name: profileData.name || '',
-        cnpj: profileData.cnpj || '',
         sector: profileData.sector || '',
-        employeeCount: profileData.employeeCount || 0,
-        annualRevenue: profileData.annualRevenue || '0',
-        address: profileData.address || '',
-        city: profileData.city || '',
-        state: profileData.state || '',
-        zipCode: profileData.zipCode || '',
-        phone: profileData.phone || '',
-        website: profileData.website || '',
+        logoUrl: profileData.logoUrl || null,
+        phone: profileData.phone || null,
+        location: profileData.location || null,
+        employeeCount: profileData.employeeCount || null,
       };
       
       await db.insert(companies).values(companyData);
     } else if (role === 'individual') {
       const individualData: InsertIndividual = {
         userId: newUser.id,
-        name: profileData.name || '',
-        cpf: profileData.cpf || '',
-        birthDate: profileData.birthDate ? new Date(profileData.birthDate) : new Date(),
-        phone: profileData.phone || '',
-        address: profileData.address || '',
-        city: profileData.city || '',
-        state: profileData.state || '',
-        zipCode: profileData.zipCode || '',
+        firstName: profileData.firstName || '',
+        lastName: profileData.lastName || '',
+        phone: profileData.phone || null,
+        location: profileData.location || null,
+        occupation: profileData.occupation || null,
+        profilePictureUrl: profileData.profilePictureUrl || null,
       };
       
       await db.insert(individuals).values(individualData);
