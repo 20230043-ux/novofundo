@@ -54,8 +54,10 @@ export const startKeepAliveService = () => {
   console.log('✅ Monitoramento Neon Database iniciado (verificação a cada 10 minutos)');
 
   // Self-ping para evitar hibernação do Render (free tier)
-  // Pinga a cada 5 minutos (bem antes dos 15 minutos de timeout do Render)
-  cron.schedule('*/5 * * * *', async () => {
+  // Pinga a cada 30 segundos para garantir que nunca hiberne
+  const PING_INTERVAL = 30 * 1000; // 30 segundos
+  
+  setInterval(async () => {
     try {
       const renderUrl = process.env.RENDER_EXTERNAL_URL || process.env.REPLIT_DOMAINS;
       
@@ -76,7 +78,7 @@ export const startKeepAliveService = () => {
         console.error('❌ Erro no keep-alive:', error);
       }
     }
-  });
+  }, PING_INTERVAL);
 
-  console.log('🚀 Serviço Keep-Alive iniciado (ping a cada 5 minutos para evitar hibernação do Render)');
+  console.log('🚀 Serviço Keep-Alive iniciado (ping a cada 30 segundos para evitar hibernação do Render)');
 };
