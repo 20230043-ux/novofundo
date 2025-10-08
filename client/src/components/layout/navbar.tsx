@@ -32,7 +32,7 @@ const Navbar = () => {
         title: "Logout realizado com sucesso",
         description: "Até logo!",
       });
-      setLocation('/auth');
+      setLocation('/');
     } catch (error) {
       toast({
         title: "Erro no logout",

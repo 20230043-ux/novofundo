@@ -68,7 +68,7 @@ const Sidebar = ({ type }: SidebarProps) => {
   
   const handleLogout = async () => {
     await logout();
-    setLocation('/auth');
+    setLocation('/');
   };
   
   // Toggle button for mobile
