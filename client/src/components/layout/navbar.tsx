@@ -18,7 +18,7 @@ import { useRealTimeNotifications } from "@/hooks/use-real-time-notifications";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
   
@@ -32,6 +32,7 @@ const Navbar = () => {
         title: "Logout realizado com sucesso",
         description: "Até logo!",
       });
+      setLocation('/auth');
     } catch (error) {
       toast({
         title: "Erro no logout",

@@ -91,7 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     onSuccess: () => {
       queryClient.setQueryData(['/api/user'], null);
-      queryClient.clear();
+      queryClient.removeQueries({ queryKey: ['/api/user'] });
+      queryClient.invalidateQueries();
     },
   });
 

@@ -27,7 +27,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ type }: SidebarProps) => {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, logout } = useAuth();
   const isMobile = useMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -66,8 +66,9 @@ const Sidebar = ({ type }: SidebarProps) => {
       .slice(0, 2);
   };
   
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    setLocation('/auth');
   };
   
   // Toggle button for mobile
