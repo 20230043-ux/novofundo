@@ -1,0 +1,203 @@
+  internalQuery: indefinido,
+  onde: indefinido,
+  esquema: indefinido,
+  tabela: indefinido,
+  coluna: indefinido,
+  dataType: indefinido,
+  restrição: indefinido,
+  arquivo: indefinido,
+  linha: indefinido,
+  rotina: indefinido
+}
+❌ Falha na verificação de saúde do banco de dados
+11:14:00 AM [express] 🚀 Pré-carregando dados essenciais...
+11:14:00 AM [expresso] GET /api/health 200 em 2ms
+🔄 Ping de keep-alive enviado: 2025-10-11T11:14:00.163Z - Status: 200
+11:14:00 AM [express] ❌ Erro ao pré-carregar dados: falha na autenticação de senha para o usuário 'neondb_owner'
+⚠️ Conexão com banco perdida, tentando reconectar...
+🗄️ Verificando conexão com o banco de dados...
+❌ Erro na conexão com o banco de dados: error: password authentication failed for user 'neondb_owner'
+  em /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+  em process.processTicksAndRejections (nó: interno / processo / task_queues: 105: 5)
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+  em initializeDatabase assíncrono (file:///opt/render/project/src/dist/index.js:5776:5)
+  e keepDatabaseAlive assíncrono (file:///opt/render/project/src/dist/index.js:5802:12)
+  em Timeout._onTimeout assíncrono (file:///opt/render/project/src/dist/index.js:5807:23) {
+  comprimento: 75,
+  gravidade: 'ERRO',
+  código: «XX000»,
+  detalhe: indefinido,
+  dica: indefinido,
+  posição: indefinido,
+  internalPosition: indefinido,
+  internalQuery: indefinido,
+  onde: indefinido,
+  esquema: indefinido,
+  tabela: indefinido,
+  coluna: indefinido,
+  dataType: indefinido,
+  restrição: indefinido,
+  arquivo: indefinido,
+  linha: indefinido,
+  rotina: indefinido
+}
+❌ Falha na verificação de saúde do banco de dados
+11:14:30 AM [express] 🚀 Pré-carregando dados essenciais...
+11:14:30 AM [expresso] GET /api/health 200 em 2ms
+🔄 Ping keep-alive enviado: 2025-10-11T11:14:30.164Z - Status: 200
+11:14:30 AM [express] ❌ Erro ao pré-carregar dados: falha na autenticação de senha para o usuário 'neondb_owner'
+⚠️ Conexão com banco perdida, tentando reconectar...
+🗄️ Verificando conexão com o banco de dados...
+❌ Erro na conexão com o banco de dados: error: password authentication failed for user 'neondb_owner'
+  em /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+  em process.processTicksAndRejections (nó: interno / processo / task_queues: 105: 5)
+  em initializeDatabase assíncrono (file:///opt/render/project/src/dist/index.js:5776:5)
+  e keepDatabaseAlive assíncrono (file:///opt/render/project/src/dist/index.js:5802:12)
+  em Timeout._onTimeout assíncrono (file:///opt/render/project/src/dist/index.js:5807:23) {
+  comprimento: 75,
+  gravidade: 'ERRO',
+  código: «XX000»,
+  detalhe: indefinido,
+  dica: indefinido,
+  posição: indefinido,
+  internalPosition: indefinido,
+  internalQuery: indefinido,
+  onde: indefinido,
+  esquema: indefinido,
+  tabela: indefinido,
+  coluna: indefinido,
+  dataType: indefinido,
+  restrição: indefinido,
+  arquivo: indefinido,
+  linha: indefinido,
+  rotina: indefinido
+}
+❌ Falha na verificação de saúde do banco de dados
+11:15:00 AM [express] 🚀 Pré-carregando dados essenciais...
+11:15:00 AM [expresso] GET /api/health 200 em 1ms
+🔄 Ping de keep-alive enviado: 2025-10-11T11:15:00.244Z - Status: 200
+11:15:00 AM [express] ❌ Erro ao pré-carregar dados: falha na autenticação de senha para o usuário 'neondb_owner'
+⚠️ Conexão com banco perdida, tentando reconectar...
+🗄️ Verificando conexão com o banco de dados...
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+❌ Erro na conexão com o banco de dados: error: password authentication failed for user 'neondb_owner'
+  em /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+  em process.processTicksAndRejections (nó: interno / processo / task_queues: 105: 5)
+  em initializeDatabase assíncrono (file:///opt/render/project/src/dist/index.js:5776:5)
+  e keepDatabaseAlive assíncrono (file:///opt/render/project/src/dist/index.js:5802:12)
+  em Timeout._onTimeout assíncrono (file:///opt/render/project/src/dist/index.js:5807:23) {
+  comprimento: 75,
+  gravidade: 'ERRO',
+  código: «XX000»,
+  detalhe: indefinido,
+  dica: indefinido,
+  posição: indefinido,
+  internalPosition: indefinido,
+  internalQuery: indefinido,
+  onde: indefinido,
+  esquema: indefinido,
+  tabela: indefinido,
+  coluna: indefinido,
+  dataType: indefinido,
+  restrição: indefinido,
+  arquivo: indefinido,
+  linha: indefinido,
+  rotina: indefinido
+}
+❌ Falha na verificação de saúde do banco de dados
+11:15:30 AM [express] 🚀 Pré-carregando dados essenciais...
+11:15:30 AM [expresso] GET /api/health 200 em 1ms
+🔄 Ping de keep-alive enviado: 2025-10-11T11:15:30.242Z - Status: 200
+11:15:30 AM [express] ❌ Erro ao pré-carregar dados: falha na autenticação de senha para o usuário 'neondb_owner'
+🗄️ Verificando conexão com o banco de dados...
+⚠️ Conexão com banco perdida, tentando reconectar...
+❌ Erro na conexão com o banco de dados: error: password authentication failed for user 'neondb_owner'
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+  em /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+  em process.processTicksAndRejections (nó: interno / processo / task_queues: 105: 5)
+  em initializeDatabase assíncrono (file:///opt/render/project/src/dist/index.js:5776:5)
+  e keepDatabaseAlive assíncrono (file:///opt/render/project/src/dist/index.js:5802:12)
+  em Timeout._onTimeout assíncrono (file:///opt/render/project/src/dist/index.js:5807:23) {
+  comprimento: 75,
+  gravidade: 'ERRO',
+  código: «XX000»,
+  detalhe: indefinido,
+  dica: indefinido,
+  posição: indefinido,
+  internalPosition: indefinido,
+  internalQuery: indefinido,
+  onde: indefinido,
+  esquema: indefinido,
+  tabela: indefinido,
+  coluna: indefinido,
+  dataType: indefinido,
+  restrição: indefinido,
+  arquivo: indefinido,
+  linha: indefinido,
+  rotina: indefinido
+}
+❌ Falha na verificação de saúde do banco de dados
+11:16:00 AM [express] 🚀 Pré-carregando dados essenciais...
+11:16:00 AM [expresso] GET /api/health 200 em 1ms
+🔄 Ping keep-alive enviado: 2025-10-11T11:16:00.156Z - Status: 200
+Falha ao remover sessões: erro: falha na autenticação de senha para o usuário 'neondb_owner'
+  em /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+  em process.processTicksAndRejections (nó: interno / processo / task_queues: 105: 5)
+  em PGStore._asyncQuery assíncrono (/opt/render/project/src/node_modules/connect-pg-simple/index.js:322:21) {
+  comprimento: 75,
+  gravidade: 'ERRO',
+  código: «XX000»,
+  detalhe: indefinido,
+  dica: indefinido,
+  posição: indefinido,
+  internalPosition: indefinido,
+  internalQuery: indefinido,
+  onde: indefinido,
+  esquema: indefinido,
+  tabela: indefinido,
+  coluna: indefinido,
+  dataType: indefinido,
+  restrição: indefinido,
+  arquivo: indefinido,
+  linha: indefinido,
+  rotina: indefinido
+}
+11:16:00 AM [express] ❌ Erro ao pré-carregar dados: falha na autenticação de senha para o usuário 'neondb_owner'
+⚠️ Tentativa 1/2 falhou: falha na autenticação de senha para o usuário 'neondb_owner'
+⚠️ Tentativa 2/2 falhou: falha na autenticação de senha para o usuário 'neondb_owner'
+⚠️ Problemas de integridade detectados: [
+  "Erro geral na verificação: Operação falhou após 2 tentativas. Último erro: password authentication failed for user 'neondb_owner'"
+]
+🗄️ Verificando conexão com o banco de dados...
+⚠️ Conexão com banco perdida, tentando reconectar...
+❌ Erro na conexão com o banco de dados: error: password authentication failed for user 'neondb_owner'
+  em /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+  em process.processTicksAndRejections (nó: interno / processo / task_queues: 105: 5)
+  em initializeDatabase assíncrono (file:///opt/render/project/src/dist/index.js:5776:5)
+💡 Dica: Execute npm run db:push para configurar o banco de dados.
+  e keepDatabaseAlive assíncrono (file:///opt/render/project/src/dist/index.js:5802:12)
+  em Timeout._onTimeout assíncrono (file:///opt/render/project/src/dist/index.js:5807:23) {
+  comprimento: 75,
+  gravidade: 'ERRO',
+  código: «XX000»,
+  detalhe: indefinido,
+  dica: indefinido,
+  posição: indefinido,
+  internalPosition: indefinido,
+  internalQuery: indefinido,
+  onde: indefinido,
+  esquema: indefinido,
+  tabela: indefinido,
+  coluna: indefinido,
+  dataType: indefinido,
+  restrição: indefinido,
+  arquivo: indefinido,
+  linha: indefinido,
+  rotina: indefinido
+}
+❌ Falha na verificação de saúde do banco de dados
+11:16:30 AM [express] 🚀 Pré-carregando dados essenciais...
+11:16:30 AM [expresso] GET /api/health 200 em 1ms
+🔄 Ping keep-alive enviado: 2025-10-11T11:16:30.215Z - Status: 200
+11:16:30 AM [express] ❌ Erro ao pré-carregar dados: falha na autenticação de senha para o usuário 'neondb_owner'
