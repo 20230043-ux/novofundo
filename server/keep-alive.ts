@@ -58,9 +58,9 @@ export const startKeepAliveService = () => {
     console.log(`✅ Monitoramento Neon Database iniciado (verificação a cada ${HEALTH_CHECK_INTERVAL / 60000} minutos)`);
   }
 
-  // OPÇÃO 3: Aumentar intervalo de ping de 30s para 5 minutos
-  // (Render hiberna após 15 minutos de inatividade, então 5 min é seguro)
-  const PING_INTERVAL = 5 * 60 * 1000; // 5 minutos (ao invés de 30 segundos)
+  // Ping a cada 10 minutos (Render hiberna após 15 min, então 10 min é seguro)
+  // Reduz pings de 288/dia para 144/dia sem afetar o Neon
+  const PING_INTERVAL = 10 * 60 * 1000; // 10 minutos
   
   setInterval(async () => {
     try {
