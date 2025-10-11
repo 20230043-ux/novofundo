@@ -35,12 +35,20 @@ export const keepAliveHandler = async (req: Request, res: Response) => {
 
 /**
  * Keep-Alive service to prevent Render free tier hibernation
- * Pings the server every 10 minutes to keep it active
+ * Only activates on Render platform - Replit doesn't need this
  */
 export const startKeepAliveService = () => {
+  // Verificar se estamos no Render
+  const isRender = process.env.RENDER === 'true' || process.env.RENDER_EXTERNAL_URL;
+  
+  if (!isRender) {
+    console.log('ℹ️  Keep-alive desativado (não necessário no Replit - economiza recursos do Neon)');
+    return;
+  }
+
   const HEALTH_CHECK_INTERVAL = 10 * 60 * 1000; // 10 minutes (reduced frequency)
   
-  // Database health check
+  // Database health check - only on Render
   setInterval(async () => {
     try {
       // Light health check for Neon Database
