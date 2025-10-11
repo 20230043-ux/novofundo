@@ -35,35 +35,32 @@ export const keepAliveHandler = async (req: Request, res: Response) => {
 
 /**
  * Keep-Alive service to prevent Render free tier hibernation
- * Only activates on Render platform - Replit doesn't need this
+ * Otimizado para economizar horas-CU do Neon Database
  */
 export const startKeepAliveService = () => {
-  // Verificar se estamos no Render
-  const isRender = process.env.RENDER === 'true' || process.env.RENDER_EXTERNAL_URL;
+  // OPÇÃO 1: Desativar health check do banco (economiza mais horas do Neon)
+  // const ENABLE_DB_HEALTH_CHECK = false;
   
-  if (!isRender) {
-    console.log('ℹ️  Keep-alive desativado (não necessário no Replit - economiza recursos do Neon)');
-    return;
+  // OPÇÃO 2: Health check do banco apenas a cada 1 hora (ao invés de 10 min)
+  const ENABLE_DB_HEALTH_CHECK = true;
+  const HEALTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1 hora
+  
+  if (ENABLE_DB_HEALTH_CHECK) {
+    setInterval(async () => {
+      try {
+        await db.execute(sql`SELECT 1`);
+        console.log('🌐 Neon Database: Conectividade verificada');
+      } catch (error) {
+        console.error('❌ Neon Database error:', error);
+      }
+    }, HEALTH_CHECK_INTERVAL);
+    
+    console.log(`✅ Monitoramento Neon Database iniciado (verificação a cada ${HEALTH_CHECK_INTERVAL / 60000} minutos)`);
   }
 
-  const HEALTH_CHECK_INTERVAL = 10 * 60 * 1000; // 10 minutes (reduced frequency)
-  
-  // Database health check - only on Render
-  setInterval(async () => {
-    try {
-      // Light health check for Neon Database
-      await db.execute(sql`SELECT 1`);
-      console.log('🌐 Neon Database: Conectividade verificada');
-    } catch (error) {
-      console.error('❌ Neon Database error:', error);
-    }
-  }, HEALTH_CHECK_INTERVAL);
-  
-  console.log('✅ Monitoramento Neon Database iniciado (verificação a cada 10 minutos)');
-
-  // Self-ping para evitar hibernação do Render (free tier)
-  // Pinga a cada 30 segundos para garantir que nunca hiberne
-  const PING_INTERVAL = 30 * 1000; // 30 segundos
+  // OPÇÃO 3: Aumentar intervalo de ping de 30s para 5 minutos
+  // (Render hiberna após 15 minutos de inatividade, então 5 min é seguro)
+  const PING_INTERVAL = 5 * 60 * 1000; // 5 minutos (ao invés de 30 segundos)
   
   setInterval(async () => {
     try {
@@ -71,12 +68,12 @@ export const startKeepAliveService = () => {
       
       if (renderUrl) {
         const url = renderUrl.startsWith('http') ? renderUrl : `https://${renderUrl}`;
+        // Usar endpoint /api/health que NÃO faz query ao banco
         const healthUrl = `${url}/api/health`;
         
         const response = await axios.get(healthUrl, { timeout: 5000 });
-        console.log(`🔄 Keep-alive ping enviado: ${new Date().toISOString()} - Status: ${response.status}`);
+        console.log(`🔄 Keep-alive ping: ${new Date().toISOString()} - Status: ${response.status}`);
       } else {
-        // Ping local se não houver URL externa configurada
         console.log('⏰ Keep-alive interno: servidor ativo', new Date().toISOString());
       }
     } catch (error) {
@@ -88,5 +85,5 @@ export const startKeepAliveService = () => {
     }
   }, PING_INTERVAL);
 
-  console.log('🚀 Serviço Keep-Alive iniciado (ping a cada 30 segundos para evitar hibernação do Render)');
+  console.log(`🚀 Serviço Keep-Alive iniciado (ping a cada ${PING_INTERVAL / 60000} minutos - otimizado para economizar Neon)`);
 };

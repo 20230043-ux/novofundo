@@ -2145,6 +2145,17 @@ export async function registerRoutes(app: Express, wsService?: any): Promise<Ser
   // Keep-alive endpoint para evitar hibernação
   app.get("/api/keep-alive", keepAliveHandler);
   app.get("/health", keepAliveHandler);
+  
+  // Endpoint simples para keep-alive que NÃO faz query ao banco
+  // Economiza horas-CU do Neon
+  app.get("/api/health", (req: Request, res: Response) => {
+    res.json({
+      status: 'online',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      message: 'Server is running (no DB query)'
+    });
+  });
 
   // ===== SISTEMA DE BACKUP E RESTAURAÇÃO =====
   
