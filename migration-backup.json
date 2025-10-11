@@ -1,0 +1,1277 @@
+{
+  "timestamp": "2025-10-11T10:41:52.054Z",
+  "data": {
+    "users": [
+      {
+        "id": 1,
+        "email": "admin@gmail.com",
+        "password": "8b8dcbabc0d77666dcb997c7afc323f498d43b4d7b64570ec0b1c1496bccf5121c0377dec2aab55524cbfa8333ed0d9f6c509b536fec654a7880a63c52179212.0795a5ed3bd95c8409846b45b91cc7c1",
+        "role": "admin",
+        "createdAt": "2025-07-23T08:34:22.196Z",
+        "updatedAt": "2025-07-23T08:34:22.196Z"
+      },
+      {
+        "id": 2,
+        "email": "bfa@bfa.ao",
+        "password": "9117071f224704c103ae58d7f7f6f3e12d1ae6020a4f14c5339bbca7813c8c6da8d15c1db4d8ce4d83d5a68dd6cbc754fef450a658f18fb05f0e785f756a089f.9bc128d87c499136aacafb2fb1dcc5eb",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:24.195Z",
+        "updatedAt": "2025-07-23T08:34:24.195Z"
+      },
+      {
+        "id": 3,
+        "email": "contact@angolacables.co.ao",
+        "password": "2c73799d926a89eef1929edf674a9bba8465c75197671dcef40b6554c71940e9eedb5714b734238d5de383f0c66c7dfb5ac1bda75239e46e1737f2bc9e3f9f17.71d5fd44a9087c1a25d8016278346975",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:24.342Z",
+        "updatedAt": "2025-07-23T08:34:24.342Z"
+      },
+      {
+        "id": 4,
+        "email": "info@kero.ao",
+        "password": "0eba3baf8313f1a39a842bb641ce3323f75f1e526e11ce9ffb5c6e90753dcd28f93b3f52d4841af4b45ec542c4f3b5461f79ab3e925a84d2aabcb4464425d085.8ab4c23aa649869386b470561776258b",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:24.489Z",
+        "updatedAt": "2025-07-23T08:34:24.489Z"
+      },
+      {
+        "id": 5,
+        "email": "contact@taag.ao",
+        "password": "1ba7035edfdb82d1494d8cc4afd75e4480dc9e92636027d6b54971fc12596c0657948259349af78ef28c2bce39d98fb7ae0a8ead70f33daa24f01d336ab4517a.44611c68e82e3766a7e26eef63bb17bd",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:24.635Z",
+        "updatedAt": "2025-07-23T08:34:24.635Z"
+      },
+      {
+        "id": 6,
+        "email": "info@movicel.ao",
+        "password": "04969c7f566ee18c758f1a3c7345f57ce896dddb03ef8f2344114e8002b4cb0d43b244f3a58b99f12008496caefe9473faa2d8c0e5031c6c1d18ddebde457cc0.6c317f6c4ab700973652cc59826e4ffc",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:24.781Z",
+        "updatedAt": "2025-07-23T08:34:24.781Z"
+      },
+      {
+        "id": 7,
+        "email": "contact@refriango.ao",
+        "password": "5086fc9aeab9e1f7dd864f759f88742f468e0e9159833545371f2a905616a5dd23890d1fed892de87c968ce451e877376c055ac0aa832814a8a93156a8c80389.c4502880a1efa0e856278e0aea502c3b",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:24.926Z",
+        "updatedAt": "2025-07-23T08:34:24.926Z"
+      },
+      {
+        "id": 8,
+        "email": "info@fazendagirassol.com",
+        "password": "b0a53bf667b204dff306896ba846e5acb3ab7728a27540648ee12c022a653bcd098d3acb9ba0ff8df584b4fb76f68e6e0c7ac90b45c0ed38b6cbc5327399f2de.a02243d5ea83c852bb9a540342e0b03e",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:25.073Z",
+        "updatedAt": "2025-07-23T08:34:25.073Z"
+      },
+      {
+        "id": 9,
+        "email": "contact@zap.co.ao",
+        "password": "9529c8f22b7778804592b478c3a0d5ce76ff751ecaf4692f2f5121a25627d09b5efa48b3cc387a88f124ba12f98c0d1721c8d61f52238b8370b839ce21f042b0.c570db8fb54cf8ea97aa625c5fa902b2",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:25.218Z",
+        "updatedAt": "2025-07-23T08:34:25.218Z"
+      },
+      {
+        "id": 10,
+        "email": "info@cocacola.ao",
+        "password": "c5b1a62a8333a402caa6f90ff8736b0702f5023620f1f0397561c4157d2d42821ac3da02507fff5131ef2d7934b8da246bbd08f0799f0ee0ff89baad15ddf3c0.edf47afe7078175ab1f888951c416731",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:25.368Z",
+        "updatedAt": "2025-07-23T08:34:25.368Z"
+      },
+      {
+        "id": 14,
+        "email": "atlantico@gmail.com",
+        "password": "1234567890",
+        "role": "company",
+        "createdAt": "2025-07-23T09:14:35.481Z",
+        "updatedAt": "2025-07-23T09:14:35.481Z"
+      },
+      {
+        "id": 15,
+        "email": "isptec@gmail.com",
+        "password": "987654321",
+        "role": "company",
+        "createdAt": "2025-07-23T09:17:11.654Z",
+        "updatedAt": "2025-07-23T09:17:11.654Z"
+      },
+      {
+        "id": 11,
+        "email": "contact@africell.ao",
+        "password": "123456789",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:25.514Z",
+        "updatedAt": "2025-07-23T08:34:25.514Z"
+      },
+      {
+        "id": 12,
+        "email": "inapem@gmail.com",
+        "password": "123456789",
+        "role": "company",
+        "createdAt": "2025-07-23T08:34:25.660Z",
+        "updatedAt": "2025-07-23T08:34:25.660Z"
+      },
+      {
+        "id": 13,
+        "email": "geraldochiquemba@gmail.com",
+        "password": "e36b00ce8f5e35be56de8f20b54b5bb1e9d8b35f1a2e07c8cf0e6b926d1bf1bebe3db1f3f77f3d8e6f0a46c61f5e0d9f8e3b5f1c4c8a8b2d7d0c7f3e6d0e5.d4e1c5b8a3f6e7d2c9f0b1a8e5c7d6f3",
+        "role": "individual",
+        "createdAt": "2025-07-23T08:49:17.564Z",
+        "updatedAt": "2025-07-23T08:49:17.564Z"
+      }
+    ],
+    "companies": [
+      {
+        "id": 1,
+        "userId": 2,
+        "name": "Banco de Fomento Angola (BFA)",
+        "sector": "Serviços Financeiros",
+        "logoUrl": "https://yt3.ggpht.com/a-/AAuE7mBtMdXtNDGQIHWQ3MsAN0ojUSwk256VJeNcDg=s900-mo-c-c0xffffffff-rj-k-no",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:25.809Z",
+        "updatedAt": "2025-07-23T08:34:25.809Z"
+      },
+      {
+        "id": 3,
+        "userId": 4,
+        "name": "Kero Supermercados",
+        "sector": "Varejo / Supermercados",
+        "logoUrl": "https://gastem.ao/wp-content/uploads/2020/08/logo-kero.jpg",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:26.101Z",
+        "updatedAt": "2025-07-23T08:34:26.101Z"
+      },
+      {
+        "id": 4,
+        "userId": 5,
+        "name": "TAAG Angola Airlines",
+        "sector": "Aviação",
+        "logoUrl": "http://angovagas.net/wp-content/uploads/2022/04/FB_IMG_16494867467389946.jpg",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:26.246Z",
+        "updatedAt": "2025-07-23T08:34:26.246Z"
+      },
+      {
+        "id": 6,
+        "userId": 7,
+        "name": "Refriango",
+        "sector": "Indústria de Bebidas",
+        "logoUrl": "http://angovagas.net/wp-content/uploads/2022/05/REFRIANGO.png",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:26.536Z",
+        "updatedAt": "2025-07-23T08:34:26.536Z"
+      },
+      {
+        "id": 7,
+        "userId": 8,
+        "name": "Fazenda Girassol",
+        "sector": "Agricultura",
+        "logoUrl": "https://www.fazendagirassol.com/Themes/Healthy/Content/images/logo.png",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:26.684Z",
+        "updatedAt": "2025-07-23T08:34:26.684Z"
+      },
+      {
+        "id": 9,
+        "userId": 10,
+        "name": "Coca-Cola Angola",
+        "sector": "Bebidas",
+        "logoUrl": "https://th.bing.com/th/id/OIP.z7mzSJmhxfClqm5Zt9aLQAHaFC",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:26.978Z",
+        "updatedAt": "2025-07-23T08:34:26.978Z"
+      },
+      {
+        "id": 10,
+        "userId": 11,
+        "name": "Africell Angola",
+        "sector": "Telecomunicações",
+        "logoUrl": "https://www.menosfios.com/wp-content/uploads/2022/04/273150568_464996925118183_7635331094090428991_n.jpg",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:27.123Z",
+        "updatedAt": "2025-07-23T08:34:27.123Z"
+      },
+      {
+        "id": 2,
+        "userId": 3,
+        "name": "Angola Cables",
+        "sector": "Telecomunicações",
+        "logoUrl": "https://tse3.mm.bing.net/th/id/OIP.J0LiapMNvEASDubEbgxbaAHaFP?rs=1&pid=ImgDetMain&o=7&rm=3",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:25.956Z",
+        "updatedAt": "2025-07-23T08:34:25.956Z"
+      },
+      {
+        "id": 5,
+        "userId": 6,
+        "name": "Movicel",
+        "sector": "Telecomunicações",
+        "logoUrl": "https://th.bing.com/th/id/R.a58772baeef0c5e6b31f555c830288e1?rik=ljVCwMlDDlCTeg&riu=http%3a%2f%2fwww.menosfios.com%2fwp-content%2fuploads%2f2016%2f10%2fMovicel-2.jpg&ehk=c7LNTrBECODyXJlpCguET8ZoncW3gi7cAfxbDnUmKSk%3d&risl=&pid=ImgRaw&r=0&sres=1&sresct=1",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:26.392Z",
+        "updatedAt": "2025-07-23T08:34:26.392Z"
+      },
+      {
+        "id": 8,
+        "userId": 9,
+        "name": "ZAP",
+        "sector": "Telecomunicações",
+        "logoUrl": "https://th.bing.com/th/id/R.dc272d0868d60c875a6efd86fab13825?rik=bQ0CDe%2fOy6NFNA&riu=http%3a%2f%2fangovagas.net%2fwp-content%2fuploads%2f2021%2f07%2fAO9lbOvA_400x400.jpg&ehk=ZjKMwTR92WN543NO3OLx%2f5w3L0HFSDzlriO79KrFKNw%3d&risl=&pid=ImgRaw&r=0",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:26.833Z",
+        "updatedAt": "2025-07-23T08:34:26.833Z"
+      },
+      {
+        "id": 12,
+        "userId": 14,
+        "name": "Banco Atlântico",
+        "sector": "Serviços Financeiros",
+        "logoUrl": "https://th.bing.com/th/id/R.11f8ee08b6108b83bd01836ecf49362a?rik=6SMsrma5LPt0tw&pid=ImgRaw&r=0",
+        "phone": "+244 222 123 456",
+        "location": "Luanda, Angola",
+        "employeeCount": 150,
+        "createdAt": "2025-07-23T09:14:39.027Z",
+        "updatedAt": "2025-07-23T09:14:39.027Z"
+      },
+      {
+        "id": 11,
+        "userId": 12,
+        "name": "INAPEM",
+        "sector": "Administração Pública",
+        "logoUrl": "https://th.bing.com/th/id/OIP.WiC-L0GmyyR46CE0ieYN6QHaHa",
+        "phone": null,
+        "location": null,
+        "employeeCount": null,
+        "createdAt": "2025-07-23T08:34:27.269Z",
+        "updatedAt": "2025-08-03T11:56:55.857Z"
+      },
+      {
+        "id": 13,
+        "userId": 15,
+        "name": "ISPTEC",
+        "sector": "educacao",
+        "logoUrl": "https://th.bing.com/th/id/R.48988eec3b25b88f4b8152da91148b7e?rik=WGXSKm9N7HPqBg&riu=http%3a%2f%2fangovagas.net%2fwp-content%2fuploads%2f2021%2f12%2fISPTEC-768x525-1.png&ehk=bb%2fntg5m8lOAat7RQZq7JIcmxjkHBC1%2b%2b9mhVS%2bbxtk%3d&risl=&pid=ImgRaw&r=0",
+        "phone": "+244 222 334 455",
+        "location": "Luanda, Angola",
+        "employeeCount": 250,
+        "createdAt": "2025-07-23T09:17:15.238Z",
+        "updatedAt": "2025-10-07T15:38:00.392Z"
+      }
+    ],
+    "individuals": [
+      {
+        "id": 1,
+        "userId": 13,
+        "firstName": "Geraldo",
+        "lastName": "Chiquemba",
+        "phone": "+244943412688",
+        "location": "Luanda",
+        "occupation": "Estudante",
+        "profilePictureUrl": "/uploads/profiles/profilePicture-1753260643719-798974981.jpeg",
+        "createdAt": "2025-07-23T08:49:17.711Z",
+        "updatedAt": "2025-07-23T08:50:48.876Z"
+      }
+    ],
+    "projects": [
+      {
+        "id": 2,
+        "name": "Painéis Solares em Comunidades Rurais",
+        "sdgId": 7,
+        "description": "Instalação de sistemas fotovoltaicos em áreas sem acesso à rede elétrica, proporcionando energia limpa. O projeto beneficia comunidades isoladas, permitindo acesso à energia para necessidades básicas e desenvolvimento local.",
+        "imageUrl": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "totalInvested": "8750000.00",
+        "peopleCount": 0,
+        "createdAt": "2025-07-23T08:34:23.084Z",
+        "updatedAt": "2025-07-23T08:34:23.084Z"
+      },
+      {
+        "id": 3,
+        "name": "Sistemas de Purificação de Água",
+        "sdgId": 6,
+        "description": "Instalação de filtros e sistemas de tratamento para garantir acesso à água potável para comunidades vulneráveis. O projeto inclui também educação sobre higiene e uso sustentável dos recursos hídricos.",
+        "imageUrl": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "totalInvested": "6320000.00",
+        "peopleCount": 0,
+        "createdAt": "2025-07-23T08:34:23.230Z",
+        "updatedAt": "2025-07-23T08:34:23.230Z"
+      },
+      {
+        "id": 1,
+        "name": "Reflorestamento da Reserva Natural",
+        "sdgId": 15,
+        "description": "Projeto de plantio de árvores nativas para recuperação de áreas degradadas e preservação da biodiversidade local. Este projeto visa reflorestar áreas desmatadas e criar corredores ecológicos.",
+        "imageUrl": "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "totalInvested": "12500.00",
+        "peopleCount": 0,
+        "createdAt": "2025-07-23T08:34:22.937Z",
+        "updatedAt": "2025-07-23T20:10:47.749Z"
+      }
+    ],
+    "sdgs": [
+      {
+        "id": 1,
+        "number": 1,
+        "name": "Erradicação da Pobreza",
+        "description": "Acabar com a pobreza em todas as suas formas, em todos os lugares.",
+        "color": "#E5243B",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 2,
+        "number": 2,
+        "name": "Fome Zero",
+        "description": "Acabar com a fome, alcançar a segurança alimentar e melhoria da nutrição e promover a agricultura sustentável.",
+        "color": "#DDA63A",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 3,
+        "number": 3,
+        "name": "Saúde e Bem-estar",
+        "description": "Assegurar uma vida saudável e promover o bem-estar para todos, em todas as idades.",
+        "color": "#4C9F38",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 4,
+        "number": 4,
+        "name": "Educação de Qualidade",
+        "description": "Assegurar a educação inclusiva e equitativa e de qualidade, e promover oportunidades de aprendizagem ao longo da vida para todos.",
+        "color": "#C5192D",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 5,
+        "number": 5,
+        "name": "Igualdade de Gênero",
+        "description": "Alcançar a igualdade de gênero e empoderar todas as mulheres e meninas.",
+        "color": "#FF3A21",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 6,
+        "number": 6,
+        "name": "Água Potável e Saneamento",
+        "description": "Garantir disponibilidade e manejo sustentável da água e saneamento para todos.",
+        "color": "#26BDE2",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 7,
+        "number": 7,
+        "name": "Energia Limpa e Acessível",
+        "description": "Garantir acesso à energia barata, confiável, sustentável e renovável para todos.",
+        "color": "#FCC30B",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 8,
+        "number": 8,
+        "name": "Trabalho Decente e Crescimento Econômico",
+        "description": "Promover o crescimento econômico sustentado, inclusivo e sustentável, emprego pleno e produtivo, e trabalho decente para todos.",
+        "color": "#A21942",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 9,
+        "number": 9,
+        "name": "Indústria, Inovação e Infraestrutura",
+        "description": "Construir infraestrutura resiliente, promover a industrialização inclusiva e sustentável, e fomentar a inovação.",
+        "color": "#FD6925",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 10,
+        "number": 10,
+        "name": "Redução das Desigualdades",
+        "description": "Reduzir as desigualdades dentro dos países e entre eles.",
+        "color": "#DD1367",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 11,
+        "number": 11,
+        "name": "Cidades e Comunidades Sustentáveis",
+        "description": "Tornar as cidades e os assentamentos humanos inclusivos, seguros, resilientes e sustentáveis.",
+        "color": "#FD9D24",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 12,
+        "number": 12,
+        "name": "Consumo e Produção Responsáveis",
+        "description": "Assegurar padrões de produção e de consumo sustentáveis.",
+        "color": "#BF8B2E",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 13,
+        "number": 13,
+        "name": "Ação Contra a Mudança Global do Clima",
+        "description": "Tomar medidas urgentes para combater a mudança climática e seus impactos.",
+        "color": "#3F7E44",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 14,
+        "number": 14,
+        "name": "Vida na Água",
+        "description": "Conservação e uso sustentável dos oceanos, dos mares e dos recursos marinhos para o desenvolvimento sustentável.",
+        "color": "#0A97D9",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 15,
+        "number": 15,
+        "name": "Vida Terrestre",
+        "description": "Proteger, recuperar e promover o uso sustentável dos ecossistemas terrestres, gerir de forma sustentável as florestas, combater a desertificação, deter e reverter a degradação da Terra e deter a perda da biodiversidade.",
+        "color": "#56C02B",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 16,
+        "number": 16,
+        "name": "Paz, Justiça e Instituições Eficazes",
+        "description": "Promover sociedades pacíficas e inclusivas para o desenvolvimento sustentável, proporcionar o acesso à justiça para todos e construir instituições eficazes, responsáveis e inclusivas em todos os níveis.",
+        "color": "#00689D",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      },
+      {
+        "id": 17,
+        "number": 17,
+        "name": "Parcerias e Meios de Implementação",
+        "description": "Fortalecer os meios de implementação e revitalizar a parceria global para o desenvolvimento sustentável.",
+        "color": "#19486A",
+        "createdAt": "2025-07-23T08:34:22.497Z"
+      }
+    ],
+    "investments": [
+      {
+        "id": 1,
+        "companyId": 1,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 1,
+        "amount": "2500000.00",
+        "createdAt": "2025-07-23T08:34:27.855Z"
+      },
+      {
+        "id": 2,
+        "companyId": 11,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 2,
+        "amount": "1800000.00",
+        "createdAt": "2025-07-23T08:34:28.156Z"
+      },
+      {
+        "id": 3,
+        "companyId": 7,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 3,
+        "amount": "3200000.00",
+        "createdAt": "2025-07-23T08:34:28.446Z"
+      },
+      {
+        "id": 4,
+        "companyId": 3,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 4,
+        "amount": "1500000.00",
+        "createdAt": "2025-07-23T08:34:28.736Z"
+      },
+      {
+        "id": 5,
+        "companyId": 9,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 5,
+        "amount": "2800000.00",
+        "createdAt": "2025-07-23T08:34:29.027Z"
+      },
+      {
+        "id": 6,
+        "companyId": 6,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 6,
+        "amount": "1200000.00",
+        "createdAt": "2025-07-23T08:34:29.317Z"
+      },
+      {
+        "id": 7,
+        "companyId": 2,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 7,
+        "amount": "4500000.00",
+        "createdAt": "2025-07-23T08:34:29.608Z"
+      },
+      {
+        "id": 8,
+        "companyId": 4,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 8,
+        "amount": "2200000.00",
+        "createdAt": "2025-07-23T08:34:29.899Z"
+      },
+      {
+        "id": 9,
+        "companyId": 1,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 9,
+        "amount": "1800000.00",
+        "createdAt": "2025-07-23T08:34:30.189Z"
+      },
+      {
+        "id": 10,
+        "companyId": 3,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 10,
+        "amount": "950000.00",
+        "createdAt": "2025-07-23T08:34:30.479Z"
+      },
+      {
+        "id": 11,
+        "companyId": 11,
+        "individualId": null,
+        "projectId": 3,
+        "paymentProofId": 11,
+        "amount": "3800000.00",
+        "createdAt": "2025-07-23T08:34:30.770Z"
+      },
+      {
+        "id": 12,
+        "companyId": 1,
+        "individualId": null,
+        "projectId": 3,
+        "paymentProofId": 12,
+        "amount": "2520000.00",
+        "createdAt": "2025-07-23T08:34:31.062Z"
+      },
+      {
+        "id": 13,
+        "companyId": 2,
+        "individualId": null,
+        "projectId": 2,
+        "paymentProofId": 13,
+        "amount": "5200000.00",
+        "createdAt": "2025-07-23T08:34:31.351Z"
+      },
+      {
+        "id": 14,
+        "companyId": 5,
+        "individualId": null,
+        "projectId": 2,
+        "paymentProofId": 14,
+        "amount": "3550000.00",
+        "createdAt": "2025-07-23T08:34:31.640Z"
+      },
+      {
+        "id": 15,
+        "companyId": 4,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 15,
+        "amount": "4200000.00",
+        "createdAt": "2025-07-23T08:34:31.930Z"
+      },
+      {
+        "id": 16,
+        "companyId": 6,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 16,
+        "amount": "2800000.00",
+        "createdAt": "2025-07-23T08:34:32.220Z"
+      },
+      {
+        "id": 17,
+        "companyId": 2,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 17,
+        "amount": "6500000.00",
+        "createdAt": "2025-07-23T08:34:32.509Z"
+      },
+      {
+        "id": 18,
+        "companyId": 8,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 18,
+        "amount": "3200000.00",
+        "createdAt": "2025-07-23T08:34:32.801Z"
+      },
+      {
+        "id": 19,
+        "companyId": 1,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 19,
+        "amount": "2800000.00",
+        "createdAt": "2025-07-23T08:34:33.092Z"
+      },
+      {
+        "id": 20,
+        "companyId": 11,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 20,
+        "amount": "1600000.00",
+        "createdAt": "2025-07-23T08:34:33.392Z"
+      },
+      {
+        "id": 21,
+        "companyId": 4,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 21,
+        "amount": "3500000.00",
+        "createdAt": "2025-07-23T08:34:33.682Z"
+      },
+      {
+        "id": 22,
+        "companyId": 3,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 22,
+        "amount": "1800000.00",
+        "createdAt": "2025-07-23T08:34:33.972Z"
+      },
+      {
+        "id": 23,
+        "companyId": 6,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 23,
+        "amount": "2200000.00",
+        "createdAt": "2025-07-23T08:34:34.263Z"
+      },
+      {
+        "id": 24,
+        "companyId": 9,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 24,
+        "amount": "1900000.00",
+        "createdAt": "2025-07-23T08:34:34.557Z"
+      },
+      {
+        "id": 25,
+        "companyId": 7,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 25,
+        "amount": "4800000.00",
+        "createdAt": "2025-07-23T08:34:34.847Z"
+      },
+      {
+        "id": 26,
+        "companyId": 2,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 26,
+        "amount": "3200000.00",
+        "createdAt": "2025-07-23T08:34:35.137Z"
+      },
+      {
+        "id": 27,
+        "companyId": 10,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 27,
+        "amount": "2800000.00",
+        "createdAt": "2025-07-23T08:34:35.427Z"
+      },
+      {
+        "id": 28,
+        "companyId": 11,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 28,
+        "amount": "2100000.00",
+        "createdAt": "2025-07-23T08:34:35.721Z"
+      },
+      {
+        "id": 29,
+        "companyId": 7,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 29,
+        "amount": "8500000.00",
+        "createdAt": "2025-07-23T08:34:36.010Z"
+      },
+      {
+        "id": 30,
+        "companyId": 9,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 30,
+        "amount": "4000000.00",
+        "createdAt": "2025-07-23T08:34:36.301Z"
+      },
+      {
+        "id": 31,
+        "companyId": 11,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 31,
+        "amount": "5200000.00",
+        "createdAt": "2025-07-23T08:34:36.591Z"
+      },
+      {
+        "id": 32,
+        "companyId": 1,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 32,
+        "amount": "2800000.00",
+        "createdAt": "2025-07-23T08:34:36.880Z"
+      },
+      {
+        "id": 33,
+        "companyId": 1,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 33,
+        "amount": "3800000.00",
+        "createdAt": "2025-07-23T08:34:37.169Z"
+      },
+      {
+        "id": 34,
+        "companyId": 2,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 34,
+        "amount": "2500000.00",
+        "createdAt": "2025-07-23T08:34:37.462Z"
+      },
+      {
+        "id": 35,
+        "companyId": 8,
+        "individualId": null,
+        "projectId": 1,
+        "paymentProofId": 35,
+        "amount": "1800000.00",
+        "createdAt": "2025-07-23T08:34:37.755Z"
+      },
+      {
+        "id": 36,
+        "companyId": 11,
+        "individualId": null,
+        "projectId": 2,
+        "paymentProofId": 36,
+        "amount": "468750.00",
+        "createdAt": "2025-07-23T19:33:31.072Z"
+      },
+      {
+        "id": 37,
+        "companyId": 11,
+        "individualId": null,
+        "projectId": 3,
+        "paymentProofId": 37,
+        "amount": "405125.00",
+        "createdAt": "2025-07-23T19:33:31.072Z"
+      }
+    ],
+    "paymentProofs": [
+      {
+        "id": 1,
+        "companyId": 1,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259667636.pdf",
+        "amount": "2500000.00",
+        "sdgId": 1,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:27.707Z",
+        "updatedAt": "2025-07-23T08:34:27.707Z"
+      },
+      {
+        "id": 2,
+        "companyId": 11,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259667932.pdf",
+        "amount": "1800000.00",
+        "sdgId": 1,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:28.010Z",
+        "updatedAt": "2025-07-23T08:34:28.010Z"
+      },
+      {
+        "id": 3,
+        "companyId": 7,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259668230.pdf",
+        "amount": "3200000.00",
+        "sdgId": 2,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:28.302Z",
+        "updatedAt": "2025-07-23T08:34:28.302Z"
+      },
+      {
+        "id": 4,
+        "companyId": 3,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259668520.pdf",
+        "amount": "1500000.00",
+        "sdgId": 2,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:28.591Z",
+        "updatedAt": "2025-07-23T08:34:28.591Z"
+      },
+      {
+        "id": 5,
+        "companyId": 9,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259668811.pdf",
+        "amount": "2800000.00",
+        "sdgId": 3,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:28.883Z",
+        "updatedAt": "2025-07-23T08:34:28.883Z"
+      },
+      {
+        "id": 6,
+        "companyId": 6,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259669101.pdf",
+        "amount": "1200000.00",
+        "sdgId": 3,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:29.172Z",
+        "updatedAt": "2025-07-23T08:34:29.172Z"
+      },
+      {
+        "id": 7,
+        "companyId": 2,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259669391.pdf",
+        "amount": "4500000.00",
+        "sdgId": 4,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:29.463Z",
+        "updatedAt": "2025-07-23T08:34:29.463Z"
+      },
+      {
+        "id": 8,
+        "companyId": 4,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259669682.pdf",
+        "amount": "2200000.00",
+        "sdgId": 4,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:29.754Z",
+        "updatedAt": "2025-07-23T08:34:29.754Z"
+      },
+      {
+        "id": 9,
+        "companyId": 1,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259669973.pdf",
+        "amount": "1800000.00",
+        "sdgId": 5,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:30.044Z",
+        "updatedAt": "2025-07-23T08:34:30.044Z"
+      },
+      {
+        "id": 10,
+        "companyId": 3,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259670263.pdf",
+        "amount": "950000.00",
+        "sdgId": 5,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:30.334Z",
+        "updatedAt": "2025-07-23T08:34:30.334Z"
+      },
+      {
+        "id": 11,
+        "companyId": 11,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259670553.pdf",
+        "amount": "3800000.00",
+        "sdgId": 6,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:30.625Z",
+        "updatedAt": "2025-07-23T08:34:30.625Z"
+      },
+      {
+        "id": 12,
+        "companyId": 1,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259670844.pdf",
+        "amount": "2520000.00",
+        "sdgId": 6,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:30.915Z",
+        "updatedAt": "2025-07-23T08:34:30.915Z"
+      },
+      {
+        "id": 13,
+        "companyId": 2,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259671135.pdf",
+        "amount": "5200000.00",
+        "sdgId": 7,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:31.206Z",
+        "updatedAt": "2025-07-23T08:34:31.206Z"
+      },
+      {
+        "id": 14,
+        "companyId": 5,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259671424.pdf",
+        "amount": "3550000.00",
+        "sdgId": 7,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:31.496Z",
+        "updatedAt": "2025-07-23T08:34:31.496Z"
+      },
+      {
+        "id": 15,
+        "companyId": 4,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259671714.pdf",
+        "amount": "4200000.00",
+        "sdgId": 8,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:31.785Z",
+        "updatedAt": "2025-07-23T08:34:31.785Z"
+      },
+      {
+        "id": 16,
+        "companyId": 6,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259672004.pdf",
+        "amount": "2800000.00",
+        "sdgId": 8,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:32.075Z",
+        "updatedAt": "2025-07-23T08:34:32.075Z"
+      },
+      {
+        "id": 17,
+        "companyId": 2,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259672293.pdf",
+        "amount": "6500000.00",
+        "sdgId": 9,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:32.364Z",
+        "updatedAt": "2025-07-23T08:34:32.364Z"
+      },
+      {
+        "id": 18,
+        "companyId": 8,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259672582.pdf",
+        "amount": "3200000.00",
+        "sdgId": 9,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:32.656Z",
+        "updatedAt": "2025-07-23T08:34:32.656Z"
+      },
+      {
+        "id": 19,
+        "companyId": 1,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259672875.pdf",
+        "amount": "2800000.00",
+        "sdgId": 10,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:32.947Z",
+        "updatedAt": "2025-07-23T08:34:32.947Z"
+      },
+      {
+        "id": 20,
+        "companyId": 11,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259673166.pdf",
+        "amount": "1600000.00",
+        "sdgId": 10,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:33.237Z",
+        "updatedAt": "2025-07-23T08:34:33.237Z"
+      },
+      {
+        "id": 21,
+        "companyId": 4,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259673465.pdf",
+        "amount": "3500000.00",
+        "sdgId": 11,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:33.536Z",
+        "updatedAt": "2025-07-23T08:34:33.536Z"
+      },
+      {
+        "id": 22,
+        "companyId": 3,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259673756.pdf",
+        "amount": "1800000.00",
+        "sdgId": 11,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:33.827Z",
+        "updatedAt": "2025-07-23T08:34:33.827Z"
+      },
+      {
+        "id": 23,
+        "companyId": 6,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259674046.pdf",
+        "amount": "2200000.00",
+        "sdgId": 12,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:34.117Z",
+        "updatedAt": "2025-07-23T08:34:34.117Z"
+      },
+      {
+        "id": 24,
+        "companyId": 9,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259674341.pdf",
+        "amount": "1900000.00",
+        "sdgId": 12,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:34.412Z",
+        "updatedAt": "2025-07-23T08:34:34.412Z"
+      },
+      {
+        "id": 25,
+        "companyId": 7,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259674631.pdf",
+        "amount": "4800000.00",
+        "sdgId": 13,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:34.702Z",
+        "updatedAt": "2025-07-23T08:34:34.702Z"
+      },
+      {
+        "id": 26,
+        "companyId": 2,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259674921.pdf",
+        "amount": "3200000.00",
+        "sdgId": 13,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:34.993Z",
+        "updatedAt": "2025-07-23T08:34:34.993Z"
+      },
+      {
+        "id": 27,
+        "companyId": 10,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259675211.pdf",
+        "amount": "2800000.00",
+        "sdgId": 14,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:35.283Z",
+        "updatedAt": "2025-07-23T08:34:35.283Z"
+      },
+      {
+        "id": 28,
+        "companyId": 11,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259675501.pdf",
+        "amount": "2100000.00",
+        "sdgId": 14,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:35.573Z",
+        "updatedAt": "2025-07-23T08:34:35.573Z"
+      },
+      {
+        "id": 29,
+        "companyId": 7,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259675795.pdf",
+        "amount": "8500000.00",
+        "sdgId": 15,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:35.866Z",
+        "updatedAt": "2025-07-23T08:34:35.866Z"
+      },
+      {
+        "id": 30,
+        "companyId": 9,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259676084.pdf",
+        "amount": "4000000.00",
+        "sdgId": 15,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:36.155Z",
+        "updatedAt": "2025-07-23T08:34:36.155Z"
+      },
+      {
+        "id": 31,
+        "companyId": 11,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259676374.pdf",
+        "amount": "5200000.00",
+        "sdgId": 16,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:36.447Z",
+        "updatedAt": "2025-07-23T08:34:36.447Z"
+      },
+      {
+        "id": 32,
+        "companyId": 1,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259676664.pdf",
+        "amount": "2800000.00",
+        "sdgId": 16,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:36.736Z",
+        "updatedAt": "2025-07-23T08:34:36.736Z"
+      },
+      {
+        "id": 33,
+        "companyId": 1,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259676954.pdf",
+        "amount": "3800000.00",
+        "sdgId": 17,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:37.025Z",
+        "updatedAt": "2025-07-23T08:34:37.025Z"
+      },
+      {
+        "id": 34,
+        "companyId": 2,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259677243.pdf",
+        "amount": "2500000.00",
+        "sdgId": 17,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:37.317Z",
+        "updatedAt": "2025-07-23T08:34:37.317Z"
+      },
+      {
+        "id": 35,
+        "companyId": 8,
+        "individualId": null,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/investment-proof-1753259677535.pdf",
+        "amount": "1800000.00",
+        "sdgId": 17,
+        "status": "approved",
+        "createdAt": "2025-07-23T08:34:37.607Z",
+        "updatedAt": "2025-07-23T08:34:37.607Z"
+      },
+      {
+        "id": 36,
+        "companyId": 11,
+        "individualId": null,
+        "consumptionRecordId": 9,
+        "fileUrl": "/uploads/payment-proofs/proof-inapem-jan2025.jpg",
+        "amount": "468750.00",
+        "sdgId": 7,
+        "status": "approved",
+        "createdAt": "2025-07-23T19:33:25.189Z",
+        "updatedAt": "2025-07-23T19:33:25.189Z"
+      },
+      {
+        "id": 37,
+        "companyId": 11,
+        "individualId": null,
+        "consumptionRecordId": 10,
+        "fileUrl": "/uploads/payment-proofs/proof-inapem-dec2024.jpg",
+        "amount": "405125.00",
+        "sdgId": 13,
+        "status": "approved",
+        "createdAt": "2025-07-23T19:33:25.189Z",
+        "updatedAt": "2025-07-23T19:33:25.189Z"
+      },
+      {
+        "id": 38,
+        "companyId": null,
+        "individualId": 1,
+        "consumptionRecordId": null,
+        "fileUrl": "/uploads/proofs/paymentProof-1754475715678-75500573.png",
+        "amount": "10000.00",
+        "sdgId": 2,
+        "status": "approved",
+        "createdAt": "2025-08-06T10:22:04.956Z",
+        "updatedAt": "2025-08-06T10:28:21.776Z"
+      },
+      {
+        "id": 39,
+        "companyId": null,
+        "individualId": 1,
+        "consumptionRecordId": 13,
+        "fileUrl": "/uploads/proofs/paymentProof-1754475981842-558493129.png",
+        "amount": "3000.00",
+        "sdgId": 2,
+        "status": "approved",
+        "createdAt": "2025-08-06T10:26:24.574Z",
+        "updatedAt": "2025-08-06T10:29:21.605Z"
+      }
+    ]
+  }
+}
